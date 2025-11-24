@@ -65,6 +65,7 @@ declare global {
     play(): void;
     pause(): void;
     stop(): void;
+    on(event: string, callback: () => void): void;
   }
 
   interface YT {

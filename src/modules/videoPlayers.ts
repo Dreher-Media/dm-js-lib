@@ -4,30 +4,11 @@
  * Manages autoplay and pause functionality across multiple players
  */
 
+import { loadScript, loadStylesheet } from "../utils/loadResource";
+
 interface PlayerInstance {
   type: "youtube" | "vimeo" | "dailymotion";
   player: unknown;
-}
-
-/**
- * Loads a script dynamically and returns a promise that resolves when loaded
- */
-function loadScript(src: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    // Check if script is already loaded
-    const existingScript = document.querySelector(`script[src="${src}"]`);
-    if (existingScript) {
-      resolve();
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.src = src;
-    script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
-    document.head.appendChild(script);
-  });
 }
 
 /**
@@ -81,22 +62,88 @@ function loadDailymotionAPI(): Promise<void> {
   });
 }
 
+/**
+ * Checks if Plyr players exist on the page
+ */
+function hasPlyrPlayers(): boolean {
+  return document.querySelectorAll("._init-plyr").length > 0;
+}
+
+/**
+ * Loads Plyr library and stylesheet from CDN
+ */
+function loadPlyrAPI(): Promise<void> {
+  // Check if already loaded
+  if (window.Plyr && typeof window.Plyr.setup === "function") {
+    return Promise.resolve();
+  }
+
+  // Load both CSS and JS in parallel
+  return Promise.all([
+    loadStylesheet("https://cdn.plyr.io/3.7.8/plyr.css"),
+    loadScript("https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"),
+  ])
+    .then(() => {
+      // Both resources loaded successfully
+    })
+    .catch((error) => {
+      console.error("Failed to load Plyr resources:", error);
+      throw error;
+    });
+}
+
 export function initVideoPlayers(): void {
   document.addEventListener("DOMContentLoaded", () => {
-    if (typeof window.Plyr !== "undefined") {
-      window.Plyr.setup("._init-plyr");
-    }
+    let plyrPlayers: Plyr[] = [];
 
     const youtubeElements = document.querySelectorAll(".youtube");
     const players: Record<string, PlayerInstance> = {};
     let init = false;
 
     // Check which platforms are needed and load their APIs
+    const needsPlyr = hasPlyrPlayers();
     const needsYouTube = hasPlayersOfType("youtube");
     const needsVimeo = hasPlayersOfType("vimeo");
     const needsDailymotion = hasPlayersOfType("dailymotion");
 
+    /**
+     * Initializes Plyr players and sets up event listeners
+     */
+    const initializePlyrPlayers = (): void => {
+      if (typeof window.Plyr !== "undefined") {
+        plyrPlayers = window.Plyr.setup("._init-plyr");
+
+        // Set up Plyr player event listeners
+        plyrPlayers.forEach((plyrPlayer) => {
+          plyrPlayer.on("play", () => {
+            // When a Plyr player plays, pause all other players
+            pauseAllPlayers();
+            if (typeof videoSwipers !== "undefined" && videoSwipers) {
+              videoSwipers.forEach((swiper) => {
+                swiper.autoplay.stop();
+              });
+            }
+          });
+
+          plyrPlayer.on("pause", () => {
+            // When a Plyr player pauses, resume swiper autoplay
+            if (typeof videoSwipers !== "undefined" && videoSwipers) {
+              videoSwipers.forEach((swiper) => {
+                swiper.autoplay.start();
+              });
+            }
+          });
+        });
+      }
+    };
+
     const pauseAllPlayers = (id: string | null = null): void => {
+      // Pause all Plyr players
+      plyrPlayers.forEach((plyrPlayer) => {
+        plyrPlayer.pause();
+      });
+
+      // Pause all other video players
       for (const [key, value] of Object.entries(players)) {
         if (id === key) continue;
 
@@ -239,6 +286,9 @@ export function initVideoPlayers(): void {
 
     // Load APIs in parallel if needed
     const apiPromises: Promise<void>[] = [];
+    if (needsPlyr) {
+      apiPromises.push(loadPlyrAPI());
+    }
     if (needsYouTube) {
       apiPromises.push(loadYouTubeAPI());
     }
@@ -253,6 +303,11 @@ export function initVideoPlayers(): void {
     if (apiPromises.length > 0) {
       Promise.all(apiPromises)
         .then(() => {
+          // Initialize Plyr players if needed
+          if (needsPlyr) {
+            initializePlyrPlayers();
+          }
+
           // Small delay to ensure APIs are fully ready
           // YouTube API will call onYouTubeIframeAPIReady callback (if needed)
           // For Vimeo and Dailymotion, or if YouTube is not needed, initialize after a short delay
@@ -274,12 +329,19 @@ export function initVideoPlayers(): void {
         .catch((error) => {
           console.error("Error loading video player APIs:", error);
           // Still try to initialize in case some APIs loaded
+          if (needsPlyr && typeof window.Plyr !== "undefined") {
+            initializePlyrPlayers();
+          }
           setTimeout(() => {
             initializePlayers();
           }, 500);
         });
     } else {
       // If no APIs need to be loaded, initialize immediately
+      // Check if Plyr is already available (might be loaded externally)
+      if (needsPlyr && typeof window.Plyr !== "undefined") {
+        initializePlyrPlayers();
+      }
       initializePlayers();
     }
 
