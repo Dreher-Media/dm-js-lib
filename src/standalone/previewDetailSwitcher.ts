@@ -98,17 +98,23 @@ export function initPreviewDetailSwitcher(options: PreviewDetailSwitcherOptions 
 
     if (detailItems.length === 0) return;
 
+    // Hide all detail view items first
+    detailItems.forEach((item) => {
+      if (item) {
+        item.style.display = "none";
+      }
+    });
+
     // Show initial detail view item (only one is shown at a time)
     const initialDetailItem = detailItems[initialIndex];
     if (initialDetailItem) {
-      // Hide all detail view items first
-      detailItems.forEach((item) => {
-        if (item) {
-          item.style.display = "none";
-        }
-      });
       // Show only the initial detail view item
       initialDetailItem.style.display = displayValue;
+    } else {
+      // Show the first detail view item
+      if (detailItems[0]) {
+        detailItems[0].style.display = displayValue;
+      }
     }
 
     // Set up click handlers on preview elements within the container scope
