@@ -1,0 +1,41 @@
+# Code Quality Rules
+
+## TypeScript Standards
+- Use strict TypeScript with proper type annotations
+- Prefer `const` and `let` over `var`
+- Use arrow functions for callbacks
+- Use optional chaining (`?.`) and nullish coalescing (`??`) where appropriate
+- Always handle null/undefined cases explicitly
+- Use meaningful variable and function names
+- Keep functions focused and single-purpose
+
+## Module Organization
+- Each module should be self-contained with clear responsibilities
+- Export functions, not classes unless necessary
+- Use named exports over default exports
+- Keep modules small and focused
+
+## Code Style
+- Use 2 spaces for indentation
+- Use single quotes for strings (unless escaping)
+- Add JSDoc comments for exported functions
+- Keep line length reasonable (max 100 characters)
+- Use trailing commas in multi-line objects/arrays
+
+## Error Handling
+- Always check for null/undefined before accessing properties
+- Use try-catch for operations that might fail
+- Provide meaningful error messages
+- Handle edge cases gracefully
+
+## Performance
+- Avoid unnecessary DOM queries (cache selectors when possible)
+- Use event delegation for dynamic content
+- Debounce/throttle expensive operations
+- Minimize global state
+
+## Compatibility
+- Maintain compatibility with existing Webflow HTML structure
+- Support data attributes as specified
+- Ensure code works with external dependencies (FsCC, Webflow, etc.)
+
