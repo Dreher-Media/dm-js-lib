@@ -8,15 +8,20 @@ export function initTabs(): void {
     document.querySelectorAll(".tab-link").forEach((el) => {
       el.addEventListener("click", (event) => {
         const target = event.currentTarget as HTMLElement;
-        const parent = target.parentNode as HTMLElement | null;
+        const tabGroup = target.dataset.tabGroup;
 
-        if (parent) {
-          const activeTab = parent.querySelector(".tab-link.active");
-          if (activeTab) {
-            activeTab.classList.remove("active");
-          }
-          target.classList.add("active");
+        if (tabGroup) {
+          // Handle tab groups via data-tab-group attribute
+          document
+            .querySelector(`.tab-link.active[data-tab-group="${tabGroup}"]`)
+            ?.classList?.remove("active");
+        } else {
+          // Fallback to parent-based approach
+          const parent = target.parentNode as HTMLElement | null;
+          parent?.querySelector(".tab-link.active")?.classList?.remove("active");
         }
+
+        target.classList.add("active");
       });
     });
   });
