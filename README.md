@@ -32,26 +32,44 @@ npm run format:check
 
 ## Release Workflow
 
-### 1. Build and Publish
+### Standard Release
 
 ```bash
-npm run release:patch   # 1.0.0 -> 1.0.1 (builds, versions, and publishes)
-npm run release:minor   # 1.0.0 -> 1.1.0 (builds, versions, and publishes)
-npm run release:major   # 1.0.0 -> 2.0.0 (builds, versions, and publishes)
+npm run release:patch   # 1.0.0 -> 1.0.1 (builds, versions, publishes, and pushes tags)
+npm run release:minor   # 1.0.0 -> 1.1.0 (builds, versions, publishes, and pushes tags)
+npm run release:major   # 1.0.0 -> 2.0.0 (builds, versions, publishes, and pushes tags)
 ```
 
 The release script will:
-1. Update the version in `package.json`
-2. Build the project (via `prepublishOnly` hook)
-3. Publish to npm
 
-### 2. Commit and Push
+1. Update the version in `package.json`
+2. Create a git commit with the version change
+3. **Create a git tag** (e.g., `v1.2.3`) - automatically done by `npm version`
+4. Build the project (via `prepublishOnly` hook)
+5. Publish to npm
+6. Push commits and tags to remote
+
+### Patching an Old Version
+
+To create a patch for an older version (e.g., patch v1.2.0 while main is at v1.5.0):
 
 ```bash
-git add .
-git commit -m "Release v1.2.3"
-git push
+# 1. Checkout the old version tag
+git checkout v1.2.0
+
+# 2. Create a branch for the patch
+git checkout -b patch-1.2.1
+
+# 3. Make your fixes, then release
+npm version patch
+npm publish
+git push origin patch-1.2.1 --follow-tags
+
+# 4. Switch back to main
+git checkout main
 ```
+
+See `RELEASE_WORKFLOW.md` for detailed workflow documentation.
 
 ## CDN Usage
 
@@ -145,4 +163,3 @@ The library integrates with these external services (loaded separately):
 ## License
 
 MIT
-

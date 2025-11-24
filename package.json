@@ -13,9 +13,9 @@
     "format": "prettier --write \"src/**/*.{ts,js}\" \"*.{js,json,md}\"",
     "format:check": "prettier --check \"src/**/*.{ts,js}\" \"*.{js,json,md}\"",
     "prepublishOnly": "npm run build",
-    "release:patch": "npm version patch && npm publish",
-    "release:minor": "npm version minor && npm publish",
-    "release:major": "npm version major && npm publish"
+    "release:patch": "npm version patch && npm publish && git push --follow-tags",
+    "release:minor": "npm version minor && npm publish && git push --follow-tags",
+    "release:major": "npm version major && npm publish && git push --follow-tags"
   },
   "keywords": [
     "cdn",
