@@ -33,11 +33,11 @@ function switchLanguage(lang: string): void {
     const contentEl = el as HTMLElement;
     const contentLang = contentEl.dataset.langContent;
     if (contentLang === lang) {
-      contentEl.style.display = "block";
-      contentEl.classList.add("active");
+      contentEl.style.display = "";
+      contentEl.classList.add("lang-active");
     } else {
       contentEl.style.display = "none";
-      contentEl.classList.remove("active");
+      contentEl.classList.remove("lang-active");
     }
   });
 
