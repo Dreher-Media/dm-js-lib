@@ -10,16 +10,6 @@ export function initWebflow(): void {
       copyrightElements.forEach((el) => {
         el.textContent = new Date().getFullYear().toString();
       });
-
-      // Restore selected language from session storage
-      const selectedLang = sessionStorage.getItem("selected_lang");
-      if (selectedLang) {
-        const langLink = document.querySelector(
-          `.biography-lang-links .tab-link[data-lang="${selectedLang}"]`
-        ) as HTMLElement | null;
-        langLink?.click?.();
-      }
     });
   }
 }
-
