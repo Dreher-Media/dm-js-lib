@@ -6,6 +6,7 @@
   "main": "dist/dm-js-lib.min.js",
   "files": [
     "dist/dm-js-lib.min.js",
+    "dist/standalone",
     "README.md"
   ],
   "scripts": {
@@ -22,7 +23,7 @@
     "javascript",
     "typescript"
   ],
-  "author": "",
+  "author": "Tobias Laufersweiler <tobias@dreher-media.de>",
   "license": "MIT",
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.4",
