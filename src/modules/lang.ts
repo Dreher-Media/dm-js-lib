@@ -28,7 +28,7 @@ function switchLanguage(lang: string): void {
   sessionStorage.setItem("selected_lang", lang);
 
   // === Attribute-based localization (new system) ===
-  // Hide all language content except the selected language
+  // Process elements that use the attribute-based system
   document.querySelectorAll("[data-lang-content]").forEach((el) => {
     const contentEl = el as HTMLElement;
     const contentLang = contentEl.dataset.langContent;
@@ -42,13 +42,14 @@ function switchLanguage(lang: string): void {
   });
 
   // === Classname-based localization (legacy system) ===
-  // Hide all biography texts except the selected language
-  document.querySelectorAll(`.biography-text:not(.${lang})`).forEach((bioEl) => {
-    (bioEl as HTMLElement).style.display = "none";
-  });
+  // Process .biography-text elements that don't use the attribute-based system
+  document
+    .querySelectorAll(`.biography-text:not([data-lang-content]):not(.${lang})`)
+    .forEach((bioEl) => {
+      (bioEl as HTMLElement).style.display = "none";
+    });
 
-  // Show biography texts for the selected language
-  document.querySelectorAll(`.biography-text.${lang}`).forEach((bioEl) => {
+  document.querySelectorAll(`.biography-text:not([data-lang-content]).${lang}`).forEach((bioEl) => {
     (bioEl as HTMLElement).style.display = "block";
   });
 
@@ -66,13 +67,15 @@ function switchLanguage(lang: string): void {
 
   // Legacy classname-based links
   document
-    .querySelectorAll(`.biography-lang-links .tab-link:not([data-lang="${lang}"])`)
+    .querySelectorAll(
+      `.biography-lang-links .tab-link:not([data-lang-link]):not([data-lang="${lang}"])`
+    )
     .forEach((tabEl) => {
       tabEl.classList.remove("active");
     });
 
   document
-    .querySelectorAll(`.biography-lang-links .tab-link[data-lang="${lang}"]`)
+    .querySelectorAll(`.biography-lang-links .tab-link:not([data-lang-link])[data-lang="${lang}"]`)
     .forEach((tabEl) => {
       tabEl.classList.add("active");
     });
@@ -131,7 +134,7 @@ function isLanguageAvailable(lang: string): boolean {
 
   // Check legacy classname-based links
   const legacyLangLink = document.querySelector(
-    `.biography-lang-links .tab-link[data-lang="${lang}"]`
+    `.biography-lang-links .tab-link:not([data-lang-link])[data-lang="${lang}"]`
   );
   if (legacyLangLink) {
     return true;
@@ -179,7 +182,7 @@ function restoreLanguage(): void {
 
     // Legacy classname-based link
     const legacyLangLink = document.querySelector(
-      `.biography-lang-links .tab-link[data-lang="${selectedLang}"]`
+      `.biography-lang-links .tab-link:not([data-lang-link])[data-lang="${selectedLang}"]`
     ) as HTMLElement | null;
     if (legacyLangLink) {
       legacyLangLink.click();
@@ -210,17 +213,19 @@ export function initLang(): void {
     });
 
     // Handle legacy classname-based language links
-    document.querySelectorAll(".biography-lang-links .tab-link[data-lang]").forEach((el) => {
-      el.addEventListener("click", (event) => {
-        event.preventDefault();
-        const target = event.currentTarget as HTMLElement;
-        const lang = target.dataset?.lang;
+    document
+      .querySelectorAll(".biography-lang-links .tab-link:not([data-lang-link])[data-lang]")
+      .forEach((el) => {
+        el.addEventListener("click", (event) => {
+          event.preventDefault();
+          const target = event.currentTarget as HTMLElement;
+          const lang = target.dataset?.lang;
 
-        if (!lang) return;
+          if (!lang) return;
 
-        switchLanguage(lang);
+          switchLanguage(lang);
+        });
       });
-    });
 
     // Restore language on page load
     restoreLanguage();
