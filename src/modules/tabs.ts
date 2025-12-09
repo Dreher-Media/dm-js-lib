@@ -6,10 +6,17 @@ export function initTabs(): void {
   document.addEventListener("DOMContentLoaded", () => {
     // Helper function to get tab target value from a tab link element
     const getTabTargetValue = (link: HTMLElement): string | null => {
+      // Priority 1: data-tab-target attribute
       const tabTarget = link.dataset.tabTarget;
       if (tabTarget) {
         return tabTarget;
       }
+      // Priority 2: data-tab-link attribute value (for attribute-based tabs)
+      const tabLink = link.dataset.tabLink;
+      if (tabLink) {
+        return tabLink;
+      }
+      // Priority 3: href attribute starting with #
       const href = link.getAttribute("href");
       if (href?.startsWith("#")) {
         return href.slice(1);
@@ -61,7 +68,7 @@ export function initTabs(): void {
           const target = event.currentTarget as HTMLElement;
           const tabGroup = target.dataset.tabGroup;
 
-          // Get the target tab content value from data-tab-target or href attribute
+          // Get the target tab content value from data-tab-target, data-tab-link, or href attribute
           const tabTargetValue = getTabTargetValue(target);
 
           // Find the corresponding tab content element by attribute
