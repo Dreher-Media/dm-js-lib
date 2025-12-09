@@ -68,14 +68,16 @@ function switchLanguage(lang: string): void {
   // Legacy classname-based links
   document
     .querySelectorAll(
-      `.biography-lang-links .tab-link:not([data-lang-link]):not([data-lang="${lang}"])`
+      `.biography-lang-links .tab-link[data-lang]:not([data-lang-link]):not([data-lang="${lang}"])`
     )
     .forEach((tabEl) => {
       tabEl.classList.remove("active");
     });
 
   document
-    .querySelectorAll(`.biography-lang-links .tab-link:not([data-lang-link])[data-lang="${lang}"]`)
+    .querySelectorAll(
+      `.biography-lang-links .tab-link[data-lang]:not([data-lang-link])[data-lang="${lang}"]`
+    )
     .forEach((tabEl) => {
       tabEl.classList.add("active");
     });
@@ -134,7 +136,7 @@ function isLanguageAvailable(lang: string): boolean {
 
   // Check legacy classname-based links
   const legacyLangLink = document.querySelector(
-    `.biography-lang-links .tab-link:not([data-lang-link])[data-lang="${lang}"]`
+    `.biography-lang-links .tab-link[data-lang]:not([data-lang-link])[data-lang="${lang}"]`
   );
   if (legacyLangLink) {
     return true;
@@ -182,7 +184,7 @@ function restoreLanguage(): void {
 
     // Legacy classname-based link
     const legacyLangLink = document.querySelector(
-      `.biography-lang-links .tab-link:not([data-lang-link])[data-lang="${selectedLang}"]`
+      `.biography-lang-links .tab-link[data-lang]:not([data-lang-link])[data-lang="${selectedLang}"]`
     ) as HTMLElement | null;
     if (legacyLangLink) {
       legacyLangLink.click();
@@ -214,7 +216,9 @@ export function initLang(): void {
 
     // Handle legacy classname-based language links
     document
-      .querySelectorAll(".biography-lang-links .tab-link:not([data-lang-link])[data-lang]")
+      .querySelectorAll(
+        ".biography-lang-links .tab-link[data-lang]:not([data-lang-link])[data-lang]"
+      )
       .forEach((el) => {
         el.addEventListener("click", (event) => {
           event.preventDefault();
