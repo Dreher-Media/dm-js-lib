@@ -131,5 +131,35 @@ export function initTabs(): void {
           }
         });
       });
+
+    // Handle initial active state for tab groups with data-tab-first-active
+    document.querySelectorAll("[data-tab-first-active][data-tab-group]").forEach((element) => {
+      const tabGroup = (element as HTMLElement).dataset.tabGroup;
+      if (!tabGroup) {
+        return;
+      }
+
+      // Find the first tab link in this group
+      const firstTabLink = document.querySelector(
+        `.tab-link[data-tab-group="${tabGroup}"]:not([data-lang-link]):not([data-lang]), [data-tab-link][data-tab-group="${tabGroup}"]`
+      ) as HTMLElement | null;
+
+      if (firstTabLink) {
+        // Get the target tab content value
+        const tabTargetValue = getTabTargetValue(firstTabLink);
+
+        // Find the corresponding tab content element
+        const targetTabContent = tabTargetValue ? findTabContentByAttribute(tabTargetValue) : null;
+
+        // Activate the first tab link
+        firstTabLink.classList.add("active");
+
+        // Show and activate the corresponding tab content
+        if (targetTabContent) {
+          targetTabContent.style.display = "block";
+          targetTabContent.classList.add("active");
+        }
+      }
+    });
   });
 }
