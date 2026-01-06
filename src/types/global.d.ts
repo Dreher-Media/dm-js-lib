@@ -59,6 +59,7 @@ declare global {
         }
       ): Promise<DailymotionPlayer>;
     };
+    videoSwipers?: Swiper[];
   }
 
   interface Plyr {

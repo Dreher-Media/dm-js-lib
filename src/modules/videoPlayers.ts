@@ -6,10 +6,16 @@
 
 import { loadScript, loadStylesheet } from "../utils/loadResource";
 
-// Initialize global videoSwipers array
-if (typeof videoSwipers === "undefined") {
-  videoSwipers = [];
+// Initialize global videoSwipers array on window object
+if (typeof window !== "undefined" && typeof window.videoSwipers === "undefined") {
+  window.videoSwipers = [];
 }
+
+// Create a reference to window.videoSwipers for direct access
+// This allows the code to use videoSwipers directly while it's actually stored on window
+const getVideoSwipers = (): Swiper[] | undefined => {
+  return typeof window !== "undefined" ? window.videoSwipers : undefined;
+};
 
 interface PlayerInstance {
   type: "youtube" | "vimeo" | "dailymotion";
@@ -123,8 +129,9 @@ export function initVideoPlayers(): void {
           plyrPlayer.on("play", () => {
             // When a Plyr player plays, pause all other players
             pauseAllPlayers();
-            if (typeof videoSwipers !== "undefined" && videoSwipers) {
-              videoSwipers.forEach((swiper) => {
+            const swipers = getVideoSwipers();
+            if (swipers) {
+              swipers.forEach((swiper) => {
                 swiper.autoplay.stop();
               });
             }
@@ -132,8 +139,9 @@ export function initVideoPlayers(): void {
 
           plyrPlayer.on("pause", () => {
             // When a Plyr player pauses, resume swiper autoplay
-            if (typeof videoSwipers !== "undefined" && videoSwipers) {
-              videoSwipers.forEach((swiper) => {
+            const swipers = getVideoSwipers();
+            if (swipers) {
+              swipers.forEach((swiper) => {
                 swiper.autoplay.start();
               });
             }
@@ -173,16 +181,18 @@ export function initVideoPlayers(): void {
 
     const onPlay = (id: string): void => {
       pauseAllPlayers(id);
-      if (typeof videoSwipers !== "undefined" && videoSwipers) {
-        videoSwipers.forEach((swiper) => {
+      const swipers = getVideoSwipers();
+      if (swipers) {
+        swipers.forEach((swiper) => {
           swiper.autoplay.stop();
         });
       }
     };
 
     const onPause = (id: string): void => {
-      if (typeof videoSwipers !== "undefined" && videoSwipers) {
-        videoSwipers.forEach((swiper) => {
+      const swipers = getVideoSwipers();
+      if (swipers) {
+        swipers.forEach((swiper) => {
           swiper.autoplay.start();
         });
       }
@@ -350,8 +360,9 @@ export function initVideoPlayers(): void {
       initializePlayers();
     }
 
-    if (typeof videoSwipers !== "undefined" && videoSwipers) {
-      videoSwipers.forEach((swiper) => {
+    const swipers = getVideoSwipers();
+    if (swipers) {
+      swipers.forEach((swiper) => {
         swiper.on("slideChange", () => {
           pauseAllPlayers();
         });
