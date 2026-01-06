@@ -6,6 +6,11 @@
 
 import { loadScript, loadStylesheet } from "../utils/loadResource";
 
+// Initialize global videoSwipers array
+if (typeof videoSwipers === "undefined") {
+  videoSwipers = [];
+}
+
 interface PlayerInstance {
   type: "youtube" | "vimeo" | "dailymotion";
   player: unknown;

@@ -133,9 +133,8 @@ declare global {
     on(event: string, callback: () => void): void;
   }
 
-  // Global video swipers array (may be set by external code)
+  // Global video swipers array (initialized by videoPlayers module, can be extended by external code)
   var videoSwipers: Swiper[] | undefined;
 }
 
 export {};
-
