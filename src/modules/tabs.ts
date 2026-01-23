@@ -90,7 +90,15 @@ export function initTabs(): void {
             link.classList.remove("active");
           });
 
-        // Get all content values for this tab group and hide all matching content elements
+        // Hide all content elements that have the data-tab-group attribute matching this group
+        document
+          .querySelectorAll(`[data-tab-content][data-tab-group="${tabGroup}"]`)
+          .forEach((contentEl) => {
+            (contentEl as HTMLElement).style.display = "none";
+            contentEl.classList.remove("active");
+          });
+
+        // Also hide content elements based on tab link target values
         const contentValues = getTabContentValuesForGroup(tabGroup);
         contentValues.forEach((contentValue) => {
           const contentEls = findAllTabContentByAttribute(contentValue);
@@ -165,6 +173,15 @@ export function initTabs(): void {
           });
 
         // Hide all content elements for this tab group
+        // First, hide all content elements that have the data-tab-group attribute matching this group
+        document
+          .querySelectorAll(`[data-tab-content][data-tab-group="${urlTabGroup}"]`)
+          .forEach((contentEl) => {
+            (contentEl as HTMLElement).style.display = "none";
+            contentEl.classList.remove("active");
+          });
+
+        // Also hide content elements based on tab link target values
         const contentValues = getTabContentValuesForGroup(urlTabGroup);
         contentValues.forEach((contentValue) => {
           const contentEls = findAllTabContentByAttribute(contentValue);
@@ -221,6 +238,18 @@ export function initTabs(): void {
           if (targetTabContents.length > 0) {
             // Hide other tabs in the same group or parent
             if (tabGroup) {
+              // Hide all content elements that have the data-tab-group attribute matching this group
+              document
+                .querySelectorAll(`[data-tab-content][data-tab-group="${tabGroup}"]`)
+                .forEach((contentEl) => {
+                  // Only hide if it's not one of the target tab contents
+                  if (!targetTabContents.includes(contentEl as HTMLElement)) {
+                    (contentEl as HTMLElement).style.display = "none";
+                    contentEl.classList.remove("active");
+                  }
+                });
+
+              // Also hide content elements based on tab link target values
               const contentValues = getTabContentValuesForGroup(tabGroup);
               contentValues.forEach((contentValue) => {
                 const contentEls = findAllTabContentByAttribute(contentValue);
