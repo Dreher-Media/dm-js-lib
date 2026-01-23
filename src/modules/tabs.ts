@@ -153,6 +153,26 @@ export function initTabs(): void {
               targetTabLink = link as HTMLElement;
             }
           });
+
+        // Explicitly hide all other tabs in the same group before activating
+        // This ensures all tabs in the group are properly deactivated
+        document
+          .querySelectorAll(
+            `.tab-link[data-tab-group="${urlTabGroup}"]:not([data-lang-link]):not([data-lang]), [data-tab-link][data-tab-group="${urlTabGroup}"]`
+          )
+          .forEach((link) => {
+            link.classList.remove("active");
+          });
+
+        // Hide all content elements for this tab group
+        const contentValues = getTabContentValuesForGroup(urlTabGroup);
+        contentValues.forEach((contentValue) => {
+          const contentEls = findAllTabContentByAttribute(contentValue);
+          contentEls.forEach((contentEl) => {
+            contentEl.style.display = "none";
+            contentEl.classList.remove("active");
+          });
+        });
       } else {
         // Find tab link without group restriction
         document
