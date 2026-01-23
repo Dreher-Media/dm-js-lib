@@ -34,6 +34,13 @@ export function initTabs(): void {
       return document.querySelector(`[data-tab-content="${value}"]`) as HTMLElement | null;
     };
 
+    // Helper function to find all tab content elements by attribute
+    const findAllTabContentByAttribute = (value: string): HTMLElement[] => {
+      return Array.from(
+        document.querySelectorAll(`[data-tab-content="${value}"]`)
+      ) as HTMLElement[];
+    };
+
     // Helper function to get all tab content values for a given tab group
     const getTabContentValuesForGroup = (group: string): string[] => {
       const contentValues: string[] = [];
@@ -68,11 +75,13 @@ export function initTabs(): void {
     const activateTab = (tabLink: HTMLElement): void => {
       const tabGroup = tabLink.dataset.tabGroup;
       const tabTargetValue = getTabTargetValue(tabLink);
-      const targetTabContent = tabTargetValue ? findTabContentByAttribute(tabTargetValue) : null;
+      const targetTabContents = tabTargetValue
+        ? findAllTabContentByAttribute(tabTargetValue)
+        : [];
 
       if (tabGroup) {
         // Handle tab groups via data-tab-group attribute
-        // Remove active class from all tab links in the same group
+        // Remove active class from all tab links in the same group (across entire document)
         document
           .querySelectorAll(
             `.tab-link[data-tab-group="${tabGroup}"]:not([data-lang-link]):not([data-lang]), [data-tab-link][data-tab-group="${tabGroup}"]`
@@ -81,14 +90,14 @@ export function initTabs(): void {
             link.classList.remove("active");
           });
 
-        // Get all content values for this tab group and hide them
+        // Get all content values for this tab group and hide all matching content elements
         const contentValues = getTabContentValuesForGroup(tabGroup);
         contentValues.forEach((contentValue) => {
-          const contentEl = findTabContentByAttribute(contentValue);
-          if (contentEl) {
+          const contentEls = findAllTabContentByAttribute(contentValue);
+          contentEls.forEach((contentEl) => {
             contentEl.style.display = "none";
             contentEl.classList.remove("active");
-          }
+          });
         });
       } else {
         // Fallback to parent-based approach
@@ -101,14 +110,14 @@ export function initTabs(): void {
               link.classList.remove("active");
             });
 
-          // Get all content values for links in this parent and hide them
+          // Get all content values for links in this parent and hide all matching content elements
           const contentValues = getTabContentValuesForParent(parent);
           contentValues.forEach((contentValue) => {
-            const contentEl = findTabContentByAttribute(contentValue);
-            if (contentEl) {
+            const contentEls = findAllTabContentByAttribute(contentValue);
+            contentEls.forEach((contentEl) => {
               contentEl.style.display = "none";
               contentEl.classList.remove("active");
-            }
+            });
           });
         }
       }
@@ -116,11 +125,11 @@ export function initTabs(): void {
       // Activate the tab link
       tabLink.classList.add("active");
 
-      // Show the corresponding tab content
-      if (targetTabContent) {
+      // Show all corresponding tab content elements
+      targetTabContents.forEach((targetTabContent) => {
         targetTabContent.style.display = "block";
         targetTabContent.classList.add("active");
-      }
+      });
     };
 
     // Handle URL parameters for setting default tab
@@ -184,39 +193,47 @@ export function initTabs(): void {
           const tabLink = link as HTMLElement;
           const tabGroup = tabLink.dataset.tabGroup;
           const tabTargetValue = getTabTargetValue(tabLink);
-          const targetTabContent = tabTargetValue
-            ? findTabContentByAttribute(tabTargetValue)
-            : null;
+          const targetTabContents = tabTargetValue
+            ? findAllTabContentByAttribute(tabTargetValue)
+            : [];
 
           // Show the corresponding tab content
-          if (targetTabContent) {
+          if (targetTabContents.length > 0) {
             // Hide other tabs in the same group or parent
             if (tabGroup) {
               const contentValues = getTabContentValuesForGroup(tabGroup);
               contentValues.forEach((contentValue) => {
-                const contentEl = findTabContentByAttribute(contentValue);
-                if (contentEl && contentEl !== targetTabContent) {
-                  contentEl.style.display = "none";
-                  contentEl.classList.remove("active");
-                }
+                const contentEls = findAllTabContentByAttribute(contentValue);
+                contentEls.forEach((contentEl) => {
+                  // Only hide if it's not one of the target tab contents
+                  if (!targetTabContents.includes(contentEl)) {
+                    contentEl.style.display = "none";
+                    contentEl.classList.remove("active");
+                  }
+                });
               });
             } else {
               const parent = tabLink.parentNode as HTMLElement | null;
               if (parent) {
                 const contentValues = getTabContentValuesForParent(parent);
                 contentValues.forEach((contentValue) => {
-                  const contentEl = findTabContentByAttribute(contentValue);
-                  if (contentEl && contentEl !== targetTabContent) {
-                    contentEl.style.display = "none";
-                    contentEl.classList.remove("active");
-                  }
+                  const contentEls = findAllTabContentByAttribute(contentValue);
+                  contentEls.forEach((contentEl) => {
+                    // Only hide if it's not one of the target tab contents
+                    if (!targetTabContents.includes(contentEl)) {
+                      contentEl.style.display = "none";
+                      contentEl.classList.remove("active");
+                    }
+                  });
                 });
               }
             }
 
-            // Show the active tab content
-            targetTabContent.style.display = "block";
-            targetTabContent.classList.add("active");
+            // Show all active tab content elements
+            targetTabContents.forEach((targetTabContent) => {
+              targetTabContent.style.display = "block";
+              targetTabContent.classList.add("active");
+            });
           }
         });
     }
