@@ -4,23 +4,15 @@
  */
 
 import { initCookieConsent } from "./modules/cookieConsent";
-import { initWebflow } from "./modules/webflowInit";
-import { initActiveLinks } from "./modules/activeLink";
-import { initSeparators } from "./modules/separators";
+import { initUtilities } from "./modules/utilities";
 import { initTabs } from "./modules/tabs";
 import { initLang } from "./modules/lang";
 import { initVideoPlayers } from "./modules/videoPlayers";
-import { initYouTubeThumbnails } from "./modules/youtubeThumbnails";
-import { initFileDownload } from "./modules/fileDownload";
 
 // Initialize all modules
 initCookieConsent();
-initWebflow();
-initActiveLinks();
-initSeparators();
+initUtilities();
 initTabs();
 initLang();
 initVideoPlayers();
-initYouTubeThumbnails();
-initFileDownload();
 
