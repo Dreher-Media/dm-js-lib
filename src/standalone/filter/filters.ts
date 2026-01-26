@@ -126,8 +126,41 @@ export function getAllFilters(
     const field = el.dataset.filterField;
     if (field) {
       const value = getFilterValue(el);
+      
+      // Check if this is a select with an "all" value that should be ignored
+      let shouldIgnore = false;
+      if (el.tagName.toLowerCase() === 'select' && value) {
+        const select = el as HTMLSelectElement;
+        const allValue = select.dataset.filterAllValue || '';
+        const allText = select.dataset.filterAllText || 'All';
+        
+        // If the value matches the "all" value, treat it as no filter
+        if (value === allValue || value.trim() === allValue) {
+          shouldIgnore = true;
+        }
+        
+        // Also check if the selected option has no value attribute (uses text as value)
+        // and matches common placeholder patterns or the "all" text
+        const selectedOption = select.options[select.selectedIndex];
+        if (selectedOption && !selectedOption.hasAttribute('value')) {
+          const optionText = selectedOption.textContent?.trim().toLowerCase() || '';
+          const lowerAllText = allText.toLowerCase();
+          // Check if it's a placeholder option (starts with "select", "choose", "all", etc.)
+          if (
+            optionText === lowerAllText ||
+            optionText.startsWith('select') ||
+            optionText.startsWith('choose') ||
+            optionText === 'all' ||
+            optionText === ''
+          ) {
+            shouldIgnore = true;
+          }
+        }
+      }
+      
       // Only add non-empty values (empty string, null, or whitespace-only means no filter)
-      if (value && value.trim().length > 0) {
+      // Also ignore values that match the "all" option or placeholder options
+      if (value && value.trim().length > 0 && !shouldIgnore) {
         // Check if data-filter-search is specified (can be single or multiple fields)
         const searchFields = parseFieldList(el.dataset.filterSearch);
         if (searchFields.length > 0) {
