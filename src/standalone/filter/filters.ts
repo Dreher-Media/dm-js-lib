@@ -126,7 +126,8 @@ export function getAllFilters(
     const field = el.dataset.filterField;
     if (field) {
       const value = getFilterValue(el);
-      if (value) {
+      // Only add non-empty values (empty string, null, or whitespace-only means no filter)
+      if (value && value.trim().length > 0) {
         // Check if data-filter-search is specified (can be single or multiple fields)
         const searchFields = parseFieldList(el.dataset.filterSearch);
         if (searchFields.length > 0) {
@@ -220,14 +221,21 @@ export function matchesFilters(
   multifieldSearches: Record<string, string[]>,
   instance: string | null
 ): boolean {
+  // Filter out empty filter arrays
+  const activeFilters: Record<string, string[]> = {};
+  for (const [field, filterValues] of Object.entries(filters)) {
+    if (filterValues.length > 0) {
+      activeFilters[field] = filterValues;
+    }
+  }
+
   // No filters active, show everything
-  if (Object.keys(filters).length === 0) {
+  if (Object.keys(activeFilters).length === 0) {
     return true;
   }
 
   // Check each filter field
-  for (const [field, filterValues] of Object.entries(filters)) {
-    if (filterValues.length === 0) continue;
+  for (const [field, filterValues] of Object.entries(activeFilters)) {
     
     // Check if this is a multifield search
     const searchFields = multifieldSearches[field];
