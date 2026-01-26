@@ -1,0 +1,213 @@
+/**
+ * Video Players Module - Player Management
+ * Functions for initializing and managing video players
+ */
+
+import type { PlayerInstance } from './types';
+
+// Initialize global videoSwipers array on window object
+if (typeof window !== "undefined" && typeof window.videoSwipers === "undefined") {
+  window.videoSwipers = [];
+}
+
+// Create a reference to window.videoSwipers for direct access
+// This allows the code to use videoSwipers directly while it's actually stored on window
+const getVideoSwipers = (): Swiper[] | undefined => {
+  return typeof window !== "undefined" ? window.videoSwipers : undefined;
+};
+
+/**
+ * Initializes Plyr players and sets up event listeners
+ */
+export function initializePlyrPlayers(plyrPlayers: Plyr[]): void {
+  if (typeof window.Plyr !== "undefined") {
+    const players = window.Plyr.setup("._init-plyr");
+    plyrPlayers.push(...players);
+
+    // Set up Plyr player event listeners
+    players.forEach((plyrPlayer) => {
+      plyrPlayer.on("play", () => {
+        // When a Plyr player plays, pause all other players
+        pauseAllPlayers(null, plyrPlayers, {});
+        const swipers = getVideoSwipers();
+        if (swipers) {
+          swipers.forEach((swiper) => {
+            swiper.autoplay.stop();
+          });
+        }
+      });
+
+      plyrPlayer.on("pause", () => {
+        // When a Plyr player pauses, resume swiper autoplay
+        const swipers = getVideoSwipers();
+        if (swipers) {
+          swipers.forEach((swiper) => {
+            swiper.autoplay.start();
+          });
+        }
+      });
+    });
+  }
+}
+
+/**
+ * Pauses all video players
+ */
+export function pauseAllPlayers(
+  id: string | null = null,
+  plyrPlayers: Plyr[],
+  players: Record<string, PlayerInstance>
+): void {
+  // Pause all Plyr players
+  plyrPlayers.forEach((plyrPlayer) => {
+    plyrPlayer.pause();
+  });
+
+  // Pause all other video players
+  for (const [key, value] of Object.entries(players)) {
+    if (id === key) continue;
+
+    if (value.type === "youtube") {
+      const ytPlayer = value.player as {
+        pauseVideo: () => void;
+      };
+      ytPlayer.pauseVideo();
+    } else if (value.type === "vimeo") {
+      const vimeoPlayer = value.player as {
+        pause: () => void;
+      };
+      vimeoPlayer.pause();
+    } else if (value.type === "dailymotion") {
+      const dmPlayer = value.player as {
+        pause: () => void;
+      };
+      dmPlayer.pause();
+    }
+  }
+}
+
+/**
+ * Handles play event for a player
+ */
+export function onPlay(
+  id: string,
+  plyrPlayers: Plyr[],
+  players: Record<string, PlayerInstance>
+): void {
+  pauseAllPlayers(id, plyrPlayers, players);
+  const swipers = getVideoSwipers();
+  if (swipers) {
+    swipers.forEach((swiper) => {
+      swiper.autoplay.stop();
+    });
+  }
+}
+
+/**
+ * Handles pause event for a player
+ */
+export function onPause(id: string): void {
+  const swipers = getVideoSwipers();
+  if (swipers) {
+    swipers.forEach((swiper) => {
+      swiper.autoplay.start();
+    });
+  }
+}
+
+/**
+ * Initializes video players (YouTube, Vimeo, Dailymotion)
+ */
+export function initializePlayers(
+  youtubeElements: NodeListOf<Element>,
+  players: Record<string, PlayerInstance>,
+  plyrPlayers: Plyr[]
+): void {
+  youtubeElements.forEach((el) => {
+    el.addEventListener("click", () => {
+      const customEmbed = el.querySelector("[data-custom-embed]");
+      if (customEmbed) {
+        el.innerHTML = customEmbed.innerHTML;
+      }
+
+      const element = el as HTMLElement;
+      const id = `player_${element.dataset.id}`;
+      const type = element.dataset.type as "youtube" | "vimeo" | "dailymotion";
+      const videoId = element.dataset.videoId;
+      const time = parseInt(element.dataset.time || "0", 10);
+
+      if (!videoId || !type) return;
+
+      onPlay(id, plyrPlayers, players);
+
+      // YouTube Player
+      if (type === "youtube" && window.YT) {
+        const player = new window.YT.Player(id, {
+          videoId: videoId,
+          playerVars: {
+            start: time,
+          },
+          events: {
+            onReady: (event) => {
+              event.target.playVideo();
+            },
+            onStateChange: (event) => {
+              if (event.data === window.YT!.PlayerState.PLAYING) {
+                onPlay(id, plyrPlayers, players);
+              } else if (
+                event.data === window.YT!.PlayerState.PAUSED ||
+                event.data === window.YT!.PlayerState.ENDED
+              ) {
+                onPause(id);
+              }
+            },
+          },
+        });
+
+        players[id] = { type, player };
+      }
+      // Vimeo Player
+      else if (type === "vimeo" && window.Vimeo) {
+        const container = document.getElementById(id);
+        if (container) {
+          container.innerHTML = "";
+        }
+
+        const player = new window.Vimeo.Player(id, {
+          id: videoId,
+          autoplay: true,
+          start: time,
+        });
+
+        player.on("play", () => onPlay(id, plyrPlayers, players));
+        player.on("pause", () => onPause(id));
+
+        players[id] = { type, player };
+      }
+      // Dailymotion Player
+      else if (type === "dailymotion" && window.dailymotion) {
+        window.dailymotion
+          .createPlayer(id, {
+            video: videoId,
+            params: {
+              autoplay: 1,
+              start: time,
+              mute: false,
+            },
+          })
+          .then((playerInstance) => {
+            // Attach event listeners
+            playerInstance.on("play", () => onPlay(id, plyrPlayers, players));
+            playerInstance.on("pause", () => onPause(id));
+            playerInstance.on("ended", () => onPause(id));
+
+            // Store the player instance
+            players[id] = { type: "dailymotion", player: playerInstance };
+          })
+          .catch((error) => {
+            console.error("Error initializing Dailymotion player:", error);
+          });
+      }
+    });
+  });
+}

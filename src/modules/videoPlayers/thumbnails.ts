@@ -1,6 +1,10 @@
 /**
- * YouTube Thumbnails Module
+ * Video Players Module - YouTube Thumbnails
  * Checks and upgrades YouTube thumbnail quality by trying different sizes
+ */
+
+/**
+ * Initializes YouTube thumbnail quality upgrade
  */
 export function initYouTubeThumbnails(): void {
   document.addEventListener("DOMContentLoaded", () => {

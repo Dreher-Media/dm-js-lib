@@ -46,4 +46,3 @@ export function initCookieConsent(): void {
   // Run the script on page load
   document.addEventListener("DOMContentLoaded", handleFsCcReject);
 }
-
