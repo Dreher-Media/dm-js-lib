@@ -69,6 +69,70 @@ Add `data-filter-field` to your filter controls (checkboxes, radios, selects, in
 </select>
 ```
 
+**Autofill Options (Optional):**
+
+Select dropdowns can automatically populate with all available options from your list items. This must be explicitly enabled:
+
+```html
+<!-- Enable autofill to populate with all unique values from list items -->
+<select data-filter-field="category" data-filter-autofill="true">
+  <!-- Options will be auto-generated -->
+</select>
+```
+
+The autofill feature:
+- Scans all list items for unique values matching the field
+- Automatically creates options for each unique value
+- Sorts options alphabetically
+- Includes an optional "All" option
+- Preserves manually added options (won't overwrite them)
+- Updates automatically when items are added/removed
+
+**Manual Options (Default):**
+
+By default, select elements use manually defined options:
+
+```html
+<select data-filter-field="category">
+  <option value="">All Categories</option>
+  <option value="design">Design</option>
+  <option value="development">Development</option>
+</select>
+```
+
+**Customize "All" Option:**
+
+```html
+<select 
+  data-filter-field="category"
+  data-filter-all-value=""
+  data-filter-all-text="Show All">
+  <!-- Auto-generated options with custom "All" option -->
+</select>
+```
+
+**Disable "All" Option:**
+
+```html
+<select 
+  data-filter-field="category"
+  data-filter-autofill-all="false">
+  <!-- Auto-generated options without "All" option -->
+</select>
+```
+
+**Force Refresh:**
+
+To regenerate options (useful when items are added dynamically):
+
+```html
+<select 
+  data-filter-field="category"
+  data-filter-autofill-refresh="true">
+  <!-- Options will be regenerated on each refresh -->
+</select>
+```
+
 ### Search Inputs
 
 ```html
@@ -230,6 +294,7 @@ const active = filterAPI.getActiveFilters(null);
 
 // Refresh filter (useful after adding items dynamically)
 filterAPI.refresh(null);
+// This also refreshes autofill options for select elements
 ```
 
 For multiple instances:
@@ -280,8 +345,12 @@ The module adds classes you can style:
 ```html
 <!-- Filter Controls -->
 <div>
-  <input type="checkbox" data-filter-field="category" value="design"> Design
-  <input type="checkbox" data-filter-field="category" value="development"> Development
+  <!-- Autofilled select - options generated automatically -->
+  <select data-filter-field="category" data-filter-autofill="true">
+    <!-- Options auto-populated from list items -->
+  </select>
+  
+  <input type="checkbox" data-filter-field="status" value="active"> Active
   <input type="text" data-filter-field="search" data-filter-search="title,description" placeholder="Search...">
   <button data-filter-clear>Clear</button>
 </div>
@@ -330,6 +399,16 @@ The standalone build exposes:
 - `Filter.initFilter()` - Manually initialize the filter module (auto-initializes by default)
 - `Filter.filterAPI` - Programmatic API for controlling filters
 
+## Autofill Attributes Reference
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `data-filter-autofill` | `"true"`, `"false"` (default) | Enable/disable autofill for select elements |
+| `data-filter-autofill-all` | `"true"` (default), `"false"` | Include/exclude "All" option in autofilled selects |
+| `data-filter-all-value` | string | Value for the "All" option (default: empty string) |
+| `data-filter-all-text` | string | Text for the "All" option (default: "All") |
+| `data-filter-autofill-refresh` | `"true"`, `"false"` (default) | Force refresh of options on each update |
+
 ## Notes
 
 - Filters work with AND logic (all active filters must match)
@@ -337,4 +416,6 @@ The standalone build exposes:
 - Checkbox/radio/select fields use exact matching
 - The module automatically handles dynamic content via MutationObserver
 - Multiple filter instances are completely independent
+- Select autofill is disabled by default - enable with `data-filter-autofill="true"` to scan list items for unique values
+- Autofill preserves manually added options and won't overwrite them
 - This is a standalone module - not included in the main library bundle

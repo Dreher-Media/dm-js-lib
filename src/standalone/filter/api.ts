@@ -7,6 +7,7 @@ import { getInstance } from './filters';
 import { getAllFilters } from './filters';
 import { getCache, updateCache } from './cache';
 import { applyFilters } from './apply';
+import { refreshAutofill } from './autofill';
 
 /**
  * Programmatic API for filter control
@@ -94,6 +95,7 @@ export const filterAPI = {
     const listElement = document.querySelector(listSelector) as HTMLElement;
     if (listElement) {
       updateCache(instance, listElement);
+      refreshAutofill(instance);
       applyFilters(listElement);
     }
   },

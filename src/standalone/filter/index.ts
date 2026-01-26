@@ -25,6 +25,10 @@
  * - data-filter-loading to show loading indicator during filter
  * - data-filter-persist to save filter state to localStorage
  * - data-filter-debounce to configure debounce delay for search inputs
+ * - data-filter-autofill="true" to enable automatic option population for select elements (disabled by default)
+ * - data-filter-autofill-all to include/exclude "All" option in autofilled selects
+ * - data-filter-all-value and data-filter-all-text to customize the "All" option
+ * - data-filter-autofill-refresh to force refresh of autofilled options
  */
 
 import { getInstance } from './filters';
@@ -33,6 +37,7 @@ import { applyFilters } from './apply';
 import { restoreFromLocalStorage, restoreFromUrl } from './persistence';
 import { initializeControls, initializeClear } from './controls';
 import { filterAPI } from './api';
+import { initializeAutofill, refreshAutofill } from './autofill';
 
 let isInitialized = false;
 let controlsInitialized = false;
@@ -82,6 +87,9 @@ function initializeFilterModule(): void {
       // Update cache
       updateCache(instance, el);
 
+      // Initialize autofill for select elements
+      refreshAutofill(instance);
+
       applyFilters(el);
     });
   };
@@ -96,6 +104,9 @@ function initializeFilterModule(): void {
     initializeControls();
     controlsInitialized = true;
   }
+
+  // Initialize autofill (only once, but will refresh per instance)
+  initializeAutofill();
 
   // Initialize clear button (only once)
   if (!clearInitialized) {
@@ -113,6 +124,8 @@ function initializeFilterModule(): void {
         const el = listElement as HTMLElement;
         const instance = getInstance(el);
         updateCache(instance, el);
+        // Refresh autofill when items are added/removed
+        refreshAutofill(instance);
       });
     });
 
@@ -120,6 +133,7 @@ function initializeFilterModule(): void {
       childList: true,
       subtree: true,
     });
+    
     observerInitialized = true;
   }
 
