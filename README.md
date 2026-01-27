@@ -14,7 +14,7 @@ That's it! All modules are now available on your page. No configuration needed.
 
 ## What This Library Does
 
-This library provides 5 built-in modules that add common website functionality. Simply add HTML attributes to your elements, and the library handles the rest automatically.
+This library provides 6 built-in modules that add common website functionality. Simply add HTML attributes to your elements, and the library handles the rest automatically.
 
 Additionally, there are standalone modules available that can be loaded separately when needed.
 
@@ -138,6 +138,30 @@ YouTube thumbnails are automatically upgraded to the highest available quality -
 
 [📖 Full Documentation →](./src/modules/videoPlayers/README.md)
 
+---
+
+### 🎯 Conditional Elements
+**Show or hide elements based on dates, times, and URL parameters**
+
+Conditionally display content based on various client-side conditions. Perfect for time-sensitive content, calendar events, preview modes, and dynamic content display.
+
+**Perfect for:** Time-sensitive promotions, calendar events, preview/debug modes, seasonal content, business hours displays
+
+**Example:**
+```html
+<!-- Show before a specific date -->
+<div data-conditional-date="before:2025-12-31">Limited time offer</div>
+
+<!-- Show on weekdays during business hours -->
+<div data-conditional-date="day:weekday between:09:00,17:00">
+  Business hours content
+</div>
+
+<!-- Show when preview parameter is in URL -->
+<div data-conditional-url="param:preview=true">Preview content</div>
+```
+
+[📖 Full Documentation →](./src/modules/conditional/README.md)
 
 ---
 

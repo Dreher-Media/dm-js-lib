@@ -8,6 +8,7 @@ import { initUtilities } from "./modules/utilities";
 import { initTabs } from "./modules/tabs";
 import { initLang } from "./modules/lang";
 import { initVideoPlayers } from "./modules/videoPlayers";
+import { initConditional } from "./modules/conditional";
 
 // Initialize all modules
 initCookieConsent();
@@ -15,4 +16,5 @@ initUtilities();
 initTabs();
 initLang();
 initVideoPlayers();
+initConditional();
 
