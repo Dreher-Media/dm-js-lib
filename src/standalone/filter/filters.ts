@@ -129,20 +129,20 @@ export function getAllFilters(
       
       // Check if this is a select with an "all" value that should be ignored
       let shouldIgnore = false;
-      if (el.tagName.toLowerCase() === 'select' && value) {
+      if (el.tagName.toLowerCase() === 'select') {
         const select = el as HTMLSelectElement;
         const allValue = select.dataset.filterAllValue || '';
         const allText = select.dataset.filterAllText || 'All';
         
-        // If the value matches the "all" value, treat it as no filter
-        if (value === allValue || value.trim() === allValue) {
+        // If value is null/empty or matches the "all" value, treat it as no filter
+        if (!value || value === '' || value === allValue || (value.trim && value.trim() === allValue)) {
           shouldIgnore = true;
         }
         
         // Also check if the selected option has no value attribute (uses text as value)
         // and matches common placeholder patterns or the "all" text
         const selectedOption = select.options[select.selectedIndex];
-        if (selectedOption && !selectedOption.hasAttribute('value')) {
+        if (selectedOption && (!selectedOption.hasAttribute('value') || selectedOption.value === '')) {
           const optionText = selectedOption.textContent?.trim().toLowerCase() || '';
           const lowerAllText = allText.toLowerCase();
           // Check if it's a placeholder option (starts with "select", "choose", "all", etc.)

@@ -11,17 +11,17 @@ import { updateUrlParams } from './persistence';
  * Handle filter control changes
  */
 function handleFilterChange(control: HTMLElement): void {
-  // Find the associated list
+  // Find all associated lists (there may be multiple, e.g., in tabs)
   const instance = getInstance(control);
   const baseSelector = '[data-filter-list]';
   const listSelector = instance
     ? `[data-filter-instance="${instance}"] ${baseSelector}, ${baseSelector}[data-filter-instance="${instance}"]`
     : `${baseSelector}:not([data-filter-instance])`;
   
-  const listElement = document.querySelector(listSelector) as HTMLElement;
-  if (listElement) {
-    applyFilters(listElement);
-  }
+  // Apply filters to all matching lists
+  document.querySelectorAll(listSelector).forEach((listElement) => {
+    applyFilters(listElement as HTMLElement);
+  });
 }
 
 /**
