@@ -160,7 +160,7 @@ export function getAllFilters(
       
       // Only add non-empty values (empty string, null, or whitespace-only means no filter)
       // Also ignore values that match the "all" option or placeholder options
-      if (value && value.trim().length > 0 && !shouldIgnore) {
+      if (value && typeof value === 'string' && value.trim().length > 0 && !shouldIgnore) {
         // Check if data-filter-search is specified (can be single or multiple fields)
         const searchFields = parseFieldList(el.dataset.filterSearch);
         if (searchFields.length > 0) {

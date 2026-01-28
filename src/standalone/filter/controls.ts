@@ -65,11 +65,12 @@ export function initializeControls(): void {
     });
   });
 
-  // Handle selects
-  document.querySelectorAll('select[data-filter-field]').forEach((select) => {
-    select.addEventListener('change', () => {
-      handleFilterChange(select as HTMLElement);
-    });
+  // Handle selects - use event delegation to support dynamically added selects
+  document.addEventListener('change', (event) => {
+    const target = event.target as HTMLElement;
+    if (target.tagName.toLowerCase() === 'select' && target.hasAttribute('data-filter-field')) {
+      handleFilterChange(target);
+    }
   });
 
   // Handle text inputs (search)
