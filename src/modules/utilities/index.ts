@@ -109,7 +109,7 @@ function initSeparators(): void {
             // No separator after the last child
             // Create a new separator element
             const separator = document.createElement("span");
-            separator.innerHTML = `&nbsp;${separatorText}&nbsp;`;
+            separator.innerHTML = `${separatorText}`;
 
             // Insert the separator after the current child
             child.insertAdjacentElement("afterend", separator);
