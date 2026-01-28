@@ -64,7 +64,12 @@ export function getFieldFilters(
     : `${baseSelector}:not([data-filter-instance])`;
   
   document.querySelectorAll(selector).forEach((control) => {
-    const value = getFilterValue(control as HTMLElement);
+    const el = control as HTMLElement;
+    // Skip list items - they are descendants of [data-filter-list] elements
+    if (el.closest('[data-filter-list]') !== null) {
+      return;
+    }
+    const value = getFilterValue(el);
     if (value) {
       filters.push(value.toLowerCase());
     }
@@ -82,7 +87,18 @@ export function isSearchField(field: string, instance: string | null): boolean {
     ? `[data-filter-instance="${instance}"] ${baseSelector}, ${baseSelector}[data-filter-instance="${instance}"]`
     : `${baseSelector}:not([data-filter-instance])`;
   
-  const control = document.querySelector(selector) as HTMLElement | null;
+  // Find the first control that is not a list item
+  const allMatches = document.querySelectorAll(selector);
+  let control: HTMLElement | null = null;
+  for (const el of Array.from(allMatches)) {
+    const element = el as HTMLElement;
+    // Skip list items - they are descendants of [data-filter-list] elements
+    if (element.closest('[data-filter-list]') === null) {
+      control = element;
+      break;
+    }
+  }
+  
   if (!control) return false;
   
   const tagName = control.tagName.toLowerCase();
@@ -116,6 +132,8 @@ export function getAllFilters(
 } {
   const filters: Record<string, string[]> = {};
   const multifieldSearches: Record<string, string[]> = {};
+  // Only match actual filter controls (form elements and interactive elements)
+  // We'll filter out list items in the loop below
   const baseSelector = '[data-filter-field]';
   const selector = instance
     ? `[data-filter-instance="${instance}"] ${baseSelector}, ${baseSelector}[data-filter-instance="${instance}"]`
@@ -127,6 +145,14 @@ export function getAllFilters(
     const el = control as HTMLElement;
     const field = el.dataset.filterField;
     if (field) {
+      // Skip list items - they are descendants of [data-filter-list] elements
+      // List items should only be matched when checking item values, not when collecting filter controls
+      const isListItem = el.closest('[data-filter-list]') !== null;
+      if (isListItem) {
+        console.log('[Filter] Skipping list item (not a control):', { field, tagName: el.tagName, element: el });
+        return;
+      }
+      
       const value = getFilterValue(el);
       
       console.log('[Filter] Processing control:', {

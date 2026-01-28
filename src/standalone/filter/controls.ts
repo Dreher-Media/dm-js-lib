@@ -152,6 +152,10 @@ export function initializeClear(): void {
 
       document.querySelectorAll(selector).forEach((control) => {
         const el = control as HTMLElement;
+        // Skip list items - they are descendants of [data-filter-list] elements
+        if (el.closest('[data-filter-list]') !== null) {
+          return;
+        }
         const tagName = el.tagName.toLowerCase();
 
         if (tagName === 'input') {
