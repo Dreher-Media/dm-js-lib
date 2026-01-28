@@ -19,16 +19,9 @@ function handleFilterChange(control: HTMLElement): void {
     : `${baseSelector}:not([data-filter-instance])`;
   
   const lists = document.querySelectorAll(listSelector);
-  console.log('[Filter] handleFilterChange called:', {
-    instance,
-    listSelector,
-    listsFound: lists.length,
-    lists: Array.from(lists).map(el => ({ id: el.id, element: el }))
-  });
   
   // Apply filters to all matching lists
   lists.forEach((listElement) => {
-    console.log('[Filter] Applying filters to list:', listElement.id || 'no-id');
     applyFilters(listElement as HTMLElement);
   });
 }
@@ -78,13 +71,6 @@ export function initializeControls(): void {
   document.addEventListener('change', (event) => {
     const target = event.target as HTMLElement;
     if (target.tagName.toLowerCase() === 'select' && target.hasAttribute('data-filter-field')) {
-      console.log('[Filter] Select change detected:', {
-        element: target,
-        field: target.getAttribute('data-filter-field'),
-        value: (target as HTMLSelectElement).value,
-        selectedIndex: (target as HTMLSelectElement).selectedIndex,
-        selectedOption: (target as HTMLSelectElement).options[(target as HTMLSelectElement).selectedIndex]?.textContent
-      });
       handleFilterChange(target);
     }
   });

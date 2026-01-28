@@ -139,8 +139,6 @@ export function getAllFilters(
     ? `[data-filter-instance="${instance}"] ${baseSelector}, ${baseSelector}[data-filter-instance="${instance}"]`
     : `${baseSelector}:not([data-filter-instance])`;
   
-  console.log('[Filter] getAllFilters called:', { instance, selector });
-  
   document.querySelectorAll(selector).forEach((control) => {
     const el = control as HTMLElement;
     const field = el.dataset.filterField;
@@ -149,18 +147,10 @@ export function getAllFilters(
       // List items should only be matched when checking item values, not when collecting filter controls
       const isListItem = el.closest('[data-filter-list]') !== null;
       if (isListItem) {
-        console.log('[Filter] Skipping list item (not a control):', { field, tagName: el.tagName, element: el });
         return;
       }
       
       const value = getFilterValue(el);
-      
-      console.log('[Filter] Processing control:', {
-        field,
-        tagName: el.tagName,
-        value,
-        element: el
-      });
       
       // Check if this is a select with an "all" value that should be ignored
       let shouldIgnore = false;
@@ -191,16 +181,6 @@ export function getAllFilters(
             shouldIgnore = true;
           }
         }
-        
-        console.log('[Filter] Select check:', {
-          field,
-          value,
-          allValue,
-          allText,
-          selectedIndex: select.selectedIndex,
-          selectedOptionText: selectedOption?.textContent,
-          shouldIgnore
-        });
       }
       
       // Only add non-empty values (empty string, null, or whitespace-only means no filter)
@@ -217,14 +197,10 @@ export function getAllFilters(
           filters[field] = [];
         }
         filters[field].push(value.toLowerCase());
-        console.log('[Filter] Added filter:', { field, value: value.toLowerCase(), filters });
-      } else {
-        console.log('[Filter] Skipped filter:', { field, value, shouldIgnore, reason: !value ? 'no value' : shouldIgnore ? 'should ignore' : 'empty string' });
       }
     }
   });
   
-  console.log('[Filter] getAllFilters result:', { filters, multifieldSearches });
   return { filters, multifieldSearches };
 }
 
@@ -240,7 +216,6 @@ export function getItemFieldValue(
   if (itemField === field) {
     const value = item.dataset.filterValue || item.textContent?.trim() || '';
     const result = value.split(',').map((v) => v.trim().toLowerCase()).filter(Boolean);
-    console.log('[Filter] getItemFieldValue (item field match):', { field, itemField, value, result, item });
     return result;
   }
   
@@ -315,16 +290,8 @@ export function matchesFilters(
 
   // No filters active, show everything
   if (Object.keys(activeFilters).length === 0) {
-    console.log('[Filter] matchesFilters: No active filters, showing item:', item);
     return true;
   }
-  
-  console.log('[Filter] matchesFilters: Checking item:', {
-    item,
-    itemId: item.id,
-    itemDataFilterValue: item.dataset.filterValue,
-    activeFilters
-  });
 
   // Check each filter field
   for (const [field, filterValues] of Object.entries(activeFilters)) {
@@ -366,15 +333,7 @@ export function matchesFilters(
         itemValues = getItemFilterValues(item);
       }
       
-      console.log('[Filter] matchesFilters: Field check:', {
-        field,
-        filterValues,
-        itemValues,
-        itemId: item.id
-      });
-      
       if (itemValues.length === 0) {
-        console.log('[Filter] matchesFilters: No item values found, hiding item:', item.id);
         return false; // Item doesn't have this field or any filterable values
       }
       
@@ -385,27 +344,19 @@ export function matchesFilters(
         itemValues.some((itemValue) => {
           // For search fields, use partial matching
           if (isSearch) {
-            const match = itemValue.includes(filterValue) || filterValue.includes(itemValue);
-            console.log('[Filter] matchesFilters: Search match check:', { filterValue, itemValue, match, isSearch });
-            return match;
+            return itemValue.includes(filterValue) || filterValue.includes(itemValue);
           }
           // For checkboxes/radios/selects, use exact matching
-          const match = itemValue === filterValue;
-          console.log('[Filter] matchesFilters: Exact match check:', { filterValue, itemValue, match, isSearch });
-          return match;
+          return itemValue === filterValue;
         })
       );
       
-      console.log('[Filter] matchesFilters: Field result:', { field, matches, itemId: item.id });
-      
       if (!matches) {
-        console.log('[Filter] matchesFilters: Item does not match filter, hiding:', item.id);
         return false;
       }
     }
   }
   
-  console.log('[Filter] matchesFilters: Item matches all filters, showing:', item.id);
   return true;
 }
 

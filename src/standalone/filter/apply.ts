@@ -14,11 +14,9 @@ import type { FilterCache } from './types';
  */
 export function applyFilters(listElement: HTMLElement): void {
   const instance = getInstance(listElement);
-  console.log('[Filter] applyFilters called:', { instance, listElement: listElement.id || 'no-id' });
   const { filters, multifieldSearches } = getAllFilters(instance);
   const cache = getCache(instance, listElement);
   const items = cache.items;
-  console.log('[Filter] applyFilters: Found items:', items.length);
   
   // Show loading state
   if (cache.loadingElement) {
@@ -30,9 +28,7 @@ export function applyFilters(listElement: HTMLElement): void {
   requestAnimationFrame(() => {
     let visibleCount = 0;
 
-    console.log('[Filter] applyFilters: Processing items with filters:', { filters, multifieldSearches });
-
-    items.forEach((item, index) => {
+    items.forEach((item) => {
       const matches = matchesFilters(item, filters, multifieldSearches, instance);
 
       if (matches) {
@@ -40,20 +36,12 @@ export function applyFilters(listElement: HTMLElement): void {
         item.classList.add('filter-active');
         item.classList.remove('filter-hidden');
         visibleCount++;
-        if (index < 3) { // Log first 3 items for debugging
-          console.log('[Filter] applyFilters: Item shown:', { index, itemId: item.id, itemDataFilterValue: item.dataset.filterValue });
-        }
       } else {
         item.style.display = 'none';
         item.classList.add('filter-hidden');
         item.classList.remove('filter-active');
-        if (index < 3) { // Log first 3 items for debugging
-          console.log('[Filter] applyFilters: Item hidden:', { index, itemId: item.id, itemDataFilterValue: item.dataset.filterValue });
-        }
       }
     });
-    
-    console.log('[Filter] applyFilters: Result:', { visibleCount, total: items.length });
 
     // Update counts
     updateCounts(listElement, items.length, visibleCount, instance, cache);
