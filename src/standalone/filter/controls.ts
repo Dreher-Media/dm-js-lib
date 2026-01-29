@@ -32,22 +32,32 @@ function handleFilterChange(control: HTMLElement): void {
 export function initializeControls(): void {
   // Handle checkboxes
   document.querySelectorAll('input[type="checkbox"][data-filter-field]').forEach((input) => {
-    input.addEventListener('change', () => {
-      handleFilterChange(input as HTMLElement);
+    const el = input as HTMLElement;
+    // Skip list items - they are descendants of [data-filter-list] elements
+    if (el.closest('[data-filter-list]') !== null) {
+      return;
+    }
+    el.addEventListener('change', () => {
+      handleFilterChange(el);
     });
   });
 
   // Handle radios with proper group handling
   document.querySelectorAll('input[type="radio"][data-filter-field]').forEach((input) => {
-    input.addEventListener('change', () => {
-      const field = (input as HTMLElement).dataset.filterField;
-      const instance = getInstance(input as HTMLElement);
-      const name = (input as HTMLInputElement).name;
+    const el = input as HTMLElement;
+    // Skip list items - they are descendants of [data-filter-list] elements
+    if (el.closest('[data-filter-list]') !== null) {
+      return;
+    }
+    el.addEventListener('change', () => {
+      const field = el.dataset.filterField;
+      const instance = getInstance(el);
+      const name = (el as HTMLInputElement).name;
 
       // Uncheck other radios in same group
       if (name) {
         document.querySelectorAll(`input[type="radio"][name="${name}"]`).forEach((radio) => {
-          if (radio !== input) {
+          if (radio !== el) {
             (radio as HTMLInputElement).checked = false;
           }
         });
@@ -57,32 +67,37 @@ export function initializeControls(): void {
           ? `input[type="radio"][data-filter-field="${field}"][data-filter-instance="${instance}"], input[type="radio"][data-filter-field="${field}"][data-filter-instance="${instance}"]`
           : `input[type="radio"][data-filter-field="${field}"]:not([data-filter-instance])`;
         document.querySelectorAll(selector).forEach((radio) => {
-          if (radio !== input) {
+          if (radio !== el) {
             (radio as HTMLInputElement).checked = false;
           }
         });
       }
 
-      handleFilterChange(input as HTMLElement);
+      handleFilterChange(el);
     });
   });
 
   // Handle selects - use event delegation to support dynamically added selects
   document.addEventListener('change', (event) => {
     const target = event.target as HTMLElement;
-    if (target.tagName.toLowerCase() === 'select' && target.hasAttribute('data-filter-field')) {
+    // Skip list items - they are descendants of [data-filter-list] elements
+    if (target.tagName.toLowerCase() === 'select' && target.hasAttribute('data-filter-field') && target.closest('[data-filter-list]') === null) {
       handleFilterChange(target);
     }
   });
 
   // Handle text inputs (search)
   document.querySelectorAll('input[type="text"][data-filter-field], input[type="search"][data-filter-field]').forEach((input) => {
-    let timeout: ReturnType<typeof setTimeout>;
     const el = input as HTMLElement;
+    // Skip list items - they are descendants of [data-filter-list] elements
+    if (el.closest('[data-filter-list]') !== null) {
+      return;
+    }
+    let timeout: ReturnType<typeof setTimeout>;
     const debounceDelay = el.dataset.filterDebounce
       ? parseInt(el.dataset.filterDebounce, 10) || 300
       : 300;
-    input.addEventListener('input', () => {
+    el.addEventListener('input', () => {
       clearTimeout(timeout);
       timeout = setTimeout(() => {
         handleFilterChange(el);
@@ -93,6 +108,11 @@ export function initializeControls(): void {
   // Handle buttons/links with data-filter-field
   document.querySelectorAll('[data-filter-field]:not(input):not(select)').forEach((control) => {
     const el = control as HTMLElement;
+    
+    // Skip list items - they are descendants of [data-filter-list] elements
+    if (el.closest('[data-filter-list]') !== null) {
+      return;
+    }
     
     // Add keyboard support
     el.setAttribute('role', 'button');
