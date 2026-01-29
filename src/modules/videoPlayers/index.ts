@@ -1,6 +1,6 @@
 /**
  * Video Players Module
- * Handles integration with Plyr, YouTube, Vimeo, and Dailymotion players
+ * Handles integration with Plyr, YouTube, Vimeo, Dailymotion, ARD Mediathek, and other (open in new tab)
  * Manages autoplay and pause functionality across multiple players
  */
 
@@ -87,7 +87,7 @@ export function initVideoPlayers(): void {
               }
             }, 1000);
           } else {
-            // No YouTube, so initialize immediately for Vimeo/Dailymotion
+            // No YouTube, so initialize immediately for Vimeo/Dailymotion/ARD Mediathek
             setTimeout(() => {
               initializeAllPlayers();
             }, 100);
@@ -104,7 +104,7 @@ export function initVideoPlayers(): void {
           }, 500);
         });
     } else {
-      // If no APIs need to be loaded, initialize immediately
+      // If no APIs need to be loaded (or only ARD Mediathek), initialize immediately
       // Check if Plyr is already available (might be loaded externally)
       if (needsPlyr && typeof window.Plyr !== "undefined") {
         initializePlyrPlayers(plyrPlayers);

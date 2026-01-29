@@ -1,6 +1,6 @@
 # Video Players Module
 
-Manages video players from multiple platforms (Plyr, YouTube, Vimeo, Dailymotion) with automatic pause/play coordination.
+Manages video players from multiple platforms (Plyr, YouTube, Vimeo, Dailymotion, ARD Mediathek, other) with automatic pause/play coordination.
 
 ## What It Does
 
@@ -12,6 +12,8 @@ This module automatically initializes and manages video players from different p
 - **YouTube** - YouTube embeds
 - **Vimeo** - Vimeo embeds
 - **Dailymotion** - Dailymotion embeds
+- **ARD Mediathek** - ARD Mediathek iframe embeds (no external API; embed loads on click)
+- **Other** - Any video URL; opens in a new tab on click (for platforms that can't be embedded)
 
 ## Usage
 
@@ -69,6 +71,46 @@ Add the `_init-plyr` class to video elements:
   <img src="thumbnail.jpg" alt="Video thumbnail">
 </div>
 ```
+
+### ARD Mediathek
+
+```html
+<div 
+  class="youtube" 
+  data-type="ardmediathek"
+  data-video-id="Y3JpZDovL3N3ci5kZS9hZXgvbzExNjA0MTA"
+  data-id="player4">
+  <img src="thumbnail.jpg" alt="Video thumbnail">
+</div>
+```
+
+**Attributes:**
+- `data-type="ardmediathek"` - Specifies ARD Mediathek embed
+- `data-video-id` - ARD Mediathek video ID (base64-style from their URLs)
+- `data-id` - Unique player ID
+
+On click, the thumbnail is replaced with an iframe embed. No external script is loaded.
+
+**Play coordination:** Clicking an ARD embed triggers the same “on play” behavior as other players: other videos are paused and Swiper autoplay is stopped. Because ARD Mediathek does not expose a JavaScript API, the ARD iframe cannot be paused when another video is started, and Swiper autoplay is not resumed when the user pauses the ARD video.
+
+### Other (open in new tab)
+
+```html
+<div 
+  class="youtube" 
+  data-type="other"
+  data-video-id="https://example.com/video/123"
+  data-id="player5">
+  <img src="thumbnail.jpg" alt="Video thumbnail">
+</div>
+```
+
+**Attributes:**
+- `data-type="other"` - Opens the URL in a new tab (no embed)
+- `data-video-id` - Full URL to the video page
+- `data-id` - Unique player ID
+
+Use this for platforms that can't be embedded (e.g. some streaming services). Clicking pauses other players and stops Swiper autoplay, then opens the URL in a new tab with `noopener,noreferrer`.
 
 ## Features
 
@@ -128,11 +170,13 @@ You can provide custom embed code that replaces the thumbnail when clicked:
 
 ## Requirements
 
-The module automatically loads required APIs from CDN:
+The module automatically loads required APIs from CDN when needed:
 - Plyr CSS and JS
 - YouTube IFrame API
 - Vimeo Player API
 - Dailymotion Player Library
+
+ARD Mediathek uses a simple iframe embed and does not require any external script.
 
 ## Notes
 

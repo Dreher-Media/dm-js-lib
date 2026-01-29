@@ -116,7 +116,7 @@ export function onPause(id: string): void {
 }
 
 /**
- * Initializes video players (YouTube, Vimeo, Dailymotion)
+ * Initializes video players (YouTube, Vimeo, Dailymotion, ARD Mediathek, other)
  */
 export function initializePlayers(
   youtubeElements: NodeListOf<Element>,
@@ -132,13 +132,39 @@ export function initializePlayers(
 
       const element = el as HTMLElement;
       const id = `player_${element.dataset.id}`;
-      const type = element.dataset.type as "youtube" | "vimeo" | "dailymotion";
+      const type = element.dataset.type as
+        | "youtube"
+        | "vimeo"
+        | "dailymotion"
+        | "ardmediathek"
+        | "other";
       const videoId = element.dataset.videoId;
       const time = parseInt(element.dataset.time || "0", 10);
 
       if (!videoId || !type) return;
 
       onPlay(id, plyrPlayers, players);
+
+      // Other (open URL in new tab, no embed)
+      if (type === "other") {
+        window.open(videoId, "_blank", "noopener,noreferrer");
+        return;
+      }
+
+      // ARD Mediathek (iframe embed, no JS API)
+      if (type === "ardmediathek") {
+        const embedSrc = `https://www.ardmediathek.de/embed/${encodeURIComponent(videoId)}`;
+        const iframe = document.createElement("iframe");
+        iframe.src = embedSrc;
+        iframe.setAttribute("allowfullscreen", "");
+        iframe.setAttribute("allow", "fullscreen");
+        iframe.setAttribute("frameborder", "0");
+        iframe.style.width = "100%";
+        iframe.style.aspectRatio = "16/9";
+        element.innerHTML = "";
+        element.appendChild(iframe);
+        return;
+      }
 
       // YouTube Player
       if (type === "youtube" && window.YT) {

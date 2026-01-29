@@ -8,7 +8,9 @@ import { loadScript, loadStylesheet } from "../../utils/loadResource";
 /**
  * Checks if at least one player of the specified type exists on the page
  */
-export function hasPlayersOfType(type: "youtube" | "vimeo" | "dailymotion"): boolean {
+export function hasPlayersOfType(
+  type: "youtube" | "vimeo" | "dailymotion" | "ardmediathek" | "other"
+): boolean {
   const elements = document.querySelectorAll(".youtube");
   return Array.from(elements).some((el) => (el as HTMLElement).dataset.type === type);
 }
