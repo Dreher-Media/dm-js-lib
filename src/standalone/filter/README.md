@@ -159,19 +159,26 @@ To regenerate options (useful when items are added dynamically):
 
 ### Multiple Filter Instances
 
-Use `data-filter-instance` to have multiple independent filters on one page:
+Use `data-filter-instance` to have multiple independent filters on one page. **You only need it on a parent** (e.g. a wrapper div); the module resolves the instance by walking up the DOM, and finds controls/lists as descendants of that parent. No need to put it on every list and control.
+
+**Override per control or list:** You can set `data-filter-instance` on any individual control or on the list element to override the parent. The instance is resolved from the element first, then from its ancestors, so an attribute on the control/list wins.
 
 ```html
-<!-- First filter -->
+<!-- First filter: instance on wrapper is enough -->
 <div data-filter-instance="products">
-  <ul data-filter-list data-filter-instance="products">...</ul>
-  <input data-filter-field="category" data-filter-instance="products" value="electronics">
+  <ul data-filter-list>...</ul>
+  <input data-filter-field="category" value="electronics">
 </div>
 
 <!-- Second filter -->
 <div data-filter-instance="articles">
-  <ul data-filter-list data-filter-instance="articles">...</ul>
-  <input data-filter-field="category" data-filter-instance="articles" value="tech">
+  <ul data-filter-list>...</ul>
+  <input data-filter-field="category" value="tech">
+</div>
+
+<!-- Override: this control belongs to "products" even if moved under "articles" -->
+<div data-filter-instance="articles">
+  <input data-filter-field="category" data-filter-instance="products" value="tech">
 </div>
 ```
 
