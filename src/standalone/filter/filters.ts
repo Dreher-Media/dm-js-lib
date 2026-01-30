@@ -45,8 +45,14 @@ export function getFilterValue(element: HTMLElement): string | null {
   
   // For buttons/links, use data-filter-value or text content
   const dataValue = element.dataset.filterValue;
-  if (dataValue) return dataValue;
-  
+  if (dataValue) {
+    // Tab-link / radio-style: only contribute value when this option is active
+    if (element.dataset.filterType === 'radio') {
+      return element.classList.contains('active') ? dataValue : null;
+    }
+    return dataValue;
+  }
+
   return null;
 }
 

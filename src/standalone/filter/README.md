@@ -59,6 +59,22 @@ Add `data-filter-field` to your filter controls (checkboxes, radios, selects, in
 <input type="radio" data-filter-field="category" value="design" name="category">
 ```
 
+### Tab-link Buttons (Single Selection)
+
+Button or link elements can act as radio-style selectors (only one active per group). Add `data-filter-type="radio"` so the filter treats them as a single-choice group. Use the `active` class to indicate the selected option.
+
+```html
+<div role="tablist">
+  <button type="button" data-filter-field="category" data-filter-type="radio" data-filter-value="design" class="active">Design</button>
+  <button type="button" data-filter-field="category" data-filter-type="radio" data-filter-value="development">Development</button>
+  <button type="button" data-filter-field="category" data-filter-type="radio" data-filter-value="">All</button>
+</div>
+```
+
+- Same `data-filter-field` = same group; only one can have `active` at a time.
+- Use `data-filter-value=""` (or omit value) for an "All" option that applies no filter for that field.
+- Styling is up to you; the module only toggles the `active` class.
+
 ### Select Dropdowns
 
 ```html

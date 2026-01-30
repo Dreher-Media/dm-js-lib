@@ -108,16 +108,18 @@ export function initializeControls(): void {
   // Handle buttons/links with data-filter-field
   document.querySelectorAll('[data-filter-field]:not(input):not(select)').forEach((control) => {
     const el = control as HTMLElement;
-    
+
     // Skip list items - they are descendants of [data-filter-list] elements
     if (el.closest('[data-filter-list]') !== null) {
       return;
     }
-    
+
     // Add keyboard support
     el.setAttribute('role', 'button');
     el.setAttribute('tabindex', '0');
-    
+
+    const isTabLinkRadio = el.dataset.filterType === 'radio';
+
     const handleActivation = (event: Event): void => {
       event.preventDefault();
       const input = el.querySelector('input[type="checkbox"], input[type="radio"]');
@@ -125,6 +127,22 @@ export function initializeControls(): void {
         // If it contains a checkbox/radio, toggle it
         (input as HTMLInputElement).checked = !(input as HTMLInputElement).checked;
         handleFilterChange(input as HTMLElement);
+      } else if (isTabLinkRadio) {
+        // Tab-link / radio style: only one active in group
+        const field = el.dataset.filterField;
+        const instance = getInstance(el);
+        if (field) {
+          const groupSelector = instance
+            ? `[data-filter-field="${field}"][data-filter-type="radio"][data-filter-instance="${instance}"], [data-filter-instance="${instance}"] [data-filter-field="${field}"][data-filter-type="radio"]`
+            : `[data-filter-field="${field}"][data-filter-type="radio"]:not([data-filter-instance])`;
+          document.querySelectorAll(groupSelector).forEach((other) => {
+            const otherEl = other as HTMLElement;
+            if (otherEl.closest('[data-filter-list]') !== null) return;
+            otherEl.classList.remove('active');
+          });
+        }
+        el.classList.add('active');
+        handleFilterChange(el);
       } else {
         // Otherwise, toggle active class and use data-filter-value
         el.classList.toggle('active');
