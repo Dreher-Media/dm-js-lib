@@ -198,7 +198,10 @@ Prefix the selector with `self ` (space after "self") to look only among **desce
 </section>
 ```
 
-**Note:** Invisible children are ignored when counting: `script`, `style`, `template`, `link`, and `noscript` do not count as children. Only visible/meaningful elements are considered.
+**Note:** Invisible children are ignored when counting:
+- **Tag types:** `script`, `style`, `template`, `link`, and `noscript` do not count as children.
+- **Hidden by CSS:** Elements with `display: none`, `visibility: hidden`, or `opacity: 0` (computed) are ignored, as are elements with the `hidden` attribute.
+- Only visible, meaningful elements are considered.
 
 **Summary:**
 
@@ -375,6 +378,7 @@ Show different content based on time of day:
 3. **Re-evaluation**: Conditions are re-evaluated when:
    - URL changes (back/forward navigation)
    - Hash changes
+   - **DOM changes**: When nodes are added or removed, or when `class`, `style`, or `hidden` attributes change (so children conditions and CSS visibility stay in sync; debounced to avoid excessive runs)
 4. **Visibility toggle**: Elements are shown/hidden based on condition results
 
 ## CSS Classes

@@ -197,13 +197,37 @@ const INVISIBLE_CHILD_TAGS = new Set([
 ]);
 
 /**
- * Returns the number of visible children (excludes script, style, template, link, noscript).
+ * Returns true if the element is visible (not hidden by tag, CSS, or hidden attribute).
+ */
+function isElementVisible(el: Element): boolean {
+  const tag = el.tagName.toLowerCase();
+  if (INVISIBLE_CHILD_TAGS.has(tag)) {
+    return false;
+  }
+  if (el.getAttribute('hidden') !== null) {
+    return false;
+  }
+  if (typeof (el as HTMLElement).style === 'undefined') {
+    return true;
+  }
+  try {
+    const style = window.getComputedStyle(el);
+    if (style.display === 'none' || style.visibility === 'hidden' || parseFloat(style.opacity) === 0) {
+      return false;
+    }
+  } catch {
+    return true;
+  }
+  return true;
+}
+
+/**
+ * Returns the number of visible children (excludes invisible tags and elements hidden by CSS).
  */
 function getVisibleChildCount(el: Element): number {
   let count = 0;
   for (let i = 0; i < el.children.length; i++) {
-    const tag = el.children[i].tagName.toLowerCase();
-    if (!INVISIBLE_CHILD_TAGS.has(tag)) {
+    if (isElementVisible(el.children[i])) {
       count++;
     }
   }

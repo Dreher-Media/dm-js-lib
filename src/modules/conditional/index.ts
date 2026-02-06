@@ -16,6 +16,22 @@ function reEvaluateConditions(): void {
     });
 }
 
+/** Debounce timer for DOM observer to avoid excessive re-evaluation */
+let reEvaluateDebounce: ReturnType<typeof setTimeout> | null = null;
+
+/**
+ * Schedules a re-evaluation after a short delay (debounced).
+ */
+function scheduleReEvaluate(): void {
+  if (reEvaluateDebounce !== null) {
+    clearTimeout(reEvaluateDebounce);
+  }
+  reEvaluateDebounce = setTimeout(() => {
+    reEvaluateDebounce = null;
+    reEvaluateConditions();
+  }, 50);
+}
+
 /**
  * Initializes the conditional module
  */
@@ -32,6 +48,17 @@ export function initConditional(): void {
     // Re-evaluate when URL hash changes (some frameworks use this)
     window.addEventListener('hashchange', () => {
       reEvaluateConditions();
+    });
+
+    // Re-evaluate when DOM changes (new/removed nodes or class/style affecting visibility)
+    const observer = new MutationObserver(() => {
+      scheduleReEvaluate();
+    });
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class', 'style', 'hidden'],
     });
   });
 
