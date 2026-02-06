@@ -187,6 +187,29 @@ export function parseUrlCondition(condition: string): boolean {
   return params.has(value);
 }
 
+/** Tag names of elements that are not visible and should not count as "children" */
+const INVISIBLE_CHILD_TAGS = new Set([
+  'script',
+  'style',
+  'template',
+  'link',
+  'noscript',
+]);
+
+/**
+ * Returns the number of visible children (excludes script, style, template, link, noscript).
+ */
+function getVisibleChildCount(el: Element): number {
+  let count = 0;
+  for (let i = 0; i < el.children.length; i++) {
+    const tag = el.children[i].tagName.toLowerCase();
+    if (!INVISIBLE_CHILD_TAGS.has(tag)) {
+      count++;
+    }
+  }
+  return count;
+}
+
 /**
  * Parses and evaluates a "has children" condition
  * @param element - The element the condition is on
@@ -196,23 +219,23 @@ export function parseUrlCondition(condition: string): boolean {
 export function parseChildrenCondition(element: HTMLElement, condition: string): boolean {
   const value = condition.trim();
 
-  // Empty or "self": check if current element has children
+  // Empty or "self": check if current element has visible children
   if (!value || value.toLowerCase() === 'self') {
-    return element.children.length > 0;
+    return getVisibleChildCount(element) > 0;
   }
 
-  // "self selector": check if a descendant of current element matches and has children
+  // "self selector": check if a descendant of current element matches and has visible children
   const selfPrefix = 'self ';
   if (value.toLowerCase().startsWith(selfPrefix)) {
     const selector = value.slice(selfPrefix.length).trim();
     if (!selector) return false;
     const target = element.querySelector(selector);
-    return target !== null && target.children.length > 0;
+    return target !== null && getVisibleChildCount(target) > 0;
   }
 
   // Otherwise: selector relative to document (like data-required-children)
   const target = document.querySelector(value);
-  return target !== null && target.children.length > 0;
+  return target !== null && getVisibleChildCount(target) > 0;
 }
 
 /**

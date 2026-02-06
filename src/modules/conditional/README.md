@@ -198,11 +198,13 @@ Prefix the selector with `self ` (space after "self") to look only among **desce
 </section>
 ```
 
+**Note:** Invisible children are ignored when counting: `script`, `style`, `template`, `link`, and `noscript` do not count as children. Only visible/meaningful elements are considered.
+
 **Summary:**
 
-- Empty or `self` → current element must have children
-- `selector` → `document.querySelector(selector)` must exist and have children
-- `self selector` → `element.querySelector(selector)` (within current element) must exist and have children
+- Empty or `self` → current element must have visible children
+- `selector` → `document.querySelector(selector)` must exist and have visible children
+- `self selector` → `element.querySelector(selector)` (within current element) must exist and have visible children
 
 ## Combining Conditions
 
