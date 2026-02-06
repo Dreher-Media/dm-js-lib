@@ -8,9 +8,9 @@ import { getItemFieldValue } from './filters';
 import { getCache } from './cache';
 
 /**
- * Get all unique values for a field from list items
+ * Get all unique values for a field from a single list's items
  */
-function getUniqueFieldValues(
+function getUniqueFieldValuesFromList(
   listElement: HTMLElement,
   field: string,
   instance: string | null
@@ -27,7 +27,27 @@ function getUniqueFieldValues(
     });
   });
 
-  return Array.from(values).sort();
+  return Array.from(values);
+}
+
+/**
+ * Get all unique values for a field from all lists matching the instance
+ */
+function getUniqueFieldValuesFromAllLists(
+  listElements: NodeListOf<Element> | HTMLElement[],
+  field: string,
+  instance: string | null
+): string[] {
+  const allValues = new Set<string>();
+  const elements = Array.from(listElements) as HTMLElement[];
+
+  elements.forEach((listElement) => {
+    getUniqueFieldValuesFromList(listElement, field, instance).forEach((value) =>
+      allValues.add(value)
+    );
+  });
+
+  return Array.from(allValues).sort();
 }
 
 /**
@@ -65,18 +85,18 @@ export function autofillSelect(selectElement: HTMLSelectElement): void {
     }
   }
 
-  // Find associated list element
+  // Find all list elements for this instance (e.g. all accordion months)
   const instance = getInstance(selectElement);
   const baseListSelector = '[data-filter-list]';
   const listSelector = instance
     ? `[data-filter-instance="${instance}"] ${baseListSelector}, ${baseListSelector}[data-filter-instance="${instance}"]`
     : `${baseListSelector}:not([data-filter-instance])`;
 
-  const listElement = document.querySelector(listSelector) as HTMLElement;
-  if (!listElement) return;
+  const listElements = document.querySelectorAll(listSelector);
+  if (listElements.length === 0) return;
 
-  // Get unique values
-  const values = getUniqueFieldValues(listElement, field, instance);
+  // Get unique values from all lists (not just the first)
+  const values = getUniqueFieldValuesFromAllLists(listElements, field, instance);
   if (values.length === 0) return;
 
   // Get "All" option configuration
