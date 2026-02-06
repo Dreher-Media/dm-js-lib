@@ -141,11 +141,11 @@ YouTube thumbnails are automatically upgraded to the highest available quality -
 ---
 
 ### 🎯 Conditional Elements
-**Show or hide elements based on dates, times, and URL parameters**
+**Show or hide elements based on dates, times, URL parameters, and whether elements have children**
 
-Conditionally display content based on various client-side conditions. Perfect for time-sensitive content, calendar events, preview modes, and dynamic content display.
+Conditionally display content based on various client-side conditions. Perfect for time-sensitive content, calendar events, preview modes, empty-state handling, and dynamic content display.
 
-**Perfect for:** Time-sensitive promotions, calendar events, preview/debug modes, seasonal content, business hours displays
+**Perfect for:** Time-sensitive promotions, calendar events, preview/debug modes, seasonal content, business hours displays, hiding empty containers
 
 **Example:**
 ```html
@@ -159,6 +159,9 @@ Conditionally display content based on various client-side conditions. Perfect f
 
 <!-- Show when preview parameter is in URL -->
 <div data-conditional-url="param:preview=true">Preview content</div>
+
+<!-- Hide when target has no children -->
+<div data-conditional-children="#results">Results message</div>
 ```
 
 [📖 Full Documentation →](./src/modules/conditional/README.md)

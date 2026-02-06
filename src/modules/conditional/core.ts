@@ -188,6 +188,34 @@ export function parseUrlCondition(condition: string): boolean {
 }
 
 /**
+ * Parses and evaluates a "has children" condition
+ * @param element - The element the condition is on
+ * @param condition - The condition string: empty/"self" = current element has children, "selector" = target has children, "self selector" = descendant has children
+ * @returns True if condition passes, false otherwise
+ */
+export function parseChildrenCondition(element: HTMLElement, condition: string): boolean {
+  const value = condition.trim();
+
+  // Empty or "self": check if current element has children
+  if (!value || value.toLowerCase() === 'self') {
+    return element.children.length > 0;
+  }
+
+  // "self selector": check if a descendant of current element matches and has children
+  const selfPrefix = 'self ';
+  if (value.toLowerCase().startsWith(selfPrefix)) {
+    const selector = value.slice(selfPrefix.length).trim();
+    if (!selector) return false;
+    const target = element.querySelector(selector);
+    return target !== null && target.children.length > 0;
+  }
+
+  // Otherwise: selector relative to document (like data-required-children)
+  const target = document.querySelector(value);
+  return target !== null && target.children.length > 0;
+}
+
+/**
  * Evaluates all conditions for an element
  * @param element - The element to evaluate conditions for
  * @returns True if all conditions pass, false otherwise
@@ -195,9 +223,11 @@ export function parseUrlCondition(condition: string): boolean {
 export function evaluateConditions(element: HTMLElement): boolean {
   const dateAttr = element.dataset.conditionalDate?.trim();
   const urlAttr = element.dataset.conditionalUrl?.trim();
+  const childrenAttr = element.dataset.conditionalChildren?.trim();
 
   const dateConditions = dateAttr ? dateAttr.split('|').map(c => c.trim()).filter(c => c) : [];
   const urlConditions = urlAttr ? urlAttr.split('|').map(c => c.trim()).filter(c => c) : [];
+  const childrenConditions = childrenAttr ? childrenAttr.split('|').map(c => c.trim()).filter(c => c) : [];
 
   // Evaluate date/time conditions (date and time conditions mixed together)
   if (dateConditions.length > 0) {
@@ -227,6 +257,14 @@ export function evaluateConditions(element: HTMLElement): boolean {
   if (urlConditions.length > 0) {
     const urlResults = urlConditions.map(cond => parseUrlCondition(cond));
     if (!urlResults.some(result => result)) {
+      return false;
+    }
+  }
+
+  // Evaluate children conditions (OR logic between pipes)
+  if (childrenConditions.length > 0) {
+    const childrenResults = childrenConditions.map(cond => parseChildrenCondition(element, cond));
+    if (!childrenResults.some(result => result)) {
       return false;
     }
   }

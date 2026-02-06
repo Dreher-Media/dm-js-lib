@@ -31,6 +31,7 @@ Simply add data attributes to elements you want to conditionally show or hide:
 - `data-conditional` - Marks an element as conditional (optional, module auto-detects other attributes)
 - `data-conditional-date` - Date and time conditions (handles both dates and times)
 - `data-conditional-url` - URL parameter conditions
+- `data-conditional-children` - "Has children" conditions (show/hide based on whether an element has child nodes)
 - `data-conditional-mode` - Optional: `"show"` (default) or `"hide"` - determines visibility behavior
 
 **Note:** The `data-conditional-date` attribute handles both date and time conditions. The module automatically detects whether each condition is a date or time based on the condition syntax.
@@ -45,6 +46,7 @@ Date and time conditions are combined in the `data-conditional-date` attribute. 
 - **Date with time**: `before:YYYY-MM-DD HH:MM`, `after:YYYY-MM-DD HH:MM`, `between:YYYY-MM-DD HH:MM,YYYY-MM-DD HH:MM`, `on:YYYY-MM-DD HH:MM`
 - **Time conditions**: `before:HH:MM`, `after:HH:MM`, `between:HH:MM,HH:MM`
 - **Day conditions**: `day:weekday`, `day:weekend`, `day:monday|friday`
+- **Children conditions**: empty/`self` (current element), `selector` (document), `self selector` (descendant)
 
 ### Absolute Dates
 
@@ -149,6 +151,59 @@ Show/hide based on URL query parameters:
 <div data-conditional-url="param:mode!=production">Development mode</div>
 ```
 
+## Children Conditions
+
+Show or hide elements based on whether a given element has child nodes. Useful for hiding empty containers (e.g. empty filter results, empty lists).
+
+### Current element has children
+
+Use no value or `self` to require the **current element** to have children:
+
+```html
+<!-- Hide this wrapper if it has no children -->
+<div data-conditional-children>
+  <div class="dynamic-content">...</div>
+</div>
+
+<!-- Same with explicit "self" -->
+<div data-conditional-children="self">...</div>
+```
+
+### Another element has children (document scope)
+
+Use a **CSS selector** to require another element (found in the document) to have children. The element with the attribute is shown only if the target exists and has at least one child:
+
+```html
+<!-- Hide this message when #results has no children -->
+<div data-conditional-children="#results">
+  Results are available above.
+</div>
+
+<!-- Hide sidebar when .filter-list is empty -->
+<aside data-conditional-children=".filter-list">
+  Filter results
+</aside>
+```
+
+### Descendant has children (scoped to current element)
+
+Prefix the selector with `self ` (space after "self") to look only among **descendants of the current element**:
+
+```html
+<!-- Show only if this section contains a .list that has children -->
+<section data-conditional-children="self .list">
+  <div class="list">
+    <!-- items rendered here -->
+  </div>
+</section>
+```
+
+**Summary:**
+
+- Empty or `self` → current element must have children
+- `selector` → `document.querySelector(selector)` must exist and have children
+- `self selector` → `element.querySelector(selector)` (within current element) must exist and have children
+
 ## Combining Conditions
 
 Multiple condition types can be combined on the same element. All conditions must be true (AND logic) for the element to be shown:
@@ -164,6 +219,12 @@ Multiple condition types can be combined on the same element. All conditions mus
 <div data-conditional-date="between:2025-01-01,2025-12-31 day:weekday"
      data-conditional-url="param:preview=true">
   This year on weekdays when preview=true
+</div>
+
+<!-- Combine with children condition: show message only when list has items -->
+<div data-conditional-children=".filter-list"
+     data-conditional-date="day:weekday">
+  Results are available (weekdays only, when list has items).
 </div>
 ```
 
@@ -245,6 +306,27 @@ Show content only in preview or debug modes:
 <div data-conditional-url="param:debug">
   <pre>Debug: {{ debug_info }}</pre>
 </div>
+```
+
+### Empty State / Hide When No Children
+
+Hide elements when a container has no children (e.g. empty filter results, empty lists):
+
+```html
+<!-- Hide "no results" message when results list has items -->
+<div data-conditional-children="#results">
+  No results found.
+</div>
+
+<!-- Hide wrapper when it has no children (e.g. after filtering) -->
+<div data-conditional-children="self">
+  <div class="dynamic-items">...</div>
+</div>
+
+<!-- Hide sidebar when filter list is empty -->
+<aside data-conditional-children=".filter-list">
+  Filter results
+</aside>
 ```
 
 ### Seasonal Content

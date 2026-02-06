@@ -10,7 +10,7 @@ import { applyConditionalVisibility } from './core';
  */
 function reEvaluateConditions(): void {
   document
-    .querySelectorAll('[data-conditional], [data-conditional-date], [data-conditional-url]')
+    .querySelectorAll('[data-conditional], [data-conditional-date], [data-conditional-url], [data-conditional-children]')
     .forEach((el) => {
       applyConditionalVisibility(el as HTMLElement);
     });
