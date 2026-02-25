@@ -330,7 +330,7 @@ export function applyConditionalVisibility(element: HTMLElement): void {
   const shouldShow = mode === 'show' ? conditionsPass : !conditionsPass;
 
   if (shouldShow) {
-    element.style.display = '';
+    element.style.removeProperty('display');
     element.classList.add('conditional-active');
     element.classList.remove('conditional-hidden');
   } else {
