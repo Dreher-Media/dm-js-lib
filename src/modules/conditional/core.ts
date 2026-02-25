@@ -197,19 +197,13 @@ const INVISIBLE_CHILD_TAGS = new Set([
 ]);
 
 /**
- * Returns true if the element is visible (not hidden by tag, CSS, or hidden attribute).
+ * Returns true if the element is visible (computed style).
+ * Used when the conditional element is already visible so we respect CSS/class visibility.
  */
 function isElementVisible(el: Element): boolean {
   const tag = el.tagName.toLowerCase();
-  if (INVISIBLE_CHILD_TAGS.has(tag)) {
-    return false;
-  }
-  if (el.getAttribute('hidden') !== null) {
-    return false;
-  }
-  if (typeof (el as HTMLElement).style === 'undefined') {
-    return true;
-  }
+  if (INVISIBLE_CHILD_TAGS.has(tag)) return false;
+  if (el.getAttribute('hidden') !== null) return false;
   try {
     const style = window.getComputedStyle(el);
     if (style.display === 'none' || style.visibility === 'hidden' || parseFloat(style.opacity) === 0) {
@@ -222,14 +216,33 @@ function isElementVisible(el: Element): boolean {
 }
 
 /**
- * Returns the number of visible children (excludes invisible tags and elements hidden by CSS).
+ * Returns true if the element counts as present using only its own state (no getComputedStyle).
+ * Used when the conditional element is hidden so we can still count children and re-show it.
  */
-function getVisibleChildCount(el: Element): number {
+function isElementCountedAsChild(el: Element): boolean {
+  const tag = el.tagName.toLowerCase();
+  if (INVISIBLE_CHILD_TAGS.has(tag)) return false;
+  if (el.getAttribute('hidden') !== null) return false;
+  const htmlEl = el as HTMLElement;
+  if (htmlEl.style?.display === 'none') return false;
+  return true;
+}
+
+/**
+ * Returns the number of visible children. When the conditional element is hidden we use
+ * own-state-only so children still count and the parent can be shown again (avoids
+ * getComputedStyle returning 'none' for descendants). When visible we use computed
+ * visibility for accurate behavior. No extra layout cost when conditional is hidden.
+ */
+function getVisibleChildCount(el: Element, conditionalElement: HTMLElement | null): number {
+  const useOwnStateOnly =
+    conditionalElement?.classList.contains('conditional-hidden') &&
+    (el === conditionalElement || conditionalElement.contains(el));
+
+  const countAsVisible = useOwnStateOnly ? isElementCountedAsChild : isElementVisible;
   let count = 0;
   for (let i = 0; i < el.children.length; i++) {
-    if (isElementVisible(el.children[i])) {
-      count++;
-    }
+    if (countAsVisible(el.children[i])) count++;
   }
   return count;
 }
@@ -245,7 +258,7 @@ export function parseChildrenCondition(element: HTMLElement, condition: string):
 
   // Empty or "self": check if current element has visible children
   if (!value || value.toLowerCase() === 'self') {
-    return getVisibleChildCount(element) > 0;
+    return getVisibleChildCount(element, element) > 0;
   }
 
   // "self selector": check if a descendant of current element matches and has visible children
@@ -254,12 +267,12 @@ export function parseChildrenCondition(element: HTMLElement, condition: string):
     const selector = value.slice(selfPrefix.length).trim();
     if (!selector) return false;
     const target = element.querySelector(selector);
-    return target !== null && getVisibleChildCount(target) > 0;
+    return target !== null && getVisibleChildCount(target, element) > 0;
   }
 
   // Otherwise: selector relative to document (like data-required-children)
   const target = document.querySelector(value);
-  return target !== null && getVisibleChildCount(target) > 0;
+  return target !== null && getVisibleChildCount(target, element) > 0;
 }
 
 /**
