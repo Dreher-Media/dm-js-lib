@@ -5,11 +5,14 @@
 
 import { applyConditionalVisibility } from './core';
 
+const CONDITIONAL_SELECTOR =
+  '[data-conditional], [data-conditional-date], [data-conditional-url], [data-conditional-children]';
+
 /** Debounce timer for DOM observer to avoid excessive re-evaluation */
 let reEvaluateDebounce: ReturnType<typeof setTimeout> | null = null;
 
-/** True while we are applying visibility; observer ignores self-caused mutations to avoid feedback loop / flicker */
-let isApplyingVisibility = false;
+/** Elements we're updating this run; observer skips only when all mutations are on these (avoids feedback loop but still reacts to external DOM changes) */
+let elementsUpdatedThisRun: Set<Element> | null = null;
 
 /**
  * Schedules a re-evaluation after a short delay (debounced).
@@ -25,20 +28,18 @@ function scheduleReEvaluate(): void {
 }
 
 /**
- * Re-evaluates all conditional elements. Ignores observer callbacks caused by our own style/class updates.
+ * Re-evaluates all conditional elements. Observer will ignore only mutations on these elements to avoid feedback loop, but will still schedule when other scripts change the DOM.
  */
 function runReEvaluateConditions(): void {
-  isApplyingVisibility = true;
+  const elements = document.querySelectorAll(CONDITIONAL_SELECTOR);
+  elementsUpdatedThisRun = new Set(elements);
   try {
-    document
-      .querySelectorAll('[data-conditional], [data-conditional-date], [data-conditional-url], [data-conditional-children]')
-      .forEach((el) => {
-        applyConditionalVisibility(el as HTMLElement);
-      });
+    elements.forEach((el) => {
+      applyConditionalVisibility(el as HTMLElement);
+    });
   } finally {
-    // Clear flag after observer callbacks (microtasks) so we don't schedule from our own mutations
     setTimeout(() => {
-      isApplyingVisibility = false;
+      elementsUpdatedThisRun = null;
     }, 0);
   }
 }
@@ -62,8 +63,11 @@ export function initConditional(): void {
     });
 
     // Re-evaluate when DOM changes (new/removed nodes or class/style affecting visibility)
-    const observer = new MutationObserver(() => {
-      if (isApplyingVisibility) return;
+    const observer = new MutationObserver((mutations) => {
+      if (elementsUpdatedThisRun !== null) {
+        const onlyOurUpdates = mutations.every((m) => elementsUpdatedThisRun!.has(m.target as Element));
+        if (onlyOurUpdates) return;
+      }
       scheduleReEvaluate();
     });
     observer.observe(document.body, {
