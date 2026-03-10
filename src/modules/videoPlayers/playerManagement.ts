@@ -27,8 +27,8 @@ export function initializePlyrPlayers(plyrPlayers: Plyr[]): void {
     // Set up Plyr player event listeners
     players.forEach((plyrPlayer) => {
       plyrPlayer.on("play", () => {
-        // When a Plyr player plays, pause all other players
-        pauseAllPlayers(null, plyrPlayers, {});
+        // When a Plyr player plays, pause all other players (exclude this one)
+        pauseAllPlayers(null, plyrPlayers, {}, plyrPlayer);
         const swipers = getVideoSwipers();
         if (swipers) {
           swipers.forEach((swiper) => {
@@ -52,14 +52,20 @@ export function initializePlyrPlayers(plyrPlayers: Plyr[]): void {
 
 /**
  * Pauses all video players
+ * @param id - Optional player id to exclude (for YouTube/Vimeo/Dailymotion)
+ * @param plyrPlayers - Array of Plyr instances
+ * @param players - Map of other player instances
+ * @param excludePlyrPlayer - Optional Plyr instance to exclude (the one that is currently playing)
  */
 export function pauseAllPlayers(
   id: string | null = null,
   plyrPlayers: Plyr[],
-  players: Record<string, PlayerInstance>
+  players: Record<string, PlayerInstance>,
+  excludePlyrPlayer: Plyr | null = null
 ): void {
-  // Pause all Plyr players
+  // Pause all Plyr players except the one that just started playing
   plyrPlayers.forEach((plyrPlayer) => {
+    if (excludePlyrPlayer && plyrPlayer === excludePlyrPlayer) return;
     plyrPlayer.pause();
   });
 
