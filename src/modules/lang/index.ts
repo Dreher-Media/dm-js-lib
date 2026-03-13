@@ -1,6 +1,6 @@
 /**
  * Language Module
- * Handles language switching with support for both attribute-based and classname-based localization
+ * Handles language switching with attribute-based localization (data-lang-link / data-lang-content)
  * Includes session storage persistence for selected language
  */
 
@@ -24,23 +24,6 @@ export function initLang(): void {
         switchLanguage(lang);
       });
     });
-
-    // Handle legacy classname-based language links
-    document
-      .querySelectorAll(
-        ".biography-lang-links .tab-link[data-lang]:not([data-lang-link])[data-lang]"
-      )
-      .forEach((el) => {
-        el.addEventListener("click", (event) => {
-          event.preventDefault();
-          const target = event.currentTarget as HTMLElement;
-          const lang = target.dataset?.lang;
-
-          if (!lang) return;
-
-          switchLanguage(lang);
-        });
-      });
 
     // Restore language on page load
     restoreLanguage();

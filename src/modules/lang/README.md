@@ -41,20 +41,6 @@ Add `data-lang-content` to content blocks:
 </div>
 ```
 
-### Legacy Classname-Based System
-
-The module also supports the legacy system using class names:
-
-```html
-<div class="biography-lang-links">
-  <a href="#" class="tab-link" data-lang="en">English</a>
-  <a href="#" class="tab-link" data-lang="de">Deutsch</a>
-</div>
-
-<div class="biography-text en">English content</div>
-<div class="biography-text de">Deutsche Inhalte</div>
-```
-
 ## Features
 
 ### Automatic Language Detection
@@ -111,6 +97,4 @@ Use standard two-letter language codes (ISO 639-1):
 
 ## Notes
 
-- Both attribute-based and classname-based systems can coexist on the same page
-- The module supports mixed usage (some content with attributes, some with classes)
 - Language preference is stored in session storage (cleared when browser closes)

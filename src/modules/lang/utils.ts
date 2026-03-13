@@ -69,19 +69,5 @@ export function isLanguageAvailable(lang: string): boolean {
     return true;
   }
 
-  // Check legacy classname-based links
-  const legacyLangLink = document.querySelector(
-    `.biography-lang-links .tab-link[data-lang]:not([data-lang-link])[data-lang="${lang}"]`
-  );
-  if (legacyLangLink) {
-    return true;
-  }
-
-  // Check legacy classname-based content
-  const legacyLangContent = document.querySelector(`.biography-text.${lang}`);
-  if (legacyLangContent) {
-    return true;
-  }
-
   return false;
 }

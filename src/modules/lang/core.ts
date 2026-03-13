@@ -6,14 +6,13 @@
 import { getLangFromElement, getBrowserLanguage, isLanguageAvailable } from './utils';
 
 /**
- * Switches to the specified language using both attribute-based and classname-based systems
+ * Switches to the specified language using the attribute-based system
  * @param lang - The language code to switch to
  */
 export function switchLanguage(lang: string): void {
   // Store selected language in session storage
   sessionStorage.setItem("selected_lang", lang);
 
-  // === Attribute-based localization (new system) ===
   // Process elements that use the attribute-based system
   document.querySelectorAll("[data-lang-content]").forEach((el) => {
     const contentEl = el as HTMLElement;
@@ -27,20 +26,7 @@ export function switchLanguage(lang: string): void {
     }
   });
 
-  // === Classname-based localization (legacy system) ===
-  // Process .biography-text elements that don't use the attribute-based system
-  document
-    .querySelectorAll(`.biography-text:not([data-lang-content]):not(.${lang})`)
-    .forEach((bioEl) => {
-      (bioEl as HTMLElement).style.display = "none";
-    });
-
-  document.querySelectorAll(`.biography-text:not([data-lang-content]).${lang}`).forEach((bioEl) => {
-    (bioEl as HTMLElement).style.display = "block";
-  });
-
-  // Update tab link active states (supports both systems)
-  // Attribute-based links
+  // Update tab link active states
   document.querySelectorAll("[data-lang-link]").forEach((linkEl) => {
     const link = linkEl as HTMLElement;
     const linkLang = getLangFromElement(link);
@@ -50,23 +36,6 @@ export function switchLanguage(lang: string): void {
       link.classList.remove("active");
     }
   });
-
-  // Legacy classname-based links
-  document
-    .querySelectorAll(
-      `.biography-lang-links .tab-link[data-lang]:not([data-lang-link]):not([data-lang="${lang}"])`
-    )
-    .forEach((tabEl) => {
-      tabEl.classList.remove("active");
-    });
-
-  document
-    .querySelectorAll(
-      `.biography-lang-links .tab-link[data-lang]:not([data-lang-link])[data-lang="${lang}"]`
-    )
-    .forEach((tabEl) => {
-      tabEl.classList.add("active");
-    });
 }
 
 /**
@@ -91,21 +60,11 @@ export function restoreLanguage(): void {
 
   if (selectedLang) {
     // Try to find and click the language link
-    // Attribute-based link
     const attrLangLink = document.querySelector(
       `[data-lang-link="${selectedLang}"]`
     ) as HTMLElement | null;
     if (attrLangLink) {
       attrLangLink.click();
-      return;
-    }
-
-    // Legacy classname-based link
-    const legacyLangLink = document.querySelector(
-      `.biography-lang-links .tab-link[data-lang]:not([data-lang-link])[data-lang="${selectedLang}"]`
-    ) as HTMLElement | null;
-    if (legacyLangLink) {
-      legacyLangLink.click();
       return;
     }
 
