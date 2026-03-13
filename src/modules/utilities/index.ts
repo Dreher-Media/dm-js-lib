@@ -62,6 +62,7 @@ function initFileDownload(): void {
       const link = document.createElement("a");
       link.href = url;
       link.download = filename || url.split("/").pop() || "download";
+      link.target = "_blank";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

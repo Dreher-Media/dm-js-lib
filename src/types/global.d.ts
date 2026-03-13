@@ -23,10 +23,11 @@ declare global {
           videoId: string;
           playerVars?: {
             start?: number;
+            rel?: number;
           };
           events?: {
             onReady?: (event: { target: YT.Player }) => void;
-            onStateChange?: (event: { data: number }) => void;
+            onStateChange?: (event: { data: number; target: YT.Player }) => void;
           };
         }
       ) => YT.Player;
@@ -77,10 +78,11 @@ declare global {
           videoId: string;
           playerVars?: {
             start?: number;
+            rel?: number;
           };
           events?: {
             onReady?: (event: { target: YT.Player }) => void;
-            onStateChange?: (event: { data: number }) => void;
+            onStateChange?: (event: { data: number; target: YT.Player }) => void;
           };
         }
       ): YT.Player;
