@@ -1,15 +1,15 @@
 /**
  * Filter Module
  * Provides attribute-based filtering functionality for lists
- * 
+ *
  * Inspired by Finsweet's List Filter approach, simplified and flexible
- * 
+ *
  * Basic Usage:
  * - Add data-filter-list to the container holding filterable items
  * - Add data-filter-controls to the container holding filter controls
  * - Add data-filter-field="identifier" to filter controls (checkboxes, radios, selects, inputs)
  * - Add data-filter-field="identifier" to list items to match against filters
- * 
+ *
  * Optional Features:
  * - data-filter-instance="name" to support multiple filtered lists on one page
  * - data-filter-search="field1,field2" to search across one or multiple fields (comma-separated)
@@ -31,13 +31,13 @@
  * - data-filter-autofill-refresh to force refresh of autofilled options
  */
 
-import { getInstance } from './filters';
-import { getCache, updateCache } from './cache';
-import { applyFilters } from './apply';
-import { restoreFromLocalStorage, restoreFromUrl } from './persistence';
-import { initializeControls, initializeClear } from './controls';
-import { filterAPI } from './api';
-import { initializeAutofill, refreshAutofill } from './autofill';
+import { getInstance } from "./filters";
+import { getCache, updateCache } from "./cache";
+import { applyFilters } from "./apply";
+import { restoreFromLocalStorage, restoreFromUrl } from "./persistence";
+import { initializeControls, initializeClear } from "./controls";
+import { filterAPI } from "./api";
+import { initializeAutofill, refreshAutofill } from "./autofill";
 
 let isInitialized = false;
 let controlsInitialized = false;
@@ -50,7 +50,7 @@ let observerInitialized = false;
 function initializeFilterModule(): void {
   // Initialize all filter lists
   const initializeLists = (): void => {
-    document.querySelectorAll('[data-filter-list]').forEach((listElement) => {
+    document.querySelectorAll("[data-filter-list]").forEach((listElement) => {
       const el = listElement as HTMLElement;
       const instance = getInstance(el);
 
@@ -61,26 +61,29 @@ function initializeFilterModule(): void {
       }
 
       // Restore from URL if enabled
-      if (el.dataset.filterUrl === 'true') {
+      if (el.dataset.filterUrl === "true") {
         restoreFromUrl(instance);
       }
 
       // Add ARIA attributes for accessibility
-      el.setAttribute('role', 'region');
-      el.setAttribute('aria-label', 'Filtered list');
+      el.setAttribute("role", "region");
+      el.setAttribute("aria-label", "Filtered list");
       if (!el.id) {
-        el.id = `filter-list-${instance || 'default'}-${Date.now()}`;
+        el.id = `filter-list-${instance || "default"}-${Date.now()}`;
       }
 
       // Add aria-live region for announcements
-      let liveRegion = document.querySelector(`#filter-live-${instance || 'default'}`) as HTMLElement;
+      let liveRegion = document.querySelector(
+        `#filter-live-${instance || "default"}`
+      ) as HTMLElement;
       if (!liveRegion) {
-        liveRegion = document.createElement('div');
-        liveRegion.id = `filter-live-${instance || 'default'}`;
-        liveRegion.setAttribute('aria-live', 'polite');
-        liveRegion.setAttribute('aria-atomic', 'true');
-        liveRegion.className = 'sr-only';
-        liveRegion.style.cssText = 'position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden;';
+        liveRegion = document.createElement("div");
+        liveRegion.id = `filter-live-${instance || "default"}`;
+        liveRegion.setAttribute("aria-live", "polite");
+        liveRegion.setAttribute("aria-atomic", "true");
+        liveRegion.className = "sr-only";
+        liveRegion.style.cssText =
+          "position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden;";
         document.body.appendChild(liveRegion);
       }
 
@@ -120,7 +123,7 @@ function initializeFilterModule(): void {
   // Set up MutationObserver for dynamic content (only once)
   if (!observerInitialized) {
     const observer = new MutationObserver(() => {
-      document.querySelectorAll('[data-filter-list]').forEach((listElement) => {
+      document.querySelectorAll("[data-filter-list]").forEach((listElement) => {
         const el = listElement as HTMLElement;
         const instance = getInstance(el);
         updateCache(instance, el);
@@ -133,7 +136,7 @@ function initializeFilterModule(): void {
       childList: true,
       subtree: true,
     });
-    
+
     observerInitialized = true;
   }
 
@@ -145,8 +148,8 @@ function initializeFilterModule(): void {
  * Can be called manually, or will auto-initialize on DOMContentLoaded
  */
 export function initFilter(): void {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeFilterModule);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializeFilterModule);
   } else {
     // DOM is already ready
     initializeFilterModule();
@@ -154,8 +157,8 @@ export function initFilter(): void {
 }
 
 // Auto-initialize on DOMContentLoaded by default
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeFilterModule);
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initializeFilterModule);
 } else {
   // DOM is already ready, initialize immediately
   initializeFilterModule();

@@ -10,18 +10,14 @@
  * Configuration is done via data attributes on the list, controls, and status elements.
  */
 
-import type {
-  PaginationInstanceState,
-  PaginationMode,
-  PaginationOptions,
-} from './types';
+import type { PaginationInstanceState, PaginationMode, PaginationOptions } from "./types";
 
 type InstancesMap = Map<string, PaginationInstanceState>;
 
-const DEFAULT_INSTANCE_ID = 'default';
-const PAGINATION_HIDDEN_CLASS = 'pagination-hidden';
-const PAGINATION_ACTIVE_CLASS = 'pagination-active';
-const PAGINATION_DISABLED_CLASS = 'pagination-disabled';
+const DEFAULT_INSTANCE_ID = "default";
+const PAGINATION_HIDDEN_CLASS = "pagination-hidden";
+const PAGINATION_ACTIVE_CLASS = "pagination-active";
+const PAGINATION_DISABLED_CLASS = "pagination-disabled";
 
 const instances: InstancesMap = new Map();
 
@@ -29,9 +25,9 @@ const getInstanceId = (element: HTMLElement | null): string => {
   if (!element) return DEFAULT_INSTANCE_ID;
 
   const attr = element.dataset.paginationInstance;
-  if (attr && attr.trim() !== '') return attr.trim();
+  if (attr && attr.trim() !== "") return attr.trim();
 
-  const wrapper = element.closest<HTMLElement>('[data-pagination-instance]');
+  const wrapper = element.closest<HTMLElement>("[data-pagination-instance]");
   if (wrapper?.dataset.paginationInstance) {
     return wrapper.dataset.paginationInstance.trim();
   }
@@ -40,15 +36,13 @@ const getInstanceId = (element: HTMLElement | null): string => {
 };
 
 const isEligibleItem = (el: HTMLElement): boolean => {
-  if (el.classList.contains('pagination-exclude')) return false;
-  if (el.classList.contains('filter-hidden')) return false;
+  if (el.classList.contains("pagination-exclude")) return false;
+  if (el.classList.contains("filter-hidden")) return false;
   return true;
 };
 
 const collectItems = (list: HTMLElement): HTMLElement[] => {
-  const explicitItems = Array.from(
-    list.querySelectorAll<HTMLElement>('[data-pagination-item]'),
-  );
+  const explicitItems = Array.from(list.querySelectorAll<HTMLElement>("[data-pagination-item]"));
 
   if (explicitItems.length > 0) {
     return explicitItems.filter(isEligibleItem);
@@ -62,18 +56,17 @@ const collectItems = (list: HTMLElement): HTMLElement[] => {
 const readMode = (source: HTMLElement | null): PaginationMode => {
   const value =
     source?.dataset.paginationMode ??
-    source?.closest<HTMLElement>('[data-pagination-mode]')?.dataset
-      .paginationMode ??
+    source?.closest<HTMLElement>("[data-pagination-mode]")?.dataset.paginationMode ??
     null;
 
-  if (value === 'load-more' || value === 'infinite') return value;
-  return 'numbers';
+  if (value === "load-more" || value === "infinite") return value;
+  return "numbers";
 };
 
 const readNumberAttr = (
   source: HTMLElement | null,
-  attr: keyof HTMLElement['dataset'],
-  defaultValue: number,
+  attr: keyof HTMLElement["dataset"],
+  defaultValue: number
 ): number => {
   if (!source) return defaultValue;
   const attrKey = String(attr);
@@ -90,7 +83,11 @@ const readNumberAttr = (
   return Number.isNaN(parsed) || parsed <= 0 ? defaultValue : parsed;
 };
 
-const computeTotalPages = (totalItems: number, pageSize: number, firstPageSize?: number): number => {
+const computeTotalPages = (
+  totalItems: number,
+  pageSize: number,
+  firstPageSize?: number
+): number => {
   const first = firstPageSize ?? pageSize;
   if (totalItems <= 0) return 1;
   if (first >= totalItems) return 1;
@@ -103,11 +100,11 @@ const getVisibleCount = (
   totalItems: number,
   currentPage: number,
   pageSize: number,
-  firstPageSize?: number,
+  firstPageSize?: number
 ): number => {
   const first = firstPageSize ?? pageSize;
 
-  if (mode === 'numbers') {
+  if (mode === "numbers") {
     if (currentPage <= 1) return Math.min(first, totalItems);
     const startIndex = first + (currentPage - 2) * pageSize;
     const remaining = Math.max(totalItems - startIndex, 0);
@@ -120,27 +117,23 @@ const getVisibleCount = (
 
 const resolveOptions = (list: HTMLElement, instanceId: string): PaginationOptions => {
   const mode = readMode(list);
-  const pageSize = readNumberAttr(list, 'paginationPageSize', 12);
+  const pageSize = readNumberAttr(list, "paginationPageSize", 12);
   const firstPageSizeRaw = (list.dataset.paginationFirstPageSize ??
-    list.closest<HTMLElement>('[data-pagination-first-page-size]')?.dataset.paginationFirstPageSize) as
-    | string
-    | undefined;
+    list.closest<HTMLElement>("[data-pagination-first-page-size]")?.dataset
+      .paginationFirstPageSize) as string | undefined;
   const firstPageSizeParsed =
     firstPageSizeRaw !== undefined ? Number.parseInt(firstPageSizeRaw, 10) : undefined;
   const firstPageSize =
     firstPageSizeParsed && !Number.isNaN(firstPageSizeParsed) && firstPageSizeParsed > 0
       ? firstPageSizeParsed
       : undefined;
-  const startPage = readNumberAttr(list, 'paginationStartPage', 1);
+  const startPage = readNumberAttr(list, "paginationStartPage", 1);
 
-  const urlKey =
-    list.dataset.paginationUrl === 'true'
-      ? instanceId
-      : undefined;
+  const urlKey = list.dataset.paginationUrl === "true" ? instanceId : undefined;
 
   const persistKey = list.dataset.paginationPersist || undefined;
   const hideLoadMoreWhenComplete =
-    list.dataset.paginationHideLoadMoreWhenComplete === 'true' ||
+    list.dataset.paginationHideLoadMoreWhenComplete === "true" ||
     list.closest<HTMLElement>('[data-pagination-hide-load-more-when-complete="true"]') !== null;
 
   const infiniteOffsetRaw = list.dataset.paginationInfiniteOffset;
@@ -161,14 +154,14 @@ const resolveOptions = (list: HTMLElement, instanceId: string): PaginationOption
 
 const collectControls = (
   root: HTMLElement,
-  instanceId: string,
-): PaginationInstanceState['elements']['controls'] => {
-  const scope = root.closest<HTMLElement>('[data-pagination-instance]') ?? root;
+  instanceId: string
+): PaginationInstanceState["elements"]["controls"] => {
+  const scope = root.closest<HTMLElement>("[data-pagination-instance]") ?? root;
 
   const queryAll = (selector: string): HTMLElement[] =>
-    Array.from(
-      scope.querySelectorAll<HTMLElement>(selector),
-    ).filter((el) => getInstanceId(el) === instanceId);
+    Array.from(scope.querySelectorAll<HTMLElement>(selector)).filter(
+      (el) => getInstanceId(el) === instanceId
+    );
 
   return {
     prev: queryAll('[data-pagination-control="prev"]'),
@@ -181,27 +174,27 @@ const collectControls = (
 
 const collectStatusElements = (
   root: HTMLElement,
-  instanceId: string,
-): PaginationInstanceState['elements']['status'] => {
-  const scope = root.closest<HTMLElement>('[data-pagination-instance]') ?? root;
+  instanceId: string
+): PaginationInstanceState["elements"]["status"] => {
+  const scope = root.closest<HTMLElement>("[data-pagination-instance]") ?? root;
 
   const queryAll = (selector: string): HTMLElement[] =>
-    Array.from(
-      scope.querySelectorAll<HTMLElement>(selector),
-    ).filter((el) => getInstanceId(el) === instanceId);
+    Array.from(scope.querySelectorAll<HTMLElement>(selector)).filter(
+      (el) => getInstanceId(el) === instanceId
+    );
 
   return {
-    currentPage: queryAll('[data-pagination-current-page]'),
-    totalPages: queryAll('[data-pagination-total-pages]'),
-    totalItems: queryAll('[data-pagination-total-items]'),
-    visibleItems: queryAll('[data-pagination-visible-items]'),
+    currentPage: queryAll("[data-pagination-current-page]"),
+    totalPages: queryAll("[data-pagination-total-pages]"),
+    totalItems: queryAll("[data-pagination-total-items]"),
+    visibleItems: queryAll("[data-pagination-visible-items]"),
   };
 };
 
 const collectSentinel = (root: HTMLElement): HTMLElement | null => {
-  const scope = root.closest<HTMLElement>('[data-pagination-instance]') ?? root;
+  const scope = root.closest<HTMLElement>("[data-pagination-instance]") ?? root;
   return (
-    scope.querySelector<HTMLElement>('[data-pagination-sentinel]') ??
+    scope.querySelector<HTMLElement>("[data-pagination-sentinel]") ??
     scope.querySelector<HTMLElement>('[data-pagination-control="load-more"]')
   );
 };
@@ -215,7 +208,7 @@ const updateStatusElements = (instance: PaginationInstanceState): void => {
     totalItems,
     currentPage,
     instance.options.pageSize,
-    instance.options.firstPageSize,
+    instance.options.firstPageSize
   );
 
   elements.status.currentPage.forEach((el) => {
@@ -242,17 +235,17 @@ const updateControlStates = (instance: PaginationInstanceState): void => {
     els.forEach((el) => {
       if (disabled) {
         el.classList.add(PAGINATION_DISABLED_CLASS);
-        el.classList.add('is-disabled');
-        el.setAttribute('aria-disabled', 'true');
+        el.classList.add("is-disabled");
+        el.setAttribute("aria-disabled", "true");
       } else {
         el.classList.remove(PAGINATION_DISABLED_CLASS);
-        el.classList.remove('is-disabled');
-        el.removeAttribute('aria-disabled');
+        el.classList.remove("is-disabled");
+        el.removeAttribute("aria-disabled");
       }
     });
   };
 
-  if (options.mode === 'numbers') {
+  if (options.mode === "numbers") {
     setDisabled(elements.controls.prev, currentPage <= 1);
     setDisabled(elements.controls.first, currentPage <= 1);
     setDisabled(elements.controls.next, currentPage >= totalPages);
@@ -262,25 +255,23 @@ const updateControlStates = (instance: PaginationInstanceState): void => {
     setDisabled(elements.controls.loadMore, isComplete);
     elements.controls.loadMore.forEach((btn) => {
       if (isComplete) {
-        btn.setAttribute('data-pagination-complete', 'true');
+        btn.setAttribute("data-pagination-complete", "true");
       } else {
-        btn.removeAttribute('data-pagination-complete');
+        btn.removeAttribute("data-pagination-complete");
       }
 
       if (options.hideLoadMoreWhenComplete) {
-        btn.style.display = isComplete ? 'none' : '';
+        btn.style.display = isComplete ? "none" : "";
       }
     });
   }
 
-  const scope =
-    elements.list.closest<HTMLElement>('[data-pagination-instance]') ??
-    elements.list;
-  const pageButtons = scope.querySelectorAll<HTMLElement>('[data-pagination-page]');
+  const scope = elements.list.closest<HTMLElement>("[data-pagination-instance]") ?? elements.list;
+  const pageButtons = scope.querySelectorAll<HTMLElement>("[data-pagination-page]");
 
   pageButtons.forEach((btn) => {
     const pageAttr = btn.dataset.paginationPage;
-    if (!pageAttr || pageAttr === '*') return;
+    if (!pageAttr || pageAttr === "*") return;
 
     const pageNumber = Number.parseInt(pageAttr, 10);
     if (Number.isNaN(pageNumber)) return;
@@ -288,12 +279,12 @@ const updateControlStates = (instance: PaginationInstanceState): void => {
     const isActive = pageNumber === currentPage;
     if (isActive) {
       btn.classList.add(PAGINATION_ACTIVE_CLASS);
-      btn.classList.add('is-active');
-      btn.setAttribute('aria-current', 'page');
+      btn.classList.add("is-active");
+      btn.setAttribute("aria-current", "page");
     } else {
       btn.classList.remove(PAGINATION_ACTIVE_CLASS);
-      btn.classList.remove('is-active');
-      btn.removeAttribute('aria-current');
+      btn.classList.remove("is-active");
+      btn.removeAttribute("aria-current");
     }
   });
 };
@@ -314,7 +305,7 @@ const applyVisibility = (instance: PaginationInstanceState): void => {
 
   const first = firstPageSize ?? pageSize;
   const maxIndex =
-    mode === 'numbers'
+    mode === "numbers"
       ? 0
       : instance.currentPage <= 1
         ? first
@@ -324,7 +315,7 @@ const applyVisibility = (instance: PaginationInstanceState): void => {
     const itemIndex = index + 1;
 
     const isVisible =
-      mode === 'numbers'
+      mode === "numbers"
         ? (() => {
             if (instance.currentPage <= 1) {
               return itemIndex <= first;
@@ -352,13 +343,13 @@ const applyVisibility = (instance: PaginationInstanceState): void => {
     totalItems,
   };
 
-  const changeEvent = new CustomEvent('pagination:change', {
+  const changeEvent = new CustomEvent("pagination:change", {
     detail,
   });
   elements.list.dispatchEvent(changeEvent);
 
   if (instance.currentPage >= instance.totalPages) {
-    const endEvent = new CustomEvent('pagination:end', {
+    const endEvent = new CustomEvent("pagination:end", {
       detail,
     });
     elements.list.dispatchEvent(endEvent);
@@ -366,7 +357,7 @@ const applyVisibility = (instance: PaginationInstanceState): void => {
 };
 
 const readPageFromUrl = (key: string): number | null => {
-  if (typeof window === 'undefined') return null;
+  if (typeof window === "undefined") return null;
   try {
     const url = new URL(window.location.href);
     const value = url.searchParams.get(`page_${key}`);
@@ -379,18 +370,18 @@ const readPageFromUrl = (key: string): number | null => {
 };
 
 const writePageToUrl = (key: string, page: number): void => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   try {
     const url = new URL(window.location.href);
     url.searchParams.set(`page_${key}`, String(page));
-    window.history.replaceState({}, '', url.toString());
+    window.history.replaceState({}, "", url.toString());
   } catch {
     // ignore
   }
 };
 
 const readPageFromStorage = (key: string): number | null => {
-  if (typeof window === 'undefined' || !window.localStorage) return null;
+  if (typeof window === "undefined" || !window.localStorage) return null;
   try {
     const value = window.localStorage.getItem(`pagination_${key}`);
     if (!value) return null;
@@ -402,7 +393,7 @@ const readPageFromStorage = (key: string): number | null => {
 };
 
 const writePageToStorage = (key: string, page: number): void => {
-  if (typeof window === 'undefined' || !window.localStorage) return;
+  if (typeof window === "undefined" || !window.localStorage) return;
   try {
     window.localStorage.setItem(`pagination_${key}`, String(page));
   } catch {
@@ -440,8 +431,8 @@ const persistPage = (instance: PaginationInstanceState): void => {
 };
 
 const createObserver = (instance: PaginationInstanceState): void => {
-  if (instance.options.mode !== 'infinite') return;
-  if (!('IntersectionObserver' in window)) return;
+  if (instance.options.mode !== "infinite") return;
+  if (!("IntersectionObserver" in window)) return;
 
   const sentinel = instance.elements.sentinel;
   if (!sentinel) return;
@@ -460,7 +451,7 @@ const createObserver = (instance: PaginationInstanceState): void => {
     {
       root: null,
       threshold,
-    },
+    }
   );
 
   observer.observe(sentinel);
@@ -540,18 +531,18 @@ const prevInternal = (instanceId: string): void => {
 const attachControlHandlers = (): void => {
   const scope = document;
 
-  scope.addEventListener('click', (event) => {
+  scope.addEventListener("click", (event) => {
     const target = event.target as HTMLElement | null;
     if (!target) return;
 
-    const control = target.closest<HTMLElement>('[data-pagination-control]');
+    const control = target.closest<HTMLElement>("[data-pagination-control]");
     if (!control) return;
 
     const instanceId = getInstanceId(control);
     const type = control.dataset.paginationControl;
 
     if (!type) return;
-    if (type === 'load-more') {
+    if (type === "load-more") {
       event.preventDefault();
       nextInternal(instanceId);
       return;
@@ -559,28 +550,28 @@ const attachControlHandlers = (): void => {
 
     event.preventDefault();
 
-    if (type === 'prev') {
+    if (type === "prev") {
       prevInternal(instanceId);
-    } else if (type === 'next') {
+    } else if (type === "next") {
       nextInternal(instanceId);
-    } else if (type === 'first') {
+    } else if (type === "first") {
       goToPageInternal(instanceId, 1);
-    } else if (type === 'last') {
+    } else if (type === "last") {
       const instance = instances.get(instanceId);
       if (!instance) return;
       goToPageInternal(instanceId, instance.totalPages);
     }
   });
 
-  scope.addEventListener('click', (event) => {
+  scope.addEventListener("click", (event) => {
     const target = event.target as HTMLElement | null;
     if (!target) return;
 
-    const pageButton = target.closest<HTMLElement>('[data-pagination-page]');
+    const pageButton = target.closest<HTMLElement>("[data-pagination-page]");
     if (!pageButton) return;
 
     const pageAttr = pageButton.dataset.paginationPage;
-    if (!pageAttr || pageAttr === '*') return;
+    if (!pageAttr || pageAttr === "*") return;
 
     const page = Number.parseInt(pageAttr, 10);
     if (Number.isNaN(page) || page <= 0) return;
@@ -601,14 +592,14 @@ function initializePaginationModule(): void {
     return;
   }
 
-  const lists = document.querySelectorAll<HTMLElement>('[data-pagination-list]');
+  const lists = document.querySelectorAll<HTMLElement>("[data-pagination-list]");
   lists.forEach((list) => {
     initInstance(list);
   });
 
-  const filterLists = document.querySelectorAll<HTMLElement>('[data-filter-list]');
+  const filterLists = document.querySelectorAll<HTMLElement>("[data-filter-list]");
   filterLists.forEach((filterList) => {
-    filterList.addEventListener('filter:change', () => {
+    filterList.addEventListener("filter:change", () => {
       const filterInstanceId = getInstanceId(filterList);
 
       instances.forEach((instance) => {
@@ -617,8 +608,7 @@ function initializePaginationModule(): void {
 
         const listElement = instance.elements.list;
         const isSameElement = listElement === filterList;
-        const isWithinFilter =
-          filterList.contains(listElement) || listElement.contains(filterList);
+        const isWithinFilter = filterList.contains(listElement) || listElement.contains(filterList);
 
         if (isSameElement || isWithinFilter) {
           instance.currentPage = 1;
@@ -644,8 +634,8 @@ function initializePaginationModule(): void {
 }
 
 export function initPagination(): void {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializePaginationModule);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializePaginationModule);
   } else {
     initializePaginationModule();
   }
@@ -689,13 +679,12 @@ declare global {
   }
 }
 
-if (typeof window !== 'undefined' && !window.paginationAPI) {
+if (typeof window !== "undefined" && !window.paginationAPI) {
   window.paginationAPI = paginationAPI;
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializePaginationModule);
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initializePaginationModule);
 } else {
   initializePaginationModule();
 }
-

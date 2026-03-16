@@ -1,4 +1,4 @@
-export type PaginationMode = 'numbers' | 'load-more' | 'infinite';
+export type PaginationMode = "numbers" | "load-more" | "infinite";
 
 export interface PaginationElements {
   list: HTMLElement;
@@ -38,4 +38,3 @@ export interface PaginationInstanceState {
   totalPages: number;
   observer?: IntersectionObserver;
 }
-

@@ -21,9 +21,11 @@ Additionally, there are standalone modules available that can be loaded separate
 ## Built-in Modules
 
 ### 🛠️ Utilities
+
 **A collection of four small utility functions**
 
 Combines four simple utilities that work automatically:
+
 - **Active Link** - Automatically highlights active navigation links
 - **File Download** - Enables file downloads from any element
 - **Separators** - Automatically inserts separators between elements
@@ -32,6 +34,7 @@ Combines four simple utilities that work automatically:
 **Perfect for:** Common website tasks that need minimal setup
 
 **Examples:**
+
 ```html
 <!-- Active Link (automatic) -->
 <nav>
@@ -57,6 +60,7 @@ Combines four simple utilities that work automatically:
 ---
 
 ### 🍪 Cookie Consent
+
 **Shows or hides content based on cookie preferences**
 
 Integrates with Finsweet Cookie Consent to automatically show/hide content based on user consent choices. Perfect for GDPR compliance.
@@ -64,10 +68,13 @@ Integrates with Finsweet Cookie Consent to automatically show/hide content based
 **Perfect for:** Analytics scripts, marketing embeds, tracking pixels
 
 **Example:**
+
 ```html
 <div fs-cc="analytics">
   <!-- Shown when analytics consent is given -->
-  <script>/* Google Analytics */</script>
+  <script>
+    /* Google Analytics */
+  </script>
 </div>
 ```
 
@@ -76,6 +83,7 @@ Integrates with Finsweet Cookie Consent to automatically show/hide content based
 ---
 
 ### 🌍 Language
+
 **Multi-language content switching**
 
 Create multi-language pages with automatic browser language detection. Users can switch languages, and their preference is remembered.
@@ -83,6 +91,7 @@ Create multi-language pages with automatic browser language detection. Users can
 **Perfect for:** International websites, bilingual content, localized pages
 
 **Example:**
+
 ```html
 <button data-lang-link="en">English</button>
 <button data-lang-link="de">Deutsch</button>
@@ -96,6 +105,7 @@ Create multi-language pages with automatic browser language detection. Users can
 ---
 
 ### 📑 Tabs
+
 **Interactive tab interfaces**
 
 Create tabbed content sections with support for multiple tab groups, URL control, and automatic activation.
@@ -103,6 +113,7 @@ Create tabbed content sections with support for multiple tab groups, URL control
 **Perfect for:** Product details, FAQ sections, feature comparisons, content organization
 
 **Example:**
+
 ```html
 <div class="tabs">
   <button class="tab-link" data-tab-target="tab1">Tab 1</button>
@@ -118,6 +129,7 @@ Create tabbed content sections with support for multiple tab groups, URL control
 ---
 
 ### 🎥 Video Players
+
 **Unified video player management**
 
 Supports YouTube, Vimeo, Dailymotion, and HTML5 videos (Plyr). Automatically pauses other videos when one plays. Integrates with Swiper carousels. **Also automatically upgrades YouTube thumbnail quality** for crisp, clear thumbnails.
@@ -125,12 +137,10 @@ Supports YouTube, Vimeo, Dailymotion, and HTML5 videos (Plyr). Automatically pau
 **Perfect for:** Video galleries, product demos, tutorial pages, media libraries
 
 **Example:**
+
 ```html
-<div class="youtube" 
-     data-type="youtube"
-     data-video-id="dQw4w9WgXcQ"
-     data-id="player1">
-  <img src="thumbnail.jpg" alt="Video">
+<div class="youtube" data-type="youtube" data-video-id="dQw4w9WgXcQ" data-id="player1">
+  <img src="thumbnail.jpg" alt="Video" />
 </div>
 ```
 
@@ -141,6 +151,7 @@ YouTube thumbnails are automatically upgraded to the highest available quality -
 ---
 
 ### 🎯 Conditional Elements
+
 **Show or hide elements based on dates, times, URL parameters, and whether elements have children**
 
 Conditionally display content based on various client-side conditions. Perfect for time-sensitive content, calendar events, preview modes, empty-state handling, and dynamic content display.
@@ -148,14 +159,13 @@ Conditionally display content based on various client-side conditions. Perfect f
 **Perfect for:** Time-sensitive promotions, calendar events, preview/debug modes, seasonal content, business hours displays, hiding empty containers
 
 **Example:**
+
 ```html
 <!-- Show before a specific date -->
 <div data-conditional-date="before:2025-12-31">Limited time offer</div>
 
 <!-- Show on weekdays during business hours -->
-<div data-conditional-date="day:weekday between:09:00,17:00">
-  Business hours content
-</div>
+<div data-conditional-date="day:weekday between:09:00,17:00">Business hours content</div>
 
 <!-- Show when preview parameter is in URL -->
 <div data-conditional-url="param:preview=true">Preview content</div>
@@ -173,6 +183,7 @@ Conditionally display content based on various client-side conditions. Perfect f
 These modules are not included in the main bundle and must be loaded separately when needed. They're perfect for when you only need specific functionality.
 
 ### 🔍 Filter
+
 **Powerful filtering system for lists and collections**
 
 Create advanced filter interfaces with checkboxes, search boxes, dropdowns, and more. Supports multiple filter types, URL persistence, and localStorage.
@@ -180,6 +191,7 @@ Create advanced filter interfaces with checkboxes, search boxes, dropdowns, and 
 **Perfect for:** Product catalogs, portfolio galleries, blog archives, directory listings
 
 **Installation:**
+
 ```html
 <script src="https://cdn.jsdelivr.net/npm/@dreher-media/dm-js-lib@latest/dist/standalone/filter.min.js"></script>
 ```
@@ -194,10 +206,11 @@ The filter module auto-initializes on page load. Manual initialization is option
 ```
 
 **Example:**
+
 ```html
 <!-- Filter controls -->
-<input type="checkbox" data-filter-field="category" value="design"> Design
-<input type="text" data-filter-field="search" placeholder="Search...">
+<input type="checkbox" data-filter-field="category" value="design" /> Design
+<input type="text" data-filter-field="search" placeholder="Search..." />
 
 <!-- Filterable list -->
 <ul data-filter-list>
@@ -211,6 +224,7 @@ The filter module auto-initializes on page load. Manual initialization is option
 ---
 
 ### 🔄 Preview Detail Switcher
+
 **Switch between preview and detail views**
 
 Create interactive interfaces where clicking preview elements shows corresponding detail views. Only one detail view is visible at a time.
@@ -218,22 +232,24 @@ Create interactive interfaces where clicking preview elements shows correspondin
 **Perfect for:** Product galleries, portfolio showcases, content switchers
 
 **Installation:**
+
 ```html
 <script src="https://cdn.jsdelivr.net/npm/@dreher-media/dm-js-lib@latest/dist/standalone/previewDetailSwitcher.min.js"></script>
 <script>
   // Initialize
   PreviewDetailSwitcher.initPreviewDetailSwitcher({
-    container: '.my-container'
+    container: ".my-container",
   });
 </script>
 ```
 
 **Example:**
+
 ```html
 <div class="gallery">
   <button data-preview-id="item1">Preview 1</button>
   <button data-preview-id="item2">Preview 2</button>
-  
+
   <div data-detail-item data-detail-id="item1">Detail 1</div>
   <div data-detail-item data-detail-id="item2">Detail 2</div>
 </div>
@@ -244,6 +260,7 @@ Create interactive interfaces where clicking preview elements shows correspondin
 ---
 
 ### 📄 Pagination
+
 **Client-side pagination for generic lists**
 
 Paginate any list of items on the client using simple data attributes. Supports numbered pagination, “load more” buttons, and infinite scroll, and integrates cleanly with the standalone filter module.
@@ -251,11 +268,13 @@ Paginate any list of items on the client using simple data attributes. Supports 
 **Perfect for:** Blog indexes, product grids, search result lists, and any long collection of items.
 
 **Installation:**
+
 ```html
 <script src="https://cdn.jsdelivr.net/npm/@dreher-media/dm-js-lib@latest/dist/standalone/pagination.min.js"></script>
 ```
 
 **Example:**
+
 ```html
 <div data-pagination-mode="numbers">
   <ul data-pagination-list data-pagination-page-size="9">
@@ -314,6 +333,7 @@ No JavaScript coding required. Everything works through HTML attributes.
 ## Browser Support
 
 Works in all modern browsers:
+
 - Chrome (latest)
 - Firefox (latest)
 - Safari (latest)
@@ -330,6 +350,7 @@ Most modules work standalone. Some modules have optional dependencies:
 ## Getting Help
 
 Each module has detailed documentation with examples. Click on any module name above to see:
+
 - Complete usage examples
 - All available options
 - Styling tips

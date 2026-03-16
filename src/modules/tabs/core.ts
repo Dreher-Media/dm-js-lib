@@ -8,7 +8,7 @@ import {
   findAllTabContentByAttribute,
   getTabContentValuesForGroup,
   getTabContentValuesForParent,
-} from './utils';
+} from "./utils";
 
 /**
  * Helper function to activate a tab programmatically
@@ -16,9 +16,7 @@ import {
 export function activateTab(tabLink: HTMLElement): void {
   const tabGroup = tabLink.dataset.tabGroup;
   const tabTargetValue = getTabTargetValue(tabLink);
-  const targetTabContents = tabTargetValue
-    ? findAllTabContentByAttribute(tabTargetValue)
-    : [];
+  const targetTabContents = tabTargetValue ? findAllTabContentByAttribute(tabTargetValue) : [];
 
   if (tabGroup) {
     // Handle tab groups via data-tab-group attribute

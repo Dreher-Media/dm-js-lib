@@ -3,7 +3,7 @@
  * Main language switching and restoration functionality
  */
 
-import { getLangFromElement, getBrowserLanguage, isLanguageAvailable } from './utils';
+import { getLangFromElement, getBrowserLanguage, isLanguageAvailable } from "./utils";
 
 /**
  * Switches to the specified language using the attribute-based system

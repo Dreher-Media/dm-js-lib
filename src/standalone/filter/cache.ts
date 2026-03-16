@@ -3,32 +3,32 @@
  * Functions for managing filter instance cache
  */
 
-import type { FilterCache } from './types';
+import type { FilterCache } from "./types";
 
 const filterCache: Map<string, FilterCache> = new Map();
 
 export function getCacheKey(instance: string | null): string {
-  return instance || 'default';
+  return instance || "default";
 }
 
 export function updateCache(instance: string | null, listElement: HTMLElement): FilterCache {
   const key = getCacheKey(instance);
-  const baseSelector = '[data-filter-count], [data-filter-results]';
+  const baseSelector = "[data-filter-count], [data-filter-results]";
   const countSelector = instance
     ? `[data-filter-instance="${instance}"] ${baseSelector}, ${baseSelector}[data-filter-instance="${instance}"]`
     : `${baseSelector}:not([data-filter-instance])`;
 
   const emptySelector = instance
     ? `[data-filter-instance="${instance}"] [data-filter-empty], [data-filter-empty][data-filter-instance="${instance}"]`
-    : '[data-filter-empty]:not([data-filter-instance])';
+    : "[data-filter-empty]:not([data-filter-instance])";
 
   const loadingSelector = instance
     ? `[data-filter-instance="${instance}"] [data-filter-loading], [data-filter-loading][data-filter-instance="${instance}"]`
-    : '[data-filter-loading]:not([data-filter-instance])';
+    : "[data-filter-loading]:not([data-filter-instance])";
 
   // Find all list items
   let items: HTMLElement[] = [];
-  const explicitItems = listElement.querySelectorAll('[data-filter-item]');
+  const explicitItems = listElement.querySelectorAll("[data-filter-item]");
   if (explicitItems.length > 0) {
     items = Array.from(explicitItems) as HTMLElement[];
   } else {
@@ -38,7 +38,7 @@ export function updateCache(instance: string | null, listElement: HTMLElement): 
       }
     });
     if (items.length === 0) {
-      const fieldItems = listElement.querySelectorAll('[data-filter-field]');
+      const fieldItems = listElement.querySelectorAll("[data-filter-field]");
       items = Array.from(fieldItems) as HTMLElement[];
     }
   }
@@ -50,7 +50,7 @@ export function updateCache(instance: string | null, listElement: HTMLElement): 
       document.querySelectorAll(
         instance
           ? `[data-filter-instance="${instance}"] [data-filter-field], [data-filter-field][data-filter-instance="${instance}"]`
-          : '[data-filter-field]:not([data-filter-instance])'
+          : "[data-filter-field]:not([data-filter-instance])"
       )
     ) as HTMLElement[],
     countElements: Array.from(document.querySelectorAll(countSelector)) as HTMLElement[],

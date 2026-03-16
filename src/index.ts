@@ -17,4 +17,3 @@ initTabs();
 initLang();
 initVideoPlayers();
 initConditional();
-

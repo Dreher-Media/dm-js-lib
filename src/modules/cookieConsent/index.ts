@@ -28,9 +28,7 @@ export function initCookieConsent(): void {
       const isConsentGiven = window.FsCC?.store.consents[category] ?? false;
 
       // Find the corresponding fs-cc element
-      const consentElement = document.querySelector(
-        `[fs-cc="${category}"]`
-      ) as HTMLElement | null;
+      const consentElement = document.querySelector(`[fs-cc="${category}"]`) as HTMLElement | null;
 
       // Toggle visibility based on consent state
       if (isConsentGiven) {

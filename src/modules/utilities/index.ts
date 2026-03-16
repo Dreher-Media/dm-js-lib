@@ -23,10 +23,7 @@ function initActiveLinks(): void {
       if (!rawHref) return;
 
       // Skip non-navigational anchors and javascript: links
-      if (
-        rawHref.startsWith("#") ||
-        rawHref.toLowerCase().startsWith("javascript:")
-      ) {
+      if (rawHref.startsWith("#") || rawHref.toLowerCase().startsWith("javascript:")) {
         return;
       }
 

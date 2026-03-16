@@ -3,9 +3,9 @@
  * Handles tab link functionality for switching between tab content
  */
 
-import { getUrlParams, getTabTargetValue, findAllTabContentByAttribute } from './utils';
-import { activateTab } from './core';
-import { getTabContentValuesForGroup, getTabContentValuesForParent } from './utils';
+import { getUrlParams, getTabTargetValue, findAllTabContentByAttribute } from "./utils";
+import { activateTab } from "./core";
+import { getTabContentValuesForGroup, getTabContentValuesForParent } from "./utils";
 
 export function initTabs(): void {
   document.addEventListener("DOMContentLoaded", () => {

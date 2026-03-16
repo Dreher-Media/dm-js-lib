@@ -3,7 +3,7 @@
  * Functions for initializing and managing video players
  */
 
-import type { PlayerInstance } from './types';
+import type { PlayerInstance } from "./types";
 
 /** Class name for the overlay that hides YouTube ads/recommendations when paused */
 const YOUTUBE_PAUSE_OVERLAY_CLASS = "youtube-pause-overlay";
@@ -20,10 +20,7 @@ function removeYouTubePauseOverlay(container: HTMLElement): void {
  * Shows a clickable overlay over the YouTube player to hide ads/recommendations when paused.
  * Clicking the overlay removes it and resumes playback.
  */
-function showYouTubePauseOverlay(
-  container: HTMLElement,
-  player: { playVideo: () => void }
-): void {
+function showYouTubePauseOverlay(container: HTMLElement, player: { playVideo: () => void }): void {
   removeYouTubePauseOverlay(container);
   const overlay = document.createElement("div");
   overlay.className = YOUTUBE_PAUSE_OVERLAY_CLASS;

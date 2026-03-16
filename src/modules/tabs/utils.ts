@@ -43,9 +43,7 @@ export function findTabContentByAttribute(value: string): HTMLElement | null {
  * Helper function to find all tab content elements by attribute
  */
 export function findAllTabContentByAttribute(value: string): HTMLElement[] {
-  return Array.from(
-    document.querySelectorAll(`[data-tab-content="${value}"]`)
-  ) as HTMLElement[];
+  return Array.from(document.querySelectorAll(`[data-tab-content="${value}"]`)) as HTMLElement[];
 }
 
 /**

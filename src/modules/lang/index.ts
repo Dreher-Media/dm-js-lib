@@ -4,8 +4,8 @@
  * Includes session storage persistence for selected language
  */
 
-import { getLangFromElement } from './utils';
-import { switchLanguage, restoreLanguage } from './core';
+import { getLangFromElement } from "./utils";
+import { switchLanguage, restoreLanguage } from "./core";
 
 /**
  * Initializes the language module

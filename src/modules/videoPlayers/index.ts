@@ -11,14 +11,10 @@ import {
   loadYouTubeAPI,
   loadVimeoAPI,
   loadDailymotionAPI,
-} from './apiLoaders';
-import {
-  initializePlyrPlayers,
-  initializePlayers,
-  pauseAllPlayers,
-} from './playerManagement';
-import { initYouTubeThumbnails } from './thumbnails';
-import type { PlayerInstance } from './types';
+} from "./apiLoaders";
+import { initializePlyrPlayers, initializePlayers, pauseAllPlayers } from "./playerManagement";
+import { initYouTubeThumbnails } from "./thumbnails";
+import type { PlayerInstance } from "./types";
 
 export function initVideoPlayers(): void {
   // Initialize YouTube thumbnail upgrades

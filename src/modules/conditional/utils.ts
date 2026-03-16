@@ -16,7 +16,7 @@ export function getUrlParams(): URLSearchParams {
  * @returns Day name (monday, tuesday, etc.)
  */
 export function getDayOfWeek(): string {
-  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
   return days[new Date().getDay()];
 }
 
@@ -95,21 +95,21 @@ export function isDateInRange(date: Date, start?: Date, end?: Date): boolean {
  */
 export function isTimeInRange(time: Date, start?: Date, end?: Date): boolean {
   const timeMinutes = time.getHours() * 60 + time.getMinutes();
-  
+
   if (start) {
     const startMinutes = start.getHours() * 60 + start.getMinutes();
     if (timeMinutes < startMinutes) {
       return false;
     }
   }
-  
+
   if (end) {
     const endMinutes = end.getHours() * 60 + end.getMinutes();
     if (timeMinutes > endMinutes) {
       return false;
     }
   }
-  
+
   return true;
 }
 
