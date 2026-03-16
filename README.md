@@ -243,6 +243,40 @@ Create interactive interfaces where clicking preview elements shows correspondin
 
 ---
 
+### 📄 Pagination
+**Client-side pagination for generic lists**
+
+Paginate any list of items on the client using simple data attributes. Supports numbered pagination, “load more” buttons, and infinite scroll, and integrates cleanly with the standalone filter module.
+
+**Perfect for:** Blog indexes, product grids, search result lists, and any long collection of items.
+
+**Installation:**
+```html
+<script src="https://cdn.jsdelivr.net/npm/@dreher-media/dm-js-lib@latest/dist/standalone/pagination.min.js"></script>
+```
+
+**Example:**
+```html
+<div data-pagination-mode="numbers">
+  <ul data-pagination-list data-pagination-page-size="9">
+    <li>Item 1</li>
+    <li>Item 2</li>
+    <li>Item 3</li>
+  </ul>
+
+  <nav aria-label="List pagination">
+    <button data-pagination-control="prev">Previous</button>
+    <button data-pagination-page="1">1</button>
+    <button data-pagination-page="2">2</button>
+    <button data-pagination-control="next">Next</button>
+  </nav>
+</div>
+```
+
+[📖 Full Documentation →](./src/standalone/pagination/README.md)
+
+---
+
 ## CDN Installation
 
 ### Recommended: Auto-update on patches
