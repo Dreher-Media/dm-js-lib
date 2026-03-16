@@ -76,19 +76,61 @@ const readNumberAttr = (
   defaultValue: number,
 ): number => {
   if (!source) return defaultValue;
-  const value =
-    (source.dataset[attr] as string | undefined) ??
-    source.closest<HTMLElement>(`[data-${attr.replace(/[A-Z]/g, (m) => '-' + m.toLowerCase())}]`)
-      ?.dataset[attr];
+  const attrKey = String(attr);
+  const dataAttrName = `data-${attrKey.replace(/[A-Z]/g, (m: string) => `-${m.toLowerCase()}`)}`;
+
+  const dataset = source.dataset as unknown as Record<string, string | undefined>;
+  const ancestor = source.closest<HTMLElement>(`[${dataAttrName}]`);
+  const ancestorDataset = ancestor?.dataset as unknown as Record<string, string | undefined>;
+
+  const value = dataset[attrKey] ?? ancestorDataset?.[attrKey];
 
   if (!value) return defaultValue;
   const parsed = Number.parseInt(value, 10);
   return Number.isNaN(parsed) || parsed <= 0 ? defaultValue : parsed;
 };
 
+const computeTotalPages = (totalItems: number, pageSize: number, firstPageSize?: number): number => {
+  const first = firstPageSize ?? pageSize;
+  if (totalItems <= 0) return 1;
+  if (first >= totalItems) return 1;
+  const remaining = totalItems - first;
+  return 1 + Math.ceil(remaining / pageSize);
+};
+
+const getVisibleCount = (
+  mode: PaginationMode,
+  totalItems: number,
+  currentPage: number,
+  pageSize: number,
+  firstPageSize?: number,
+): number => {
+  const first = firstPageSize ?? pageSize;
+
+  if (mode === 'numbers') {
+    if (currentPage <= 1) return Math.min(first, totalItems);
+    const startIndex = first + (currentPage - 2) * pageSize;
+    const remaining = Math.max(totalItems - startIndex, 0);
+    return Math.min(pageSize, remaining);
+  }
+
+  if (currentPage <= 1) return Math.min(first, totalItems);
+  return Math.min(first + (currentPage - 1) * pageSize, totalItems);
+};
+
 const resolveOptions = (list: HTMLElement, instanceId: string): PaginationOptions => {
   const mode = readMode(list);
   const pageSize = readNumberAttr(list, 'paginationPageSize', 12);
+  const firstPageSizeRaw = (list.dataset.paginationFirstPageSize ??
+    list.closest<HTMLElement>('[data-pagination-first-page-size]')?.dataset.paginationFirstPageSize) as
+    | string
+    | undefined;
+  const firstPageSizeParsed =
+    firstPageSizeRaw !== undefined ? Number.parseInt(firstPageSizeRaw, 10) : undefined;
+  const firstPageSize =
+    firstPageSizeParsed && !Number.isNaN(firstPageSizeParsed) && firstPageSizeParsed > 0
+      ? firstPageSizeParsed
+      : undefined;
   const startPage = readNumberAttr(list, 'paginationStartPage', 1);
 
   const urlKey =
@@ -97,6 +139,9 @@ const resolveOptions = (list: HTMLElement, instanceId: string): PaginationOption
       : undefined;
 
   const persistKey = list.dataset.paginationPersist || undefined;
+  const hideLoadMoreWhenComplete =
+    list.dataset.paginationHideLoadMoreWhenComplete === 'true' ||
+    list.closest<HTMLElement>('[data-pagination-hide-load-more-when-complete="true"]') !== null;
 
   const infiniteOffsetRaw = list.dataset.paginationInfiniteOffset;
   const infiniteOffset =
@@ -105,10 +150,12 @@ const resolveOptions = (list: HTMLElement, instanceId: string): PaginationOption
   return {
     mode,
     pageSize,
+    firstPageSize,
     startPage,
     urlKey,
     persistKey,
     infiniteOffset: Number.isNaN(infiniteOffset) ? 0.5 : infiniteOffset,
+    hideLoadMoreWhenComplete,
   };
 };
 
@@ -163,13 +210,13 @@ const updateStatusElements = (instance: PaginationInstanceState): void => {
   const { elements, currentPage, totalPages } = instance;
   const totalItems = elements.items.length;
 
-  const visibleCount =
-    instance.options.mode === 'numbers'
-      ? Math.min(
-          instance.options.pageSize,
-          Math.max(totalItems - (currentPage - 1) * instance.options.pageSize, 0),
-        )
-      : Math.min(currentPage * instance.options.pageSize, totalItems);
+  const visibleCount = getVisibleCount(
+    instance.options.mode,
+    totalItems,
+    currentPage,
+    instance.options.pageSize,
+    instance.options.firstPageSize,
+  );
 
   elements.status.currentPage.forEach((el) => {
     el.textContent = String(currentPage);
@@ -219,6 +266,10 @@ const updateControlStates = (instance: PaginationInstanceState): void => {
       } else {
         btn.removeAttribute('data-pagination-complete');
       }
+
+      if (options.hideLoadMoreWhenComplete) {
+        btn.style.display = isComplete ? 'none' : '';
+      }
     });
   }
 
@@ -250,10 +301,10 @@ const updateControlStates = (instance: PaginationInstanceState): void => {
 const applyVisibility = (instance: PaginationInstanceState): void => {
   const { elements, currentPage, options } = instance;
   const { items } = elements;
-  const { pageSize, mode } = options;
+  const { pageSize, firstPageSize, mode } = options;
 
   const totalItems = items.length;
-  const totalPages = Math.max(Math.ceil(totalItems / pageSize), 1);
+  const totalPages = computeTotalPages(totalItems, pageSize, firstPageSize);
   instance.totalPages = totalPages;
 
   const clamp = (value: number, min: number, max: number): number =>
@@ -261,18 +312,27 @@ const applyVisibility = (instance: PaginationInstanceState): void => {
 
   instance.currentPage = clamp(currentPage, 1, totalPages);
 
+  const first = firstPageSize ?? pageSize;
   const maxIndex =
     mode === 'numbers'
-      ? instance.currentPage * pageSize
-      : instance.currentPage * pageSize;
+      ? 0
+      : instance.currentPage <= 1
+        ? first
+        : first + (instance.currentPage - 1) * pageSize;
 
   items.forEach((item, index) => {
     const itemIndex = index + 1;
 
     const isVisible =
       mode === 'numbers'
-        ? itemIndex > (instance.currentPage - 1) * pageSize &&
-          itemIndex <= instance.currentPage * pageSize
+        ? (() => {
+            if (instance.currentPage <= 1) {
+              return itemIndex <= first;
+            }
+            const pageStart = first + (instance.currentPage - 2) * pageSize + 1;
+            const pageEnd = first + (instance.currentPage - 1) * pageSize;
+            return itemIndex >= pageStart && itemIndex <= pageEnd;
+          })()
         : itemIndex <= maxIndex;
 
     if (isVisible) {

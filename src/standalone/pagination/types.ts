@@ -22,10 +22,12 @@ export interface PaginationElements {
 export interface PaginationOptions {
   mode: PaginationMode;
   pageSize: number;
+  firstPageSize?: number;
   startPage: number;
   urlKey?: string;
   persistKey?: string;
   infiniteOffset?: number;
+  hideLoadMoreWhenComplete?: boolean;
 }
 
 export interface PaginationInstanceState {
