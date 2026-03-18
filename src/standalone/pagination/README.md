@@ -154,7 +154,7 @@ Items hidden by the `filter` module via `.filter-hidden` are automatically exclu
 | `data-pagination-page-size` | positive integer | `12` | Number of items per page |
 | `data-pagination-first-page-size` | positive integer | _(unset)_ | Number of items on page 1 (defaults to `data-pagination-page-size`) |
 | `data-pagination-start-page` | positive integer | `1` | Initial page (before URL/storage overrides) |
-| `data-pagination-hide-load-more-when-complete` | `"true"`, `"false"` | `"false"` | Hide the load-more button when everything is visible |
+| `data-pagination-hide-load-more-when-complete` | `"true"`, `"false"` | `"true"` | Hide the load-more button when everything is visible |
 
 Can be set on the list or on an ancestor with `data-pagination-instance`.
 
@@ -182,7 +182,7 @@ Behavior:
 For `load-more`:
 
 - When no more pages are available, the button is disabled and receives `data-pagination-complete="true"`.
-- If `data-pagination-hide-load-more-when-complete="true"` is set, the button is also hidden (`display: none`) once complete.
+- By default, the button is hidden (`display: none`) once complete. Set `data-pagination-hide-load-more-when-complete="false"` to keep it visible (disabled).
 
 ### Infinite Scroll
 

@@ -133,8 +133,8 @@ const resolveOptions = (list: HTMLElement, instanceId: string): PaginationOption
 
   const persistKey = list.dataset.paginationPersist || undefined;
   const hideLoadMoreWhenComplete =
-    list.dataset.paginationHideLoadMoreWhenComplete === "true" ||
-    list.closest<HTMLElement>('[data-pagination-hide-load-more-when-complete="true"]') !== null;
+    list.dataset.paginationHideLoadMoreWhenComplete !== "false" &&
+    list.closest<HTMLElement>('[data-pagination-hide-load-more-when-complete="false"]') === null;
 
   const infiniteOffsetRaw = list.dataset.paginationInfiniteOffset;
   const infiniteOffset =
