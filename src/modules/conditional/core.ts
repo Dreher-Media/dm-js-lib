@@ -20,10 +20,18 @@ import {
  */
 export function parseDateCondition(condition: string): boolean {
   const now = new Date();
+  const trimmed = condition.trim();
+
+  if (trimmed.toLowerCase() === "current-year") {
+    const year = now.getFullYear();
+    const start = new Date(year, 0, 1);
+    const end = new Date(year, 11, 31);
+    return isDateInRange(normalizeDate(now), normalizeDate(start), normalizeDate(end));
+  }
 
   // Handle before: conditions
-  if (condition.startsWith("before:")) {
-    const value = condition.substring(7);
+  if (trimmed.startsWith("before:")) {
+    const value = trimmed.substring(7);
     const targetDate = parseDate(value);
     if (!targetDate) return false;
     // If targetDate includes time, compare with full datetime, otherwise compare dates only
@@ -36,8 +44,8 @@ export function parseDateCondition(condition: string): boolean {
   }
 
   // Handle after: conditions
-  if (condition.startsWith("after:")) {
-    const value = condition.substring(6);
+  if (trimmed.startsWith("after:")) {
+    const value = trimmed.substring(6);
     const targetDate = parseDate(value);
     if (!targetDate) return false;
     // If targetDate includes time, compare with full datetime, otherwise compare dates only
@@ -49,8 +57,8 @@ export function parseDateCondition(condition: string): boolean {
   }
 
   // Handle between: conditions
-  if (condition.startsWith("between:")) {
-    const value = condition.substring(8);
+  if (trimmed.startsWith("between:")) {
+    const value = trimmed.substring(8);
     // Use comma as separator to avoid conflicts with time colons
     const parts = value.split(",");
     if (parts.length !== 2) return false;
@@ -73,8 +81,8 @@ export function parseDateCondition(condition: string): boolean {
   }
 
   // Handle on: conditions
-  if (condition.startsWith("on:")) {
-    const value = condition.substring(3);
+  if (trimmed.startsWith("on:")) {
+    const value = trimmed.substring(3);
     const targetDate = parseDate(value);
     if (!targetDate) return false;
     // If targetDate includes time, compare with full datetime, otherwise compare dates only
@@ -190,6 +198,47 @@ export function parseUrlCondition(condition: string): boolean {
 /** Tag names of elements that are not visible and should not count as "children" */
 const INVISIBLE_CHILD_TAGS = new Set(["script", "style", "template", "link", "noscript"]);
 
+type ConditionalDateToken =
+  | "current-year"
+  | "before:"
+  | "after:"
+  | "between:"
+  | "on:"
+  | "day:";
+
+const CONDITIONAL_DATE_TOKEN_START_RE =
+  /(?:^|\s+)(current-year|before:|after:|between:|on:|day:)/g;
+
+function splitConditionalDateGroup(group: string): string[] {
+  const trimmed = group.trim();
+  if (!trimmed) return [];
+
+  const tokenStarts: number[] = [];
+  const re = new RegExp(CONDITIONAL_DATE_TOKEN_START_RE.source, CONDITIONAL_DATE_TOKEN_START_RE.flags);
+  let match: RegExpExecArray | null;
+
+  while ((match = re.exec(trimmed)) !== null) {
+    const token = match[1] as ConditionalDateToken;
+    const start = match.index + match[0].length - token.length;
+    tokenStarts.push(start);
+  }
+
+  if (tokenStarts.length === 0) return [trimmed];
+
+  // De-dupe + sort defensively (regex should already return in order)
+  const uniqueStarts = Array.from(new Set(tokenStarts)).sort((a, b) => a - b);
+
+  const tokens: string[] = [];
+  for (let i = 0; i < uniqueStarts.length; i++) {
+    const start = uniqueStarts[i];
+    const end = uniqueStarts[i + 1] ?? trimmed.length;
+    const token = trimmed.slice(start, end).trim();
+    if (token) tokens.push(token);
+  }
+
+  return tokens;
+}
+
 /**
  * Returns true if the element is visible (computed style).
  * Used when the conditional element is already visible so we respect CSS/class visibility.
@@ -283,7 +332,7 @@ export function evaluateConditions(element: HTMLElement): boolean {
   const urlAttr = element.dataset.conditionalUrl?.trim();
   const childrenAttr = element.dataset.conditionalChildren?.trim();
 
-  const dateConditions = dateAttr
+  const dateGroups = dateAttr
     ? dateAttr
         .split("|")
         .map((c) => c.trim())
@@ -303,24 +352,28 @@ export function evaluateConditions(element: HTMLElement): boolean {
     : [];
 
   // Evaluate date/time conditions (date and time conditions mixed together)
-  if (dateConditions.length > 0) {
-    const dateResults = dateConditions.map((cond) => {
-      // Determine if condition is date or time based on patterns
-      // Date patterns: before:/after:/between:/on: with dates (YYYY-MM-DD)
-      // Time patterns: before:/after:/between: with times (HH:MM), or day:
+  if (dateGroups.length > 0) {
+    // OR between pipe-separated groups. Within each group, space-separated tokens are AND'd.
+    const groupResults = dateGroups.map((group) => {
+      const tokens = splitConditionalDateGroup(group);
+      if (tokens.length === 0) return false;
 
-      // Check for time-specific patterns first (day: or HH:MM format)
-      const isTimePattern =
-        cond.startsWith("day:") || cond.match(/^(before|after|between):\d{1,2}:\d{2}/); // HH:MM format
+      return tokens.every((cond) => {
+        // Determine if condition is date or time based on patterns
+        // Date patterns: before:/after:/between:/on: with dates (YYYY-MM-DD)
+        // Time patterns: before:/after:/between: with times (HH:MM), or day:
+        const isTimePattern =
+          cond.startsWith("day:") || cond.match(/^(before|after|between):\d{1,2}:\d{2}/); // HH:MM format
 
-      if (isTimePattern) {
-        return parseTimeCondition(cond);
-      }
+        if (isTimePattern) {
+          return parseTimeCondition(cond);
+        }
 
-      // Otherwise try as date condition
-      return parseDateCondition(cond);
+        return parseDateCondition(cond);
+      });
     });
-    if (!dateResults.some((result) => result)) {
+
+    if (!groupResults.some((result) => result)) {
       return false;
     }
   }

@@ -48,6 +48,17 @@ Date and time conditions are combined in the `data-conditional-date` attribute. 
 - **Day conditions**: `day:weekday`, `day:weekend`, `day:monday|friday`
 - **Children conditions**: empty/`self` (current element), `selector` (document), `self selector` (descendant)
 
+### Current Year
+
+Show/hide based on whether the current date is within the current calendar year:
+
+```html
+<div data-conditional-date="current-year">Current year content</div>
+
+<!-- Combine with other conditions -->
+<div data-conditional-date="current-year day:weekday">Current year, weekdays only</div>
+```
+
 ### Absolute Dates
 
 Use `YYYY-MM-DD` format for specific dates, or include time with `YYYY-MM-DD HH:MM` or ISO format `YYYY-MM-DDTHH:MM`:
