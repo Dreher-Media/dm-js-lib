@@ -159,6 +159,21 @@ export function onPause(id: string): void {
 }
 
 /**
+ * Creates a dedicated mount element for external video APIs.
+ * Keeping `.youtube` as a stable wrapper prevents API libraries from replacing
+ * the styled container node itself.
+ */
+function createPlayerMountElement(container: HTMLElement, id: string): HTMLDivElement {
+  container.innerHTML = "";
+  const mountElement = document.createElement("div");
+  mountElement.id = id;
+  mountElement.style.width = "100%";
+  mountElement.style.height = "100%";
+  container.appendChild(mountElement);
+  return mountElement;
+}
+
+/**
  * Initializes video players (YouTube, Vimeo, Dailymotion, ARD Mediathek, other)
  */
 export function initializePlayers(
@@ -211,9 +226,8 @@ export function initializePlayers(
 
       // YouTube Player
       if (type === "youtube" && window.YT) {
-        element.id = id;
-        element.innerHTML = "";
-        const player = new window.YT.Player(id, {
+        const mountElement = createPlayerMountElement(element, id);
+        const player = new window.YT.Player(mountElement.id, {
           videoId: videoId,
           playerVars: {
             start: time,
@@ -242,12 +256,8 @@ export function initializePlayers(
       }
       // Vimeo Player
       else if (type === "vimeo" && window.Vimeo) {
-        const container = document.getElementById(id);
-        if (container) {
-          container.innerHTML = "";
-        }
-
-        const player = new window.Vimeo.Player(id, {
+        const mountElement = createPlayerMountElement(element, id);
+        const player = new window.Vimeo.Player(mountElement.id, {
           id: videoId,
           autoplay: true,
           start: time,
@@ -260,8 +270,9 @@ export function initializePlayers(
       }
       // Dailymotion Player
       else if (type === "dailymotion" && window.dailymotion) {
+        const mountElement = createPlayerMountElement(element, id);
         window.dailymotion
-          .createPlayer(id, {
+          .createPlayer(mountElement.id, {
             video: videoId,
             params: {
               autoplay: 1,
