@@ -5,43 +5,6 @@
 
 import type { PlayerInstance } from './types';
 
-/** Class name for the overlay that hides YouTube ads/recommendations when paused */
-const YOUTUBE_PAUSE_OVERLAY_CLASS = "youtube-pause-overlay";
-
-/**
- * Removes the custom pause overlay from a container if present
- */
-function removeYouTubePauseOverlay(container: HTMLElement): void {
-  const overlay = container.querySelector(`.${YOUTUBE_PAUSE_OVERLAY_CLASS}`);
-  overlay?.remove();
-}
-
-/**
- * Shows a clickable overlay over the YouTube player to hide ads/recommendations when paused.
- * Clicking the overlay removes it and resumes playback.
- */
-function showYouTubePauseOverlay(
-  container: HTMLElement,
-  player: { playVideo: () => void }
-): void {
-  removeYouTubePauseOverlay(container);
-  const overlay = document.createElement("div");
-  overlay.className = YOUTUBE_PAUSE_OVERLAY_CLASS;
-  overlay.setAttribute("aria-hidden", "true");
-  Object.assign(overlay.style, {
-    position: "absolute",
-    inset: "0",
-    cursor: "pointer",
-    zIndex: "1",
-  });
-  overlay.addEventListener("click", () => {
-    removeYouTubePauseOverlay(container);
-    player.playVideo();
-  });
-  container.style.position = "relative";
-  container.appendChild(overlay);
-}
-
 // Initialize global videoSwipers array on window object
 if (typeof window !== "undefined" && typeof window.videoSwipers === "undefined") {
   window.videoSwipers = [];
@@ -239,13 +202,11 @@ export function initializePlayers(
             },
             onStateChange: (event: { data: number; target: { playVideo: () => void } }) => {
               if (event.data === window.YT!.PlayerState.PLAYING) {
-                removeYouTubePauseOverlay(element);
                 onPlay(id, plyrPlayers, players);
               } else if (
                 event.data === window.YT!.PlayerState.PAUSED ||
                 event.data === window.YT!.PlayerState.ENDED
               ) {
-                showYouTubePauseOverlay(element, event.target);
                 onPause(id);
               }
             },
