@@ -254,12 +254,15 @@ const updateControlStates = (instance: PaginationInstanceState): void => {
     setDisabled(elements.controls.next, currentPage >= totalPages);
     setDisabled(elements.controls.last, currentPage >= totalPages);
 
-    // Keep first/last visible, but hide prev/next at boundaries.
+    // Keep first/last visible, but hide prev/next at boundaries
+    // without collapsing their layout space.
     elements.controls.prev.forEach((btn) => {
-      btn.style.display = isAtStart ? "none" : "";
+      btn.style.visibility = isAtStart ? "hidden" : "";
+      btn.style.pointerEvents = isAtStart ? "none" : "";
     });
     elements.controls.next.forEach((btn) => {
-      btn.style.display = isAtEnd ? "none" : "";
+      btn.style.visibility = isAtEnd ? "hidden" : "";
+      btn.style.pointerEvents = isAtEnd ? "none" : "";
     });
   } else {
     const isComplete = currentPage >= totalPages;

@@ -178,7 +178,7 @@ Behavior:
 - Disabled controls get:
   - `.pagination-disabled` and `.is-disabled` classes
   - `aria-disabled="true"`
-- In numbered mode, `prev` is hidden on the first page and `next` is hidden on the last page.
+- In numbered mode, `prev` is visually hidden on the first page and `next` is visually hidden on the last page (using `visibility: hidden`, so layout space stays reserved).
 
 For `load-more`:
 
