@@ -246,10 +246,21 @@ const updateControlStates = (instance: PaginationInstanceState): void => {
   };
 
   if (options.mode === "numbers") {
+    const isAtStart = currentPage <= 1;
+    const isAtEnd = currentPage >= totalPages;
+
     setDisabled(elements.controls.prev, currentPage <= 1);
     setDisabled(elements.controls.first, currentPage <= 1);
     setDisabled(elements.controls.next, currentPage >= totalPages);
     setDisabled(elements.controls.last, currentPage >= totalPages);
+
+    // Keep first/last visible, but hide prev/next at boundaries.
+    elements.controls.prev.forEach((btn) => {
+      btn.style.display = isAtStart ? "none" : "";
+    });
+    elements.controls.next.forEach((btn) => {
+      btn.style.display = isAtEnd ? "none" : "";
+    });
   } else {
     const isComplete = currentPage >= totalPages;
     setDisabled(elements.controls.loadMore, isComplete);
