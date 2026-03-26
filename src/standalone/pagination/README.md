@@ -13,6 +13,7 @@ This module paginates a list of items in the browser. It supports:
 - **Numbered pagination** – classic pages with previous/next/first/last and numbered buttons.
 - **Load more** – progressively reveals more items when a button is clicked.
 - **Infinite scroll** – automatically loads more items as the user scrolls near the end.
+- **Animated transitions** – built-in animation presets (WAAPI) with optional CSS-engine override.
 
 It works on any DOM list (e.g. `ul`, `div`, `section`) and is driven entirely by `data-` attributes.
 
@@ -157,6 +158,27 @@ Items hidden by the `filter` module via `.filter-hidden` are automatically exclu
 | `data-pagination-hide-load-more-when-complete` | `"true"`, `"false"` | `"true"` | Hide the load-more button when everything is visible |
 
 Can be set on the list or on an ancestor with `data-pagination-instance`.
+
+### Animation
+
+| Attribute | Values | Default | Description |
+|----------|--------|---------|-------------|
+| `data-pagination-animate` | `"true"`, `"false"` | `"true"` | Enable/disable page transition animations |
+| `data-pagination-animation-engine` | `"js"`, `"css"` | `"js"` | Animation engine (`js` uses built-in WAAPI presets) |
+| `data-pagination-animation-style` | `"fade"`, `"slide-up"`, `"slide-left"`, `"scale"`, `"none"` | `"fade"` | Transition style preset |
+| `data-pagination-animation-scope` | `"list"`, `"items"`, `"both"` | `"items"` | Animate list container, items, or both |
+| `data-pagination-animation-duration` | positive integer (ms) | `220` | Transition duration |
+| `data-pagination-animation-stagger` | positive integer (ms) | `30` | Delay between item animations (`items`/`both`) |
+| `data-pagination-animation-easing` | CSS easing string | `cubic-bezier(0.22, 1, 0.36, 1)` | Timing function |
+
+Notes:
+
+- `js` engine works out of the box without custom CSS.
+- `css` engine applies lifecycle classes for custom choreography:
+  - list: `.pagination-list-enter`, `.pagination-list-enter-active`, `.pagination-list-exit`, `.pagination-list-exit-active`
+  - items: `.pagination-item-enter`, `.pagination-item-enter-active`, `.pagination-item-exit`, `.pagination-item-exit-active`
+- For `load-more` and `infinite`, only newly revealed items animate.
+- If `prefers-reduced-motion: reduce` is enabled, animations are skipped.
 
 ### Controls
 
@@ -354,6 +376,64 @@ The module adds/toggles classes you can style:
 ```
 
 You have full control over layout and design; the module only manages classes and attributes.
+
+### Animation Examples
+
+Built-in JS preset (no extra CSS required):
+
+```html
+<div
+  data-pagination-mode="numbers"
+  data-pagination-animate="true"
+  data-pagination-animation-style="slide-up"
+  data-pagination-animation-scope="both"
+>
+  <ul data-pagination-list data-pagination-page-size="9">
+    <!-- items -->
+  </ul>
+</div>
+```
+
+CSS-engine custom example:
+
+```html
+<div
+  data-pagination-mode="numbers"
+  data-pagination-animation-engine="css"
+  data-pagination-animation-scope="items"
+>
+  <ul data-pagination-list data-pagination-page-size="9">
+    <!-- items -->
+  </ul>
+</div>
+```
+
+```css
+.pagination-item-enter-active,
+.pagination-item-exit-active {
+  transition: opacity var(--pagination-anim-duration), transform var(--pagination-anim-duration);
+}
+
+.pagination-item-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.pagination-item-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pagination-item-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pagination-item-exit-active {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+```
 
 ## Standalone Usage
 

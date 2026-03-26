@@ -1,4 +1,7 @@
 export type PaginationMode = "numbers" | "load-more" | "infinite";
+export type PaginationAnimationEngine = "js" | "css";
+export type PaginationAnimationStyle = "fade" | "slide-up" | "slide-left" | "scale" | "none";
+export type PaginationAnimationScope = "list" | "items" | "both";
 
 export interface PaginationElements {
   list: HTMLElement;
@@ -28,6 +31,13 @@ export interface PaginationOptions {
   persistKey?: string;
   infiniteOffset?: number;
   hideLoadMoreWhenComplete?: boolean;
+  animate: boolean;
+  animationEngine: PaginationAnimationEngine;
+  animationStyle: PaginationAnimationStyle;
+  animationScope: PaginationAnimationScope;
+  animationDuration: number;
+  animationStagger: number;
+  animationEasing: string;
 }
 
 export interface PaginationInstanceState {
@@ -37,4 +47,6 @@ export interface PaginationInstanceState {
   currentPage: number;
   totalPages: number;
   observer?: IntersectionObserver;
+  animationToken?: number;
+  activeAnimations?: Animation[];
 }

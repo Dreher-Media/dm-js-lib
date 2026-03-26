@@ -10,7 +10,14 @@
  * Configuration is done via data attributes on the list, controls, and status elements.
  */
 
-import type { PaginationInstanceState, PaginationMode, PaginationOptions } from "./types";
+import type {
+  PaginationAnimationEngine,
+  PaginationAnimationScope,
+  PaginationAnimationStyle,
+  PaginationInstanceState,
+  PaginationMode,
+  PaginationOptions,
+} from "./types";
 
 type InstancesMap = Map<string, PaginationInstanceState>;
 
@@ -18,6 +25,12 @@ const DEFAULT_INSTANCE_ID = "default";
 const PAGINATION_HIDDEN_CLASS = "pagination-hidden";
 const PAGINATION_ACTIVE_CLASS = "pagination-active";
 const PAGINATION_DISABLED_CLASS = "pagination-disabled";
+const ANIMATION_TIMEOUT_BUFFER_MS = 80;
+const DEFAULT_ANIMATION_DURATION = 220;
+const DEFAULT_ANIMATION_STAGGER = 30;
+const DEFAULT_ANIMATION_EASING = "cubic-bezier(0.22, 1, 0.36, 1)";
+const MAX_ANIMATED_ITEMS = 60;
+const LARGE_BATCH_STAGGER_CUTOFF = 24;
 
 const instances: InstancesMap = new Map();
 
@@ -63,21 +76,29 @@ const readMode = (source: HTMLElement | null): PaginationMode => {
   return "numbers";
 };
 
-const readNumberAttr = (
+const readStringAttr = (
   source: HTMLElement | null,
-  attr: keyof HTMLElement["dataset"],
-  defaultValue: number
-): number => {
-  if (!source) return defaultValue;
+  attr: keyof HTMLElement["dataset"]
+): string | undefined => {
+  if (!source) return undefined;
   const attrKey = String(attr);
   const dataAttrName = `data-${attrKey.replace(/[A-Z]/g, (m: string) => `-${m.toLowerCase()}`)}`;
 
   const dataset = source.dataset as unknown as Record<string, string | undefined>;
   const ancestor = source.closest<HTMLElement>(`[${dataAttrName}]`);
   const ancestorDataset = ancestor?.dataset as unknown as Record<string, string | undefined>;
-
   const value = dataset[attrKey] ?? ancestorDataset?.[attrKey];
 
+  if (!value || value.trim() === "") return undefined;
+  return value.trim();
+};
+
+const readNumberAttr = (
+  source: HTMLElement | null,
+  attr: keyof HTMLElement["dataset"],
+  defaultValue: number
+): number => {
+  const value = readStringAttr(source, attr);
   if (!value) return defaultValue;
   const parsed = Number.parseInt(value, 10);
   return Number.isNaN(parsed) || parsed <= 0 ? defaultValue : parsed;
@@ -115,12 +136,41 @@ const getVisibleCount = (
   return Math.min(first + (currentPage - 1) * pageSize, totalItems);
 };
 
+const readAnimationEngine = (list: HTMLElement): PaginationAnimationEngine => {
+  const value = readStringAttr(list, "paginationAnimationEngine");
+  return value === "css" ? "css" : "js";
+};
+
+const readAnimationStyle = (list: HTMLElement): PaginationAnimationStyle => {
+  const value = readStringAttr(list, "paginationAnimationStyle");
+  if (value === "slide-up" || value === "slide-left" || value === "scale" || value === "none") {
+    return value;
+  }
+  return "fade";
+};
+
+const readAnimationScope = (list: HTMLElement): PaginationAnimationScope => {
+  const value = readStringAttr(list, "paginationAnimationScope");
+  if (value === "list" || value === "both") return value;
+  return "items";
+};
+
+const shouldReduceMotion = (): boolean => {
+  if (typeof window === "undefined" || !window.matchMedia) return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+};
+
+const applyAnimationVars = (instance: PaginationInstanceState): void => {
+  const list = instance.elements.list;
+  list.style.setProperty("--pagination-anim-duration", `${instance.options.animationDuration}ms`);
+  list.style.setProperty("--pagination-anim-stagger", `${instance.options.animationStagger}ms`);
+  list.style.setProperty("--pagination-anim-easing", instance.options.animationEasing);
+};
+
 const resolveOptions = (list: HTMLElement, instanceId: string): PaginationOptions => {
   const mode = readMode(list);
   const pageSize = readNumberAttr(list, "paginationPageSize", 12);
-  const firstPageSizeRaw = (list.dataset.paginationFirstPageSize ??
-    list.closest<HTMLElement>("[data-pagination-first-page-size]")?.dataset
-      .paginationFirstPageSize) as string | undefined;
+  const firstPageSizeRaw = readStringAttr(list, "paginationFirstPageSize");
   const firstPageSizeParsed =
     firstPageSizeRaw !== undefined ? Number.parseInt(firstPageSizeRaw, 10) : undefined;
   const firstPageSize =
@@ -139,6 +189,24 @@ const resolveOptions = (list: HTMLElement, instanceId: string): PaginationOption
   const infiniteOffsetRaw = list.dataset.paginationInfiniteOffset;
   const infiniteOffset =
     infiniteOffsetRaw !== undefined ? Number.parseFloat(infiniteOffsetRaw) : 0.5;
+  const animate =
+    list.dataset.paginationAnimate !== "false" &&
+    list.closest<HTMLElement>('[data-pagination-animate="false"]') === null;
+  const animationEngine = readAnimationEngine(list);
+  const animationStyle = readAnimationStyle(list);
+  const animationScope = readAnimationScope(list);
+  const animationDuration = readNumberAttr(
+    list,
+    "paginationAnimationDuration",
+    DEFAULT_ANIMATION_DURATION
+  );
+  const animationStagger = readNumberAttr(
+    list,
+    "paginationAnimationStagger",
+    DEFAULT_ANIMATION_STAGGER
+  );
+  const animationEasing =
+    readStringAttr(list, "paginationAnimationEasing") ?? DEFAULT_ANIMATION_EASING;
 
   return {
     mode,
@@ -149,6 +217,13 @@ const resolveOptions = (list: HTMLElement, instanceId: string): PaginationOption
     persistKey,
     infiniteOffset: Number.isNaN(infiniteOffset) ? 0.5 : infiniteOffset,
     hideLoadMoreWhenComplete,
+    animate,
+    animationEngine,
+    animationStyle,
+    animationScope,
+    animationDuration,
+    animationStagger,
+    animationEasing,
   };
 };
 
@@ -303,7 +378,233 @@ const updateControlStates = (instance: PaginationInstanceState): void => {
   });
 };
 
-const applyVisibility = (instance: PaginationInstanceState): void => {
+const waitForAnimationGroup = async (animations: Animation[], timeoutMs: number): Promise<void> => {
+  if (animations.length === 0) return;
+
+  await Promise.race([
+    Promise.all(
+      animations.map((animation) =>
+        animation.finished.catch(() => {
+          // Ignore interrupted animations.
+        })
+      )
+    ).then(() => undefined),
+    new Promise<void>((resolve) => {
+      window.setTimeout(resolve, timeoutMs);
+    }),
+  ]);
+};
+
+const cancelInFlightAnimations = (instance: PaginationInstanceState): void => {
+  if (!instance.activeAnimations || instance.activeAnimations.length === 0) return;
+  instance.activeAnimations.forEach((animation) => {
+    try {
+      animation.cancel();
+    } catch {
+      // no-op
+    }
+  });
+  instance.activeAnimations = [];
+};
+
+const getAnimationKeyframes = (
+  style: PaginationAnimationStyle,
+  phase: "enter" | "exit"
+): Keyframe[] => {
+  if (style === "none") {
+    return phase === "enter" ? [{ opacity: 1 }, { opacity: 1 }] : [{ opacity: 1 }, { opacity: 1 }];
+  }
+
+  if (style === "slide-up") {
+    return phase === "enter"
+      ? [{ opacity: 0, transform: "translateY(12px)" }, { opacity: 1, transform: "translateY(0)" }]
+      : [{ opacity: 1, transform: "translateY(0)" }, { opacity: 0, transform: "translateY(-12px)" }];
+  }
+
+  if (style === "slide-left") {
+    return phase === "enter"
+      ? [{ opacity: 0, transform: "translateX(12px)" }, { opacity: 1, transform: "translateX(0)" }]
+      : [{ opacity: 1, transform: "translateX(0)" }, { opacity: 0, transform: "translateX(-12px)" }];
+  }
+
+  if (style === "scale") {
+    return phase === "enter"
+      ? [{ opacity: 0, transform: "scale(0.96)" }, { opacity: 1, transform: "scale(1)" }]
+      : [{ opacity: 1, transform: "scale(1)" }, { opacity: 0, transform: "scale(0.96)" }];
+  }
+
+  // fade
+  return phase === "enter" ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 1 }, { opacity: 0 }];
+};
+
+const animateElements = (
+  elements: HTMLElement[],
+  keyframes: Keyframe[],
+  duration: number,
+  easing: string,
+  stagger = 0
+): Animation[] => {
+  if (duration <= 0) return [];
+
+  const animations: Animation[] = [];
+  elements
+    .filter((element) => element.isConnected)
+    .forEach((element, index) => {
+      element.style.willChange = "opacity, transform";
+
+    const animation = element.animate(keyframes, {
+      duration,
+      easing,
+      delay: stagger > 0 ? index * stagger : 0,
+      fill: "both",
+    });
+    animation.finished.finally(() => {
+      element.style.willChange = "";
+    });
+    animations.push(animation);
+  });
+  return animations;
+};
+
+const setHiddenState = (element: HTMLElement, hidden: boolean): void => {
+  if (hidden) {
+    element.classList.add(PAGINATION_HIDDEN_CLASS);
+  } else {
+    element.classList.remove(PAGINATION_HIDDEN_CLASS);
+  }
+};
+
+const applyCssAnimationLifecycle = async (
+  instance: PaginationInstanceState,
+  listExit: boolean,
+  listEnter: boolean,
+  enteringItems: HTMLElement[],
+  exitingItems: HTMLElement[],
+  applyVisibilityState: () => void
+): Promise<void> => {
+  const { list } = instance.elements;
+  const duration = instance.options.animationDuration;
+  const stagger =
+    Math.max(enteringItems.length, exitingItems.length) > LARGE_BATCH_STAGGER_CUTOFF
+      ? 0
+      : instance.options.animationStagger;
+  const timeout = duration + Math.max(enteringItems.length, exitingItems.length) * stagger + ANIMATION_TIMEOUT_BUFFER_MS;
+
+  if (listExit) {
+    list.classList.add("pagination-list-exit");
+    list.classList.add("pagination-list-exit-active");
+  }
+  exitingItems.forEach((item) => {
+    item.classList.add("pagination-item-exit");
+    item.classList.add("pagination-item-exit-active");
+  });
+
+  await new Promise<void>((resolve) => window.setTimeout(resolve, timeout));
+
+  if (listExit) {
+    list.classList.remove("pagination-list-exit");
+    list.classList.remove("pagination-list-exit-active");
+  }
+  exitingItems.forEach((item) => {
+    item.classList.remove("pagination-item-exit");
+    item.classList.remove("pagination-item-exit-active");
+  });
+
+  applyVisibilityState();
+
+  if (listEnter) {
+    list.classList.add("pagination-list-enter");
+    list.classList.add("pagination-list-enter-active");
+  }
+  enteringItems.forEach((item) => {
+    item.classList.add("pagination-item-enter");
+    item.classList.add("pagination-item-enter-active");
+  });
+
+  await new Promise<void>((resolve) => window.setTimeout(resolve, timeout));
+
+  if (listEnter) {
+    list.classList.remove("pagination-list-enter");
+    list.classList.remove("pagination-list-enter-active");
+  }
+  enteringItems.forEach((item) => {
+    item.classList.remove("pagination-item-enter");
+    item.classList.remove("pagination-item-enter-active");
+  });
+};
+
+const applyJsAnimationPreset = async (
+  instance: PaginationInstanceState,
+  listExit: boolean,
+  listEnter: boolean,
+  enteringItems: HTMLElement[],
+  exitingItems: HTMLElement[],
+  applyVisibilityState: () => void
+): Promise<void> => {
+  const { animationStyle, animationDuration, animationEasing } = instance.options;
+  const animationStagger =
+    Math.max(enteringItems.length, exitingItems.length) > LARGE_BATCH_STAGGER_CUTOFF
+      ? 0
+      : instance.options.animationStagger;
+  const timeout =
+    animationDuration +
+    Math.max(enteringItems.length, exitingItems.length) * animationStagger +
+    ANIMATION_TIMEOUT_BUFFER_MS;
+
+  const exitAnimations: Animation[] = [];
+  if (listExit) {
+    exitAnimations.push(
+      ...animateElements(
+        [instance.elements.list],
+        getAnimationKeyframes(animationStyle, "exit"),
+        animationDuration,
+        animationEasing
+      )
+    );
+  }
+  if (exitingItems.length > 0) {
+    exitAnimations.push(
+      ...animateElements(
+        exitingItems,
+        getAnimationKeyframes(animationStyle, "exit"),
+        animationDuration,
+        animationEasing,
+        animationStagger
+      )
+    );
+  }
+  instance.activeAnimations = exitAnimations;
+  await waitForAnimationGroup(exitAnimations, timeout);
+
+  applyVisibilityState();
+
+  const enterAnimations: Animation[] = [];
+  if (listEnter) {
+    enterAnimations.push(
+      ...animateElements(
+        [instance.elements.list],
+        getAnimationKeyframes(animationStyle, "enter"),
+        animationDuration,
+        animationEasing
+      )
+    );
+  }
+  if (enteringItems.length > 0) {
+    enterAnimations.push(
+      ...animateElements(
+        enteringItems,
+        getAnimationKeyframes(animationStyle, "enter"),
+        animationDuration,
+        animationEasing,
+        animationStagger
+      )
+    );
+  }
+  instance.activeAnimations = enterAnimations;
+  await waitForAnimationGroup(enterAnimations, timeout);
+};
+
+const applyVisibility = async (instance: PaginationInstanceState): Promise<void> => {
   const { elements, currentPage, options } = instance;
   const { items } = elements;
   const { pageSize, firstPageSize, mode } = options;
@@ -325,7 +626,7 @@ const applyVisibility = (instance: PaginationInstanceState): void => {
         ? first
         : first + (instance.currentPage - 1) * pageSize;
 
-  items.forEach((item, index) => {
+  const visibilityChanges = items.map((item, index) => {
     const itemIndex = index + 1;
 
     const isVisible =
@@ -339,13 +640,75 @@ const applyVisibility = (instance: PaginationInstanceState): void => {
             return itemIndex >= pageStart && itemIndex <= pageEnd;
           })()
         : itemIndex <= maxIndex;
-
-    if (isVisible) {
-      item.classList.remove(PAGINATION_HIDDEN_CLASS);
-    } else {
-      item.classList.add(PAGINATION_HIDDEN_CLASS);
-    }
+    const wasVisible = !item.classList.contains(PAGINATION_HIDDEN_CLASS);
+    return { item, isVisible, wasVisible };
   });
+
+  const enteringItems = visibilityChanges
+    .filter((entry) => entry.isVisible && !entry.wasVisible)
+    .map((entry) => entry.item);
+  const exitingItemsRaw = visibilityChanges
+    .filter((entry) => !entry.isVisible && entry.wasVisible)
+    .map((entry) => entry.item);
+  const exitingItems = mode === "numbers" ? exitingItemsRaw : [];
+  const applyVisibilityState = (): void => {
+    visibilityChanges.forEach((entry) => {
+      setHiddenState(entry.item, !entry.isVisible);
+    });
+  };
+
+  const isAnimated =
+    options.animate &&
+    options.animationStyle !== "none" &&
+    !shouldReduceMotion() &&
+    (enteringItems.length > 0 || exitingItems.length > 0);
+
+  const token = (instance.animationToken ?? 0) + 1;
+  instance.animationToken = token;
+  cancelInFlightAnimations(instance);
+
+  if (isAnimated) {
+    const listExit = options.animationScope === "list" || options.animationScope === "both";
+    const listEnter = listExit;
+    const itemScope = options.animationScope === "items" || options.animationScope === "both";
+    let scopedEntering = itemScope ? enteringItems : [];
+    let scopedExiting = itemScope ? exitingItems : [];
+
+    // Protect performance on very large transitions:
+    // keep list-level animation, but limit expensive per-item animations.
+    if (scopedEntering.length + scopedExiting.length > MAX_ANIMATED_ITEMS) {
+      scopedEntering = [];
+      scopedExiting = [];
+    }
+
+    if (options.animationEngine === "css") {
+      await applyCssAnimationLifecycle(
+        instance,
+        listExit,
+        listEnter,
+        scopedEntering,
+        scopedExiting,
+        applyVisibilityState
+      );
+    } else {
+      await applyJsAnimationPreset(
+        instance,
+        listExit,
+        listEnter,
+        scopedEntering,
+        scopedExiting,
+        applyVisibilityState
+      );
+    }
+  } else {
+    applyVisibilityState();
+  }
+
+  if (instance.animationToken !== token) {
+    return;
+  }
+
+  cancelInFlightAnimations(instance);
 
   updateStatusElements(instance);
   updateControlStates(instance);
@@ -502,9 +865,10 @@ const initInstance = (list: HTMLElement): void => {
 
   restoreInitialPage(state);
   instances.set(instanceId, state);
+  applyAnimationVars(state);
 
   createObserver(state);
-  applyVisibility(state);
+  void applyVisibility(state);
   persistPage(state);
 };
 
@@ -515,7 +879,7 @@ const reinitializeInstance = (instance: PaginationInstanceState): void => {
   const items = collectItems(list);
   instance.elements.items = items;
 
-  applyVisibility(instance);
+  void applyVisibility(instance);
   createObserver(instance);
 };
 
@@ -524,7 +888,7 @@ const goToPageInternal = (instanceId: string, page: number): void => {
   if (!instance) return;
 
   instance.currentPage = page;
-  applyVisibility(instance);
+  void applyVisibility(instance);
   persistPage(instance);
 };
 

@@ -263,7 +263,7 @@ Create interactive interfaces where clicking preview elements shows correspondin
 
 **Client-side pagination for generic lists**
 
-Paginate any list of items on the client using simple data attributes. Supports numbered pagination, “load more” buttons, and infinite scroll, and integrates cleanly with the standalone filter module.
+Paginate any list of items on the client using simple data attributes. Supports numbered pagination, “load more” buttons, infinite scroll, and configurable page-transition animations, and integrates cleanly with the standalone filter module.
 
 **Perfect for:** Blog indexes, product grids, search result lists, and any long collection of items.
 
