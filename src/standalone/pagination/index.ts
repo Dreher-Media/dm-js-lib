@@ -45,6 +45,14 @@ const MAX_ANIMATED_ITEMS = 60;
 const LARGE_BATCH_STAGGER_CUTOFF = 24;
 
 const instances: InstancesMap = new Map();
+const NON_RENDERED_ITEM_TAGS = new Set([
+  "SCRIPT",
+  "STYLE",
+  "TEMPLATE",
+  "NOSCRIPT",
+  "LINK",
+  "META",
+]);
 
 const getInstanceId = (element: HTMLElement | null): string => {
   if (!element) return DEFAULT_INSTANCE_ID;
@@ -61,6 +69,7 @@ const getInstanceId = (element: HTMLElement | null): string => {
 };
 
 const isEligibleItem = (el: HTMLElement): boolean => {
+  if (NON_RENDERED_ITEM_TAGS.has(el.tagName)) return false;
   if (el.classList.contains("pagination-exclude")) return false;
   if (el.classList.contains("filter-hidden")) return false;
   return true;

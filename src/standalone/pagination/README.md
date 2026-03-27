@@ -147,6 +147,8 @@ If no `data-pagination-item` elements are found inside the list, **all direct ch
 
 Items hidden by the `filter` module via `.filter-hidden` are automatically excluded from pagination.
 
+For safety, non-rendered direct children such as `<script>`, `<style>`, `<template>`, `<noscript>`, `<link>`, and `<meta>` are automatically excluded.
+
 ### Modes & Page Size
 
 | Attribute | Values | Default | Description |
