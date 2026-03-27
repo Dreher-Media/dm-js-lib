@@ -9,6 +9,7 @@ import { initTabs } from "./modules/tabs";
 import { initLang } from "./modules/lang";
 import { initVideoPlayers } from "./modules/videoPlayers";
 import { initConditional } from "./modules/conditional";
+import { initAccordion } from "./modules/accordion";
 
 // Initialize all modules
 initCookieConsent();
@@ -17,3 +18,4 @@ initTabs();
 initLang();
 initVideoPlayers();
 initConditional();
+initAccordion();
