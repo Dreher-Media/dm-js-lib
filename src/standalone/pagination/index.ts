@@ -722,6 +722,11 @@ const applyVisibility = async (instance: PaginationInstanceState): Promise<void>
 
   const token = (instance.animationToken ?? 0) + 1;
   instance.animationToken = token;
+  const isStaleToken = (): boolean => instance.animationToken !== token;
+  const applyVisibilityStateIfCurrent = (): void => {
+    if (isStaleToken()) return;
+    applyVisibilityState();
+  };
   cancelInFlightAnimations(instance);
 
   if (isAnimated) {
@@ -745,7 +750,7 @@ const applyVisibility = async (instance: PaginationInstanceState): Promise<void>
         listEnter,
         scopedEntering,
         scopedExiting,
-        applyVisibilityState
+        applyVisibilityStateIfCurrent
       );
     } else {
       await applyJsAnimationPreset(
@@ -754,14 +759,14 @@ const applyVisibility = async (instance: PaginationInstanceState): Promise<void>
         listEnter,
         scopedEntering,
         scopedExiting,
-        applyVisibilityState
+        applyVisibilityStateIfCurrent
       );
     }
   } else {
-    applyVisibilityState();
+    applyVisibilityStateIfCurrent();
   }
 
-  if (instance.animationToken !== token) {
+  if (isStaleToken()) {
     return;
   }
 
