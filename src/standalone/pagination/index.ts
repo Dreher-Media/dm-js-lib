@@ -917,6 +917,21 @@ const destroyObserver = (instance: PaginationInstanceState): void => {
   }
 };
 
+const mutationTouchesInstance = (
+  mutation: MutationRecord,
+  instance: PaginationInstanceState
+): boolean => {
+  const { list } = instance.elements;
+  const target = mutation.target;
+  if (target === list) return true;
+  if (target instanceof Node && list.contains(target)) return true;
+
+  const touchesNodes = (nodes: NodeList): boolean =>
+    Array.from(nodes).some((node) => node === list || (node instanceof Node && list.contains(node)));
+
+  return touchesNodes(mutation.addedNodes) || touchesNodes(mutation.removedNodes);
+};
+
 const initInstance = (list: HTMLElement): void => {
   const instanceId = getInstanceId(list);
   const options = resolveOptions(list, instanceId);
@@ -1074,8 +1089,19 @@ function initializePaginationModule(): void {
   attachControlHandlers();
   isInitialized = true;
 
-  const observer = new MutationObserver(() => {
-    instances.forEach((instance) => {
+  const observer = new MutationObserver((mutations) => {
+    // Avoid global refresh storms caused by unrelated DOM updates.
+    // Only refresh instances whose list subtree was actually mutated.
+    const dirtyInstances = new Set<PaginationInstanceState>();
+    mutations.forEach((mutation) => {
+      instances.forEach((instance) => {
+        if (mutationTouchesInstance(mutation, instance)) {
+          dirtyInstances.add(instance);
+        }
+      });
+    });
+
+    dirtyInstances.forEach((instance) => {
       reinitializeInstance(instance);
     });
   });
