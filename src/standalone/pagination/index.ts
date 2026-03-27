@@ -25,6 +25,18 @@ const DEFAULT_INSTANCE_ID = "default";
 const PAGINATION_HIDDEN_CLASS = "pagination-hidden";
 const PAGINATION_ACTIVE_CLASS = "pagination-active";
 const PAGINATION_DISABLED_CLASS = "pagination-disabled";
+const PAGINATION_LIST_ANIMATION_CLASSES = [
+  "pagination-list-enter",
+  "pagination-list-enter-active",
+  "pagination-list-exit",
+  "pagination-list-exit-active",
+] as const;
+const PAGINATION_ITEM_ANIMATION_CLASSES = [
+  "pagination-item-enter",
+  "pagination-item-enter-active",
+  "pagination-item-exit",
+  "pagination-item-exit-active",
+] as const;
 const ANIMATION_TIMEOUT_BUFFER_MS = 80;
 const DEFAULT_ANIMATION_DURATION = 220;
 const DEFAULT_ANIMATION_STAGGER = 30;
@@ -452,25 +464,56 @@ const animateElements = (
     .forEach((element, index) => {
       element.style.willChange = "opacity, transform";
 
-    const animation = element.animate(keyframes, {
-      duration,
-      easing,
-      delay: stagger > 0 ? index * stagger : 0,
-      fill: "both",
+      const animation = element.animate(keyframes, {
+        duration,
+        easing,
+        delay: stagger > 0 ? index * stagger : 0,
+        fill: "both",
+      });
+      animation.finished.finally(() => {
+        element.style.willChange = "";
+      });
+      animations.push(animation);
     });
-    animation.finished.finally(() => {
-      element.style.willChange = "";
-    });
-    animations.push(animation);
-  });
   return animations;
+};
+
+const clearTransientAnimationStyles = (element: HTMLElement): void => {
+  element.style.willChange = "";
+  element.style.opacity = "";
+  element.style.transform = "";
+};
+
+const cleanupAnimationArtifacts = (
+  list: HTMLElement,
+  items: HTMLElement[]
+): void => {
+  PAGINATION_LIST_ANIMATION_CLASSES.forEach((className) => {
+    list.classList.remove(className);
+  });
+  clearTransientAnimationStyles(list);
+
+  items.forEach((item) => {
+    PAGINATION_ITEM_ANIMATION_CLASSES.forEach((className) => {
+      item.classList.remove(className);
+    });
+    clearTransientAnimationStyles(item);
+  });
 };
 
 const setHiddenState = (element: HTMLElement, hidden: boolean): void => {
   if (hidden) {
     element.classList.add(PAGINATION_HIDDEN_CLASS);
+    element.style.display = "none";
+    element.style.visibility = "";
+    clearTransientAnimationStyles(element);
   } else {
     element.classList.remove(PAGINATION_HIDDEN_CLASS);
+    element.style.display = "";
+    // Explicitly normalize visibility so external CSS cannot leave
+    // paginated items visually hidden after transitions.
+    element.style.opacity = "1";
+    element.style.visibility = "visible";
   }
 };
 
@@ -483,6 +526,9 @@ const applyCssAnimationLifecycle = async (
   applyVisibilityState: () => void
 ): Promise<void> => {
   const { list } = instance.elements;
+  const affectedItems = Array.from(
+    new Set([...enteringItems, ...exitingItems])
+  );
   const duration = instance.options.animationDuration;
   const stagger =
     Math.max(enteringItems.length, exitingItems.length) > LARGE_BATCH_STAGGER_CUTOFF
@@ -490,47 +536,42 @@ const applyCssAnimationLifecycle = async (
       : instance.options.animationStagger;
   const timeout = duration + Math.max(enteringItems.length, exitingItems.length) * stagger + ANIMATION_TIMEOUT_BUFFER_MS;
 
-  if (listExit) {
-    list.classList.add("pagination-list-exit");
-    list.classList.add("pagination-list-exit-active");
+  try {
+    if (listExit) {
+      list.classList.add("pagination-list-exit");
+      list.classList.add("pagination-list-exit-active");
+    }
+    exitingItems.forEach((item) => {
+      item.classList.add("pagination-item-exit");
+      item.classList.add("pagination-item-exit-active");
+    });
+
+    await new Promise<void>((resolve) => window.setTimeout(resolve, timeout));
+
+    if (listExit) {
+      list.classList.remove("pagination-list-exit");
+      list.classList.remove("pagination-list-exit-active");
+    }
+    exitingItems.forEach((item) => {
+      item.classList.remove("pagination-item-exit");
+      item.classList.remove("pagination-item-exit-active");
+    });
+
+    applyVisibilityState();
+
+    if (listEnter) {
+      list.classList.add("pagination-list-enter");
+      list.classList.add("pagination-list-enter-active");
+    }
+    enteringItems.forEach((item) => {
+      item.classList.add("pagination-item-enter");
+      item.classList.add("pagination-item-enter-active");
+    });
+
+    await new Promise<void>((resolve) => window.setTimeout(resolve, timeout));
+  } finally {
+    cleanupAnimationArtifacts(list, affectedItems);
   }
-  exitingItems.forEach((item) => {
-    item.classList.add("pagination-item-exit");
-    item.classList.add("pagination-item-exit-active");
-  });
-
-  await new Promise<void>((resolve) => window.setTimeout(resolve, timeout));
-
-  if (listExit) {
-    list.classList.remove("pagination-list-exit");
-    list.classList.remove("pagination-list-exit-active");
-  }
-  exitingItems.forEach((item) => {
-    item.classList.remove("pagination-item-exit");
-    item.classList.remove("pagination-item-exit-active");
-  });
-
-  applyVisibilityState();
-
-  if (listEnter) {
-    list.classList.add("pagination-list-enter");
-    list.classList.add("pagination-list-enter-active");
-  }
-  enteringItems.forEach((item) => {
-    item.classList.add("pagination-item-enter");
-    item.classList.add("pagination-item-enter-active");
-  });
-
-  await new Promise<void>((resolve) => window.setTimeout(resolve, timeout));
-
-  if (listEnter) {
-    list.classList.remove("pagination-list-enter");
-    list.classList.remove("pagination-list-enter-active");
-  }
-  enteringItems.forEach((item) => {
-    item.classList.remove("pagination-item-enter");
-    item.classList.remove("pagination-item-enter-active");
-  });
 };
 
 const applyJsAnimationPreset = async (
@@ -542,6 +583,9 @@ const applyJsAnimationPreset = async (
   applyVisibilityState: () => void
 ): Promise<void> => {
   const { animationStyle, animationDuration, animationEasing } = instance.options;
+  const affectedItems = Array.from(
+    new Set([...enteringItems, ...exitingItems])
+  );
   const animationStagger =
     Math.max(enteringItems.length, exitingItems.length) > LARGE_BATCH_STAGGER_CUTOFF
       ? 0
@@ -551,57 +595,61 @@ const applyJsAnimationPreset = async (
     Math.max(enteringItems.length, exitingItems.length) * animationStagger +
     ANIMATION_TIMEOUT_BUFFER_MS;
 
-  const exitAnimations: Animation[] = [];
-  if (listExit) {
-    exitAnimations.push(
-      ...animateElements(
-        [instance.elements.list],
-        getAnimationKeyframes(animationStyle, "exit"),
-        animationDuration,
-        animationEasing
-      )
-    );
-  }
-  if (exitingItems.length > 0) {
-    exitAnimations.push(
-      ...animateElements(
-        exitingItems,
-        getAnimationKeyframes(animationStyle, "exit"),
-        animationDuration,
-        animationEasing,
-        animationStagger
-      )
-    );
-  }
-  instance.activeAnimations = exitAnimations;
-  await waitForAnimationGroup(exitAnimations, timeout);
+  try {
+    const exitAnimations: Animation[] = [];
+    if (listExit) {
+      exitAnimations.push(
+        ...animateElements(
+          [instance.elements.list],
+          getAnimationKeyframes(animationStyle, "exit"),
+          animationDuration,
+          animationEasing
+        )
+      );
+    }
+    if (exitingItems.length > 0) {
+      exitAnimations.push(
+        ...animateElements(
+          exitingItems,
+          getAnimationKeyframes(animationStyle, "exit"),
+          animationDuration,
+          animationEasing,
+          animationStagger
+        )
+      );
+    }
+    instance.activeAnimations = exitAnimations;
+    await waitForAnimationGroup(exitAnimations, timeout);
 
-  applyVisibilityState();
+    applyVisibilityState();
 
-  const enterAnimations: Animation[] = [];
-  if (listEnter) {
-    enterAnimations.push(
-      ...animateElements(
-        [instance.elements.list],
-        getAnimationKeyframes(animationStyle, "enter"),
-        animationDuration,
-        animationEasing
-      )
-    );
+    const enterAnimations: Animation[] = [];
+    if (listEnter) {
+      enterAnimations.push(
+        ...animateElements(
+          [instance.elements.list],
+          getAnimationKeyframes(animationStyle, "enter"),
+          animationDuration,
+          animationEasing
+        )
+      );
+    }
+    if (enteringItems.length > 0) {
+      enterAnimations.push(
+        ...animateElements(
+          enteringItems,
+          getAnimationKeyframes(animationStyle, "enter"),
+          animationDuration,
+          animationEasing,
+          animationStagger
+        )
+      );
+    }
+    instance.activeAnimations = enterAnimations;
+    await waitForAnimationGroup(enterAnimations, timeout);
+  } finally {
+    cleanupAnimationArtifacts(instance.elements.list, affectedItems);
   }
-  if (enteringItems.length > 0) {
-    enterAnimations.push(
-      ...animateElements(
-        enteringItems,
-        getAnimationKeyframes(animationStyle, "enter"),
-        animationDuration,
-        animationEasing,
-        animationStagger
-      )
-    );
-  }
-  instance.activeAnimations = enterAnimations;
-  await waitForAnimationGroup(enterAnimations, timeout);
 };
 
 const applyVisibility = async (instance: PaginationInstanceState): Promise<void> => {
@@ -709,6 +757,19 @@ const applyVisibility = async (instance: PaginationInstanceState): Promise<void>
   }
 
   cancelInFlightAnimations(instance);
+  cleanupAnimationArtifacts(elements.list, elements.items);
+
+  visibilityChanges.forEach((entry) => {
+    if (entry.isVisible) {
+      entry.item.style.display = "";
+      entry.item.style.opacity = "1";
+      entry.item.style.visibility = "visible";
+    } else {
+      entry.item.style.display = "none";
+      entry.item.style.visibility = "";
+      entry.item.style.opacity = "";
+    }
+  });
 
   updateStatusElements(instance);
   updateControlStates(instance);

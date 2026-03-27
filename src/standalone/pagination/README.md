@@ -375,7 +375,13 @@ The module adds/toggles classes you can style:
 }
 ```
 
-You have full control over layout and design; the module only manages classes and attributes.
+Out of the box, the module now enforces hidden/visible item state internally, including:
+
+- hiding non-visible items without requiring a custom `.pagination-hidden { display: none }` rule,
+- restoring visible items to a safe visual baseline (`display`, `opacity`, `visibility`),
+- cleaning up transition artifacts after animation phases.
+
+You can still style the classes above, but custom hide CSS is optional.
 
 ### Animation Examples
 
