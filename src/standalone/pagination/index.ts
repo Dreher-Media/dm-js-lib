@@ -10,7 +10,6 @@ import type {
 type InstancesMap = Map<string, PaginationInstanceState>;
 
 const DEFAULT_INSTANCE_ID = "default";
-const PAGINATION_HIDDEN_CLASS = "pagination-hidden";
 const PAGINATION_ACTIVE_CLASS = "pagination-active";
 const PAGINATION_DISABLED_CLASS = "pagination-disabled";
 const DEFAULT_ANIMATION_DURATION = 220;
@@ -21,6 +20,7 @@ const MAX_ITEM_ANIMATIONS = 64;
 const NON_RENDERED_ITEM_TAGS = new Set(["SCRIPT", "STYLE", "TEMPLATE", "NOSCRIPT", "LINK", "META"]);
 const instances: InstancesMap = new Map();
 const renderQueues = new Map<string, Promise<void>>();
+const sourceItemsByInstance = new Map<string, HTMLElement[]>();
 
 const getInstanceId = (element: HTMLElement | null): string => {
   if (!element) return DEFAULT_INSTANCE_ID;
@@ -133,6 +133,13 @@ const collectItems = (list: HTMLElement): HTMLElement[] => {
   });
 };
 
+const isRuntimeEligibleItem = (item: HTMLElement): boolean => {
+  if (NON_RENDERED_ITEM_TAGS.has(item.tagName)) return false;
+  if (item.classList.contains("pagination-exclude")) return false;
+  if (item.classList.contains("filter-hidden")) return false;
+  return true;
+};
+
 const collectControls = (
   root: HTMLElement,
   instanceId: string
@@ -222,20 +229,10 @@ const setDisabled = (elements: HTMLElement[], disabled: boolean): void => {
   });
 };
 
-const forceVisible = (item: HTMLElement): void => {
-  item.classList.remove(PAGINATION_HIDDEN_CLASS);
+const normalizeRenderedItem = (item: HTMLElement): void => {
   item.style.display = "";
   item.style.visibility = "visible";
   item.style.opacity = "1";
-  item.style.transform = "";
-  item.style.willChange = "";
-};
-
-const forceHidden = (item: HTMLElement): void => {
-  item.classList.add(PAGINATION_HIDDEN_CLASS);
-  item.style.display = "none";
-  item.style.visibility = "";
-  item.style.opacity = "";
   item.style.transform = "";
   item.style.willChange = "";
 };
@@ -501,13 +498,16 @@ const ensureObserver = (instance: PaginationInstanceState): void => {
   instance.observer = observer;
 };
 
-const getNowVisible = (item: HTMLElement): boolean =>
-  !item.classList.contains(PAGINATION_HIDDEN_CLASS) && window.getComputedStyle(item).display !== "none";
+const isSameItemSet = (left: HTMLElement[], right: HTMLElement[]): boolean => {
+  if (left.length !== right.length) return false;
+  return left.every((item, index) => item === right[index]);
+};
 
 const performRender = async (instance: PaginationInstanceState): Promise<void> => {
-  instance.elements.items = collectItems(instance.elements.list);
-  const items = instance.elements.items;
-  const totalItems = items.length;
+  const sourceItems = sourceItemsByInstance.get(instance.id) ?? instance.elements.items;
+  const activeItems = sourceItems.filter(isRuntimeEligibleItem);
+  instance.elements.items = activeItems;
+  const totalItems = activeItems.length;
   instance.totalPages = computeTotalPages(totalItems, instance.options.pageSize, instance.options.firstPageSize);
   instance.currentPage = clamp(instance.currentPage, 1, instance.totalPages);
   const targetVisible = visibleIndexSet(
@@ -517,21 +517,22 @@ const performRender = async (instance: PaginationInstanceState): Promise<void> =
     instance.options.pageSize,
     instance.options.firstPageSize
   );
+  const nextItems = activeItems.filter((_, index) => targetVisible.has(index));
+  const sourceSet = new Set(sourceItems);
+  const currentItems = Array.from(instance.elements.list.children).filter(
+    (node): node is HTMLElement => node instanceof HTMLElement && sourceSet.has(node)
+  );
 
   const token = (instance.animationToken ?? 0) + 1;
   instance.animationToken = token;
   cancelAnimations(instance);
 
-  const entering: HTMLElement[] = [];
-  const exiting: HTMLElement[] = [];
-  items.forEach((item, index) => {
-    const isTargetVisible = targetVisible.has(index);
-    const isCurrentlyVisible = getNowVisible(item);
-    if (isTargetVisible && !isCurrentlyVisible) entering.push(item);
-    if (!isTargetVisible && isCurrentlyVisible) exiting.push(item);
-  });
+  const entering = nextItems.filter((item) => !currentItems.includes(item));
+  const exiting = currentItems.filter((item) => !nextItems.includes(item));
+  const hasDomChange = !isSameItemSet(currentItems, nextItems);
 
   const shouldAnimate =
+    hasDomChange &&
     instance.options.animate &&
     instance.options.animationStyle !== "none" &&
     !isReducedMotion() &&
@@ -564,9 +565,9 @@ const performRender = async (instance: PaginationInstanceState): Promise<void> =
       }
       if (useItemAnimation) clearCssPhase(exiting, "exit");
 
-      items.forEach((item, index) => {
-        if (targetVisible.has(index)) forceVisible(item);
-        else forceHidden(item);
+      instance.elements.list.replaceChildren(...nextItems);
+      nextItems.forEach((item) => {
+        normalizeRenderedItem(item);
       });
 
       if (useListAnimation) {
@@ -583,7 +584,6 @@ const performRender = async (instance: PaginationInstanceState): Promise<void> =
       }
       if (useItemAnimation) clearCssPhase(entering, "enter");
     } else {
-      if (entering.length > 0) entering.forEach((item) => forceVisible(item));
       const exitAnimations: Animation[] = [];
       if (useListAnimation) {
         exitAnimations.push(
@@ -611,9 +611,9 @@ const performRender = async (instance: PaginationInstanceState): Promise<void> =
       await awaitAnimations(exitAnimations, timeout);
       if (instance.animationToken !== token) return;
 
-      items.forEach((item, index) => {
-        if (targetVisible.has(index)) forceVisible(item);
-        else forceHidden(item);
+      instance.elements.list.replaceChildren(...nextItems);
+      nextItems.forEach((item) => {
+        normalizeRenderedItem(item);
       });
 
       const enterAnimations: Animation[] = [];
@@ -646,17 +646,24 @@ const performRender = async (instance: PaginationInstanceState): Promise<void> =
   }
 
   if (!shouldAnimate) {
-    items.forEach((item, index) => {
-      if (targetVisible.has(index)) forceVisible(item);
-      else forceHidden(item);
+    if (hasDomChange) {
+      instance.elements.list.replaceChildren(...nextItems);
+    }
+    nextItems.forEach((item) => {
+      normalizeRenderedItem(item);
     });
   }
 
   if (instance.animationToken !== token) return;
   cancelAnimations(instance);
-  items.forEach((item, index) => {
-    if (targetVisible.has(index)) forceVisible(item);
-    else forceHidden(item);
+  const finalItems = activeItems.filter((_, index) => targetVisible.has(index));
+  if (!isSameItemSet(Array.from(instance.elements.list.children).filter(
+    (node): node is HTMLElement => node instanceof HTMLElement && sourceSet.has(node)
+  ), finalItems)) {
+    instance.elements.list.replaceChildren(...finalItems);
+  }
+  finalItems.forEach((item) => {
+    normalizeRenderedItem(item);
   });
   updateStatus(instance);
   updateControls(instance);
@@ -693,11 +700,13 @@ const restoreInitialPage = (instance: PaginationInstanceState): void => {
 const initInstance = (list: HTMLElement): void => {
   const instanceId = getInstanceId(list);
   const options = resolveOptions(list, instanceId);
+  const sourceItems = collectItems(list);
+  sourceItemsByInstance.set(instanceId, sourceItems);
   const state: PaginationInstanceState = {
     id: instanceId,
     elements: {
       list,
-      items: collectItems(list),
+      items: sourceItems,
       controls: collectControls(list, instanceId),
       status: collectStatus(list, instanceId),
       sentinel: collectSentinel(list),
@@ -716,7 +725,18 @@ const initInstance = (list: HTMLElement): void => {
 
 const refreshInstance = (instance: PaginationInstanceState, resetPage = false): Promise<void> => {
   if (resetPage) instance.currentPage = 1;
-  instance.elements.items = collectItems(instance.elements.list);
+  const previousSource = sourceItemsByInstance.get(instance.id) ?? instance.elements.items;
+  const discovered = collectItems(instance.elements.list);
+  const knownItems = new Set(previousSource);
+  const mergedSource = [...previousSource];
+  discovered.forEach((item) => {
+    if (!knownItems.has(item)) {
+      mergedSource.push(item);
+      knownItems.add(item);
+    }
+  });
+  sourceItemsByInstance.set(instance.id, mergedSource);
+  instance.elements.items = mergedSource.filter(isRuntimeEligibleItem);
   instance.elements.sentinel = collectSentinel(instance.elements.list);
   return enqueueRender(instance, !resetPage);
 };
