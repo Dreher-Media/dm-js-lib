@@ -8,6 +8,7 @@ type TriggerAction = 'toggle' | 'open' | 'close';
 
 interface AccordionItem {
   container: HTMLElement;
+  itemElement: HTMLElement;
   triggers: HTMLElement[];
   panel: HTMLElement;
   mode: AccordionMode;
@@ -22,6 +23,7 @@ const CONTAINER_SELECTOR = '[data-accordion]';
 const ITEM_SELECTOR = '[data-accordion-item]';
 const TRIGGER_SELECTOR = '[data-accordion-trigger]';
 const PANEL_SELECTOR = '[data-accordion-panel]';
+const REMOTE_TRIGGER_SELECTOR = '[data-accordion-remote], [data-accordion-remote-item]';
 
 let containerCounter = 0;
 let panelCounter = 0;
@@ -31,6 +33,8 @@ const panelTransitionHandlers = new WeakMap<HTMLElement, (event: TransitionEvent
 const panelAnimationFrameIds = new WeakMap<HTMLElement, number>();
 const panelBasePaddingTop = new WeakMap<HTMLElement, string>();
 const panelBasePaddingBottom = new WeakMap<HTMLElement, string>();
+const accordionItemsByContainerRemote = new Map<string, AccordionItem[]>();
+const accordionItemByRemoteItem = new Map<string, AccordionItem>();
 
 function toNumber(value: string | undefined, fallback: number): number {
   if (!value) {
@@ -71,7 +75,7 @@ function getScopeKey(container: HTMLElement): string {
 
 function getItemGroups(
   container: HTMLElement
-): Array<{ triggers: HTMLElement[]; panel: HTMLElement }> {
+): Array<{ itemElement: HTMLElement; triggers: HTMLElement[]; panel: HTMLElement }> {
   const wrappedItems = Array.from(container.querySelectorAll(ITEM_SELECTOR));
   if (wrappedItems.length > 0) {
     return wrappedItems
@@ -82,9 +86,12 @@ function getItemGroups(
           return null;
         }
 
-        return { triggers, panel };
+        return { itemElement: item as HTMLElement, triggers, panel };
       })
-      .filter((value): value is { triggers: HTMLElement[]; panel: HTMLElement } => value !== null);
+      .filter(
+        (value): value is { itemElement: HTMLElement; triggers: HTMLElement[]; panel: HTMLElement } =>
+          value !== null
+      );
   }
 
   // Standalone mode: one dropdown per container.
@@ -96,10 +103,25 @@ function getItemGroups(
     return [];
   }
 
-  return [{ triggers, panel }];
+  return [{ itemElement: container, triggers, panel }];
 }
 
-function preparePanel(item: AccordionItem): void {
+function registerRemoteTargets(item: AccordionItem): void {
+  const containerRemoteKey = item.container.dataset.accordionRemote?.trim();
+  if (containerRemoteKey) {
+    const existing = accordionItemsByContainerRemote.get(containerRemoteKey) ?? [];
+    accordionItemsByContainerRemote.set(containerRemoteKey, [...existing, item]);
+  }
+
+  const itemRemoteKey =
+    item.itemElement.dataset.accordionRemoteItem?.trim() ??
+    item.panel.dataset.accordionRemoteItem?.trim();
+  if (itemRemoteKey) {
+    accordionItemByRemoteItem.set(itemRemoteKey, item);
+  }
+}
+
+function preparePanel(item: { panel: HTMLElement; duration: number; easing: string }): void {
   const { panel, duration, easing } = item;
   const computed = window.getComputedStyle(panel);
   panelBasePaddingTop.set(panel, computed.paddingTop);
@@ -369,6 +391,82 @@ function executeTriggerAction(item: AccordionItem, action: TriggerAction): void 
   toggleItem(item);
 }
 
+function executeContainerRemoteAction(items: AccordionItem[], action: TriggerAction): void {
+  if (items.length === 0) {
+    return;
+  }
+
+  const mode = items[0].mode;
+
+  if (mode === 'single') {
+    const targetItem = items[0];
+    executeTriggerAction(targetItem, action);
+    return;
+  }
+
+  if (action === 'close') {
+    items.forEach((item) => {
+      closeItem(item);
+    });
+    return;
+  }
+
+  if (action === 'open') {
+    items.forEach((item) => {
+      openItem(item);
+    });
+    return;
+  }
+
+  const hasOpenItem = items.some((item) => item.isOpen);
+  if (hasOpenItem) {
+    items.forEach((item) => {
+      closeItem(item);
+    });
+    return;
+  }
+
+  items.forEach((item) => {
+    openItem(item);
+  });
+}
+
+function bindRemoteTrigger(trigger: HTMLElement): void {
+  if (trigger.dataset.accordionRemoteBound === 'true') {
+    return;
+  }
+  trigger.dataset.accordionRemoteBound = 'true';
+
+  const runRemoteAction = (event: Event) => {
+    event.preventDefault();
+    const action = getTriggerAction(trigger);
+
+    const remoteItemKey = trigger.dataset.accordionRemoteItem?.trim();
+    if (remoteItemKey) {
+      const item = accordionItemByRemoteItem.get(remoteItemKey);
+      if (item) {
+        executeTriggerAction(item, action);
+      }
+      return;
+    }
+
+    const remoteContainerKey = trigger.dataset.accordionRemote?.trim();
+    if (!remoteContainerKey) {
+      return;
+    }
+
+    const items = accordionItemsByContainerRemote.get(remoteContainerKey) ?? [];
+    executeContainerRemoteAction(items, action);
+  };
+
+  trigger.addEventListener('click', runRemoteAction);
+  trigger.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ' || event.key === 'Space') {
+      runRemoteAction(event);
+    }
+  });
+}
+
 function updateActionTriggerVisibilityForScope(scopeKey: string): void {
   const scopedItems = accordionItemsByScope.get(scopeKey) ?? [];
   scopedItems.forEach((item) => {
@@ -392,17 +490,11 @@ function initializeAccordionContainer(container: HTMLElement): void {
     return;
   }
 
-  const items: AccordionItem[] = groups.map(({ triggers, panel }) => {
+  const items: AccordionItem[] = groups.map(({ itemElement, triggers, panel }) => {
     preparePanel({
-      container,
-      triggers,
       panel,
-      mode,
       duration,
       easing,
-      scopeKey,
-      isAnimating: false,
-      isOpen: false,
     });
 
     const panelId = ensurePanelId(panel);
@@ -428,6 +520,7 @@ function initializeAccordionContainer(container: HTMLElement): void {
 
     const item: AccordionItem = {
       container,
+      itemElement,
       triggers,
       panel,
       mode,
@@ -463,6 +556,9 @@ function initializeAccordionContainer(container: HTMLElement): void {
 
   const existingItems = accordionItemsByScope.get(scopeKey) ?? [];
   accordionItemsByScope.set(scopeKey, [...existingItems, ...items]);
+  items.forEach((item) => {
+    registerRemoteTargets(item);
+  });
 
   if (mode === 'single') {
     let foundOpen = false;
@@ -486,8 +582,16 @@ function initializeAccordionContainer(container: HTMLElement): void {
  */
 export function initAccordion(): void {
   const runInit = () => {
+    accordionItemsByScope.clear();
+    accordionItemsByContainerRemote.clear();
+    accordionItemByRemoteItem.clear();
+
     document.querySelectorAll(CONTAINER_SELECTOR).forEach((container) => {
       initializeAccordionContainer(container as HTMLElement);
+    });
+
+    document.querySelectorAll(REMOTE_TRIGGER_SELECTOR).forEach((trigger) => {
+      bindRemoteTrigger(trigger as HTMLElement);
     });
   };
 

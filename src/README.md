@@ -35,6 +35,9 @@ dm-js-lib/
 │   │   │   ├── utils.ts
 │   │   │   ├── core.ts
 │   │   │   └── README.md
+│   │   ├── accordion/
+│   │   │   ├── index.ts
+│   │   │   └── README.md
 │   │   └── videoPlayers/
 │   │       ├── index.ts
 │   │       ├── types.ts

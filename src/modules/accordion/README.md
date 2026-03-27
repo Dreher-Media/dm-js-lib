@@ -10,12 +10,12 @@ It is designed for Webflow layouts where trigger and panel are not required to b
 
 ## Usage
 
-### Standalone Pairs (Recommended)
+### Standalone Dropdown (Recommended)
 
 Use one `data-accordion` container for one standalone dropdown:
 
 ```html
-<section data-accordion data-accordion-mode="single">
+<section data-accordion>
   <button data-accordion-trigger>What is included?</button>
   <div data-accordion-panel>
     <p>Everything needed to launch your project.</p>
@@ -57,6 +57,38 @@ Add `data-accordion-group` to isolate or combine behavior across containers:
 
 Both containers above share the same single-open scope.
 
+### Remote Triggers (Outside Target)
+
+You can control accordions from anywhere in the DOM.
+
+**Container-level remote target:**
+
+```html
+<section data-accordion data-accordion-remote="pricingDetails">
+  <button data-accordion-trigger>Inside trigger</button>
+  <div data-accordion-panel>Pricing details content...</div>
+</section>
+
+<button data-accordion-remote="pricingDetails" data-accordion-action="toggle">
+  Toggle pricing details remotely
+</button>
+```
+
+**Item-level remote target:**
+
+```html
+<section data-accordion>
+  <article data-accordion-item data-accordion-remote-item="faq_shipping">
+    <button data-accordion-trigger>Shipping</button>
+    <div data-accordion-panel>Shipping answer...</div>
+  </article>
+</section>
+
+<button data-accordion-remote-item="faq_shipping" data-accordion-action="open">
+  Open shipping answer remotely
+</button>
+```
+
 ## Attributes
 
 - `data-accordion`: Accordion container (required)
@@ -66,6 +98,8 @@ Both containers above share the same single-open scope.
 - `data-accordion-item`: Optional wrapper for explicit trigger/panel pairing
 - `data-accordion-mode="single|multi"`: Open behavior (default: `multi`)
 - `data-accordion-group="<name>"`: Optional scope key shared across containers
+- `data-accordion-remote="<name>"`: Optional remote key for container-level remote control
+- `data-accordion-remote-item="<name>"`: Optional remote key for item-level remote control
 - `data-accordion-duration="<ms>"`: Animation duration in milliseconds (default: `300`)
 - `data-accordion-easing="<css-easing>"`: Transition easing string (default: `ease`)
 
@@ -111,9 +145,9 @@ The module automatically manages:
 
 ## Notes
 
-- In standalone mode (no `data-accordion-item`), each trigger is paired with the next available panel in DOM order.
 - In standalone mode (no `data-accordion-item`), one `data-accordion` container represents one dropdown.
 - If you need multiple dropdown items in the same container, use `data-accordion-item` wrappers (no scope guessing).
 - Single mode closes other open items in the same scope (`data-accordion` container by default, or shared `data-accordion-group` when set).
+- Remote triggers support both container-level (`data-accordion-remote`) and item-level (`data-accordion-remote-item`) targeting.
 - The module does not apply visual panel/dropdown styling. `data-accordion-panel` should be treated as a plain wrapper for content.
 - Add CSS for your visual design; this module handles interaction, state classes (`active`), and height animation.

@@ -85,6 +85,69 @@
         </div>
       </section>
 
+      <section class="section">
+        <h2>Basic Dropdown (Remote Container Trigger)</h2>
+        <div class="row" data-accordion data-accordion-remote="remote-basic">
+          <button class="acc-trigger" data-accordion-trigger>Local toggle</button>
+          <div class="acc-panel" data-accordion-panel>
+            This dropdown can also be controlled from triggers outside the container.
+          </div>
+        </div>
+        <div class="row">
+          <button class="acc-trigger" data-accordion-remote="remote-basic" data-accordion-action="open">
+            Remote open
+          </button>
+          <button
+            class="acc-trigger"
+            data-accordion-remote="remote-basic"
+            data-accordion-action="close"
+          >
+            Remote close
+          </button>
+        </div>
+      </section>
+
+      <section class="section" data-accordion>
+        <h2>Basic Dropdown (Remote Item Trigger)</h2>
+        <article class="row" data-accordion-item data-accordion-remote-item="remote-item-shipping">
+          <button class="acc-trigger" data-accordion-trigger>Shipping details</button>
+          <div class="acc-panel" data-accordion-panel>
+            This item can be controlled by remote item-level triggers.
+          </div>
+        </article>
+        <article class="row" data-accordion-item data-accordion-remote-item="remote-item-returns">
+          <button class="acc-trigger" data-accordion-trigger>Return policy</button>
+          <div class="acc-panel" data-accordion-panel>30-day returns for unused items.</div>
+        </article>
+      </section>
+
+      <section class="section">
+        <h2>Remote Item Controls</h2>
+        <div class="row">
+          <button
+            class="acc-trigger"
+            data-accordion-remote-item="remote-item-shipping"
+            data-accordion-action="toggle"
+          >
+            Toggle shipping (remote)
+          </button>
+          <button
+            class="acc-trigger"
+            data-accordion-remote-item="remote-item-returns"
+            data-accordion-action="open"
+          >
+            Open returns (remote)
+          </button>
+          <button
+            class="acc-trigger"
+            data-accordion-remote-item="remote-item-returns"
+            data-accordion-action="close"
+          >
+            Close returns (remote)
+          </button>
+        </div>
+      </section>
+
       <section class="section" data-accordion data-accordion-mode="single">
         <h2>1) Standalone Pairing (Single)</h2>
         <div class="row" data-accordion-item>

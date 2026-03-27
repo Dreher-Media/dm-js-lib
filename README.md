@@ -14,7 +14,7 @@ That's it! All modules are now available on your page. No configuration needed.
 
 ## What This Library Does
 
-This library provides 6 built-in modules that add common website functionality. Simply add HTML attributes to your elements, and the library handles the rest automatically.
+This library provides 7 built-in modules that add common website functionality. Simply add HTML attributes to your elements, and the library handles the rest automatically.
 
 Additionally, there are standalone modules available that can be loaded separately when needed.
 
@@ -125,6 +125,27 @@ Create tabbed content sections with support for multiple tab groups, URL control
 ```
 
 [📖 Full Documentation →](./src/modules/tabs/README.md)
+
+---
+
+### 📂 Accordion
+
+**Dropdowns and accordion lists**
+
+Create standalone dropdowns or grouped accordion lists with strict data-attribute structure. Supports `multi`/`single` mode, dedicated open/close/toggle actions, optional remote triggers, and smooth height animation.
+
+**Perfect for:** FAQs, feature reveal blocks, filters, expandable content, and complex layouts where trigger/panel are not siblings.
+
+**Example:**
+
+```html
+<section data-accordion>
+  <button data-accordion-trigger>Show details</button>
+  <div data-accordion-panel>Details...</div>
+</section>
+```
+
+[📖 Full Documentation →](./src/modules/accordion/README.md)
 
 ---
 
