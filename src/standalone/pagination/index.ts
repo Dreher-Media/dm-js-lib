@@ -21,6 +21,8 @@ const NON_RENDERED_ITEM_TAGS = new Set(["SCRIPT", "STYLE", "TEMPLATE", "NOSCRIPT
 const instances: InstancesMap = new Map();
 const renderQueues = new Map<string, Promise<void>>();
 const sourceItemsByInstance = new Map<string, HTMLElement[]>();
+const reconcileTimersByInstance = new Map<string, number[]>();
+const styleObserversByInstance = new Map<string, MutationObserver>();
 
 const getInstanceId = (element: HTMLElement | null): string => {
   if (!element) return DEFAULT_INSTANCE_ID;
@@ -140,46 +142,42 @@ const isRuntimeEligibleItem = (item: HTMLElement): boolean => {
   return true;
 };
 
+const queryByInstance = (selector: string, instanceId: string): HTMLElement[] =>
+  Array.from(document.querySelectorAll<HTMLElement>(selector)).filter(
+    (el) => getInstanceId(el) === instanceId
+  );
+
 const collectControls = (
-  root: HTMLElement,
+  _root: HTMLElement,
   instanceId: string
 ): PaginationInstanceState["elements"]["controls"] => {
-  const scope = root.closest<HTMLElement>("[data-pagination-instance]") ?? root;
-  const queryAll = (selector: string): HTMLElement[] =>
-    Array.from(scope.querySelectorAll<HTMLElement>(selector)).filter(
-      (el) => getInstanceId(el) === instanceId
-    );
   return {
-    prev: queryAll('[data-pagination-control="prev"]'),
-    next: queryAll('[data-pagination-control="next"]'),
-    first: queryAll('[data-pagination-control="first"]'),
-    last: queryAll('[data-pagination-control="last"]'),
-    loadMore: queryAll('[data-pagination-control="load-more"]'),
+    prev: queryByInstance('[data-pagination-control="prev"]', instanceId),
+    next: queryByInstance('[data-pagination-control="next"]', instanceId),
+    first: queryByInstance('[data-pagination-control="first"]', instanceId),
+    last: queryByInstance('[data-pagination-control="last"]', instanceId),
+    loadMore: queryByInstance('[data-pagination-control="load-more"]', instanceId),
   };
 };
 
 const collectStatus = (
-  root: HTMLElement,
+  _root: HTMLElement,
   instanceId: string
 ): PaginationInstanceState["elements"]["status"] => {
-  const scope = root.closest<HTMLElement>("[data-pagination-instance]") ?? root;
-  const queryAll = (selector: string): HTMLElement[] =>
-    Array.from(scope.querySelectorAll<HTMLElement>(selector)).filter(
-      (el) => getInstanceId(el) === instanceId
-    );
   return {
-    currentPage: queryAll("[data-pagination-current-page]"),
-    totalPages: queryAll("[data-pagination-total-pages]"),
-    totalItems: queryAll("[data-pagination-total-items]"),
-    visibleItems: queryAll("[data-pagination-visible-items]"),
+    currentPage: queryByInstance("[data-pagination-current-page]", instanceId),
+    totalPages: queryByInstance("[data-pagination-total-pages]", instanceId),
+    totalItems: queryByInstance("[data-pagination-total-items]", instanceId),
+    visibleItems: queryByInstance("[data-pagination-visible-items]", instanceId),
   };
 };
 
 const collectSentinel = (root: HTMLElement): HTMLElement | null => {
-  const scope = root.closest<HTMLElement>("[data-pagination-instance]") ?? root;
+  const instanceId = getInstanceId(root);
   return (
-    scope.querySelector<HTMLElement>("[data-pagination-sentinel]") ??
-    scope.querySelector<HTMLElement>('[data-pagination-control="load-more"]')
+    queryByInstance("[data-pagination-sentinel]", instanceId)[0] ??
+    queryByInstance('[data-pagination-control="load-more"]', instanceId)[0] ??
+    null
   );
 };
 
@@ -235,6 +233,92 @@ const normalizeRenderedItem = (item: HTMLElement): void => {
   item.style.opacity = "1";
   item.style.transform = "";
   item.style.willChange = "";
+};
+
+const normalizeRenderedDescendants = (item: HTMLElement): void => {
+  const descendants = item.querySelectorAll<HTMLElement>("[data-w-id]");
+  descendants.forEach((descendant) => {
+    descendant.style.visibility = "visible";
+    descendant.style.opacity = "1";
+  });
+};
+
+const normalizeRenderedItems = (items: HTMLElement[]): void => {
+  items.forEach((item) => {
+    normalizeRenderedItem(item);
+    normalizeRenderedDescendants(item);
+  });
+};
+
+const clearReconcileTimers = (instanceId: string): void => {
+  const timers = reconcileTimersByInstance.get(instanceId) ?? [];
+  timers.forEach((timerId) => {
+    window.clearTimeout(timerId);
+  });
+  reconcileTimersByInstance.delete(instanceId);
+};
+
+const collectRenderedItems = (instance: PaginationInstanceState): HTMLElement[] =>
+  Array.from(instance.elements.list.children).filter(
+    (node): node is HTMLElement =>
+      node instanceof HTMLElement && !NON_RENDERED_ITEM_TAGS.has(node.tagName)
+  );
+
+const runReconcilePass = (instance: PaginationInstanceState, token: number): void => {
+  if (instance.animationToken !== token) return;
+  normalizeRenderedItems(collectRenderedItems(instance));
+};
+
+const scheduleVisibilityReconcile = (instance: PaginationInstanceState, token: number): void => {
+  clearReconcileTimers(instance.id);
+  const timers: number[] = [];
+  const schedule = (delay: number): void => {
+    const timerId = window.setTimeout(() => {
+      runReconcilePass(instance, token);
+    }, delay);
+    timers.push(timerId);
+  };
+  schedule(0);
+  schedule(16);
+  schedule(64);
+  schedule(180);
+  schedule(360);
+  reconcileTimersByInstance.set(instance.id, timers);
+};
+
+const ensureStyleObserver = (instance: PaginationInstanceState): void => {
+  const existing = styleObserversByInstance.get(instance.id);
+  if (existing) {
+    existing.disconnect();
+  }
+  const observer = new MutationObserver((mutations) => {
+    let touchesRenderedItem = false;
+    const rendered = new Set(collectRenderedItems(instance));
+    for (const mutation of mutations) {
+      if (!(mutation.target instanceof HTMLElement)) continue;
+      if (rendered.has(mutation.target)) {
+        touchesRenderedItem = true;
+        break;
+      }
+      if (mutation.target.closest("[data-w-id]")) {
+        const host = mutation.target.closest<HTMLElement>("[data-pagination-item], .cal-item");
+        if (host && rendered.has(host)) {
+          touchesRenderedItem = true;
+          break;
+        }
+      }
+    }
+    if (!touchesRenderedItem) return;
+    const token = instance.animationToken ?? 0;
+    scheduleVisibilityReconcile(instance, token);
+  });
+  observer.observe(instance.elements.list, {
+    attributes: true,
+    childList: true,
+    subtree: true,
+    attributeFilter: ["style", "class"],
+  });
+  styleObserversByInstance.set(instance.id, observer);
 };
 
 const getKeyframes = (style: PaginationAnimationStyle, phase: "enter" | "exit"): Keyframe[] => {
@@ -302,6 +386,16 @@ const cancelAnimations = (instance: PaginationInstanceState): void => {
     }
   });
   instance.activeAnimations = [];
+};
+
+const clearAnimationEffects = (animations: Animation[]): void => {
+  animations.forEach((animation) => {
+    try {
+      animation.cancel();
+    } catch {
+      // noop
+    }
+  });
 };
 
 const applyCssPhase = (
@@ -432,8 +526,7 @@ const updateControls = (instance: PaginationInstanceState): void => {
     });
   }
 
-  const scope = instance.elements.list.closest<HTMLElement>("[data-pagination-instance]") ?? instance.elements.list;
-  const pageButtons = scope.querySelectorAll<HTMLElement>("[data-pagination-page]");
+  const pageButtons = queryByInstance("[data-pagination-page]", instance.id);
   pageButtons.forEach((button) => {
     const pageAttr = button.dataset.paginationPage;
     if (!pageAttr || pageAttr === "*") return;
@@ -566,9 +659,7 @@ const performRender = async (instance: PaginationInstanceState): Promise<void> =
       if (useItemAnimation) clearCssPhase(exiting, "exit");
 
       instance.elements.list.replaceChildren(...nextItems);
-      nextItems.forEach((item) => {
-        normalizeRenderedItem(item);
-      });
+      normalizeRenderedItems(nextItems);
 
       if (useListAnimation) {
         instance.elements.list.classList.add("pagination-list-enter", "pagination-list-enter-active");
@@ -610,11 +701,10 @@ const performRender = async (instance: PaginationInstanceState): Promise<void> =
       instance.activeAnimations = exitAnimations;
       await awaitAnimations(exitAnimations, timeout);
       if (instance.animationToken !== token) return;
+      clearAnimationEffects(exitAnimations);
 
       instance.elements.list.replaceChildren(...nextItems);
-      nextItems.forEach((item) => {
-        normalizeRenderedItem(item);
-      });
+      normalizeRenderedItems(nextItems);
 
       const enterAnimations: Animation[] = [];
       if (useListAnimation) {
@@ -642,6 +732,7 @@ const performRender = async (instance: PaginationInstanceState): Promise<void> =
       instance.activeAnimations = enterAnimations;
       await awaitAnimations(enterAnimations, timeout);
       if (instance.animationToken !== token) return;
+      clearAnimationEffects(enterAnimations);
     }
   }
 
@@ -649,9 +740,7 @@ const performRender = async (instance: PaginationInstanceState): Promise<void> =
     if (hasDomChange) {
       instance.elements.list.replaceChildren(...nextItems);
     }
-    nextItems.forEach((item) => {
-      normalizeRenderedItem(item);
-    });
+    normalizeRenderedItems(nextItems);
   }
 
   if (instance.animationToken !== token) return;
@@ -662,9 +751,8 @@ const performRender = async (instance: PaginationInstanceState): Promise<void> =
   ), finalItems)) {
     instance.elements.list.replaceChildren(...finalItems);
   }
-  finalItems.forEach((item) => {
-    normalizeRenderedItem(item);
-  });
+  normalizeRenderedItems(finalItems);
+  scheduleVisibilityReconcile(instance, token);
   updateStatus(instance);
   updateControls(instance);
   dispatchChangeEvents(instance);
@@ -720,6 +808,7 @@ const initInstance = (list: HTMLElement): void => {
   };
   restoreInitialPage(state);
   instances.set(instanceId, state);
+  ensureStyleObserver(state);
   void enqueueRender(state, true);
 };
 

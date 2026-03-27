@@ -27,4 +27,5 @@ yarn-error.log*
 # Temporary files
 *.tmp
 .cache/
+sandbox/
 
