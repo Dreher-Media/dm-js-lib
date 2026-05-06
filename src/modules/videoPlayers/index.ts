@@ -16,15 +16,15 @@ import { initializePlyrPlayers, initializePlayers, pauseAllPlayers } from "./pla
 import { initYouTubeThumbnails } from "./thumbnails";
 import type { PlayerInstance } from "./types";
 
+let players: Record<string, PlayerInstance> = {};
+let plyrPlayers: Plyr[] = [];
+
 export function initVideoPlayers(): void {
   // Initialize YouTube thumbnail upgrades
   initYouTubeThumbnails();
 
   document.addEventListener("DOMContentLoaded", () => {
-    let plyrPlayers: Plyr[] = [];
-
     const youtubeElements = document.querySelectorAll(".youtube");
-    const players: Record<string, PlayerInstance> = {};
     let init = false;
 
     // Check which platforms are needed and load their APIs
@@ -117,5 +117,10 @@ export function initVideoPlayers(): void {
         });
       });
     }
+
+    window.dmReinitVideoPlayers = (container: HTMLElement) => {
+      const elements = container.querySelectorAll<Element>(".youtube");
+      initializePlayers(elements, players, plyrPlayers);
+    };
   });
 }

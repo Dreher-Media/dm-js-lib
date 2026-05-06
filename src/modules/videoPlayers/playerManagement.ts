@@ -145,6 +145,9 @@ export function initializePlayers(
   plyrPlayers: Plyr[]
 ): void {
   youtubeElements.forEach((el) => {
+    if ((el as HTMLElement).dataset.dmPlayerBound === "true") return;
+    (el as HTMLElement).dataset.dmPlayerBound = "true";
+
     el.addEventListener("click", () => {
       const customEmbed = el.querySelector("[data-custom-embed]");
       if (customEmbed) {
