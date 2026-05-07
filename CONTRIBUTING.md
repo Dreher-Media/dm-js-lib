@@ -75,12 +75,16 @@ git pull
 git tag v$NEXT
 git push origin v$NEXT
 
-# 6. Sync develop with main so future work continues from the released state
+# 6. Sync develop with main so future work continues from the released state.
+#    A regular merge (not --ff-only) is required because squash-merging the
+#    release PR onto main leaves develop with a different commit graph.
 git switch develop
 git pull
-git merge --ff-only origin/main
+git merge origin/main --no-edit
 git push
 ```
+
+Once branch protection is enabled on `develop`, the sync step becomes its own chore PR (`chore/sync-develop-after-<version>`) instead of a direct push.
 
 The `Publish` workflow runs `npm ci`, `npm run verify`, `npm run build`, then `npm publish` using the `NPM_TOKEN` repo secret.
 
