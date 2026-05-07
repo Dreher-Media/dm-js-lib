@@ -19,7 +19,7 @@
     "prepare": "husky"
   },
   "lint-staged": {
-    "*.{ts,js,json,md}": "prettier --write"
+    "*.{ts,js,cjs,json,md}": "prettier --write"
   },
   "keywords": [
     "cdn",
