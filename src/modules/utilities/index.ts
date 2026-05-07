@@ -138,11 +138,57 @@ function initWebflow(): void {
 }
 
 /**
+ * Copy to Clipboard Utility
+ * Click any element with [data-copy] or [data-copy-target] to copy text
+ * to the clipboard. Useful for "copy email", "copy URL", "copy code"
+ * patterns common in CMS-driven sites.
+ *
+ * Usage:
+ *   <button data-copy="user@example.com">Copy email</button>
+ *   <button data-copy-target="#snippet">Copy code</button>
+ *   <pre id="snippet">npm install ...</pre>
+ *
+ * On success:
+ *   - Adds the class "is-copied" to the trigger for 1.5s (style as you wish).
+ *   - Dispatches a bubbling "dm:copied" CustomEvent with { value } in detail.
+ *
+ * Requires a secure context (HTTPS or localhost) for navigator.clipboard.
+ */
+function initCopyToClipboard(): void {
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll<HTMLElement>("[data-copy], [data-copy-target]").forEach((trigger) => {
+      trigger.addEventListener("click", async (event) => {
+        event.preventDefault();
+
+        let value: string | null = null;
+        if (trigger.dataset.copy != null) {
+          value = trigger.dataset.copy;
+        } else if (trigger.dataset.copyTarget) {
+          const target = document.querySelector(trigger.dataset.copyTarget);
+          value = target?.textContent ?? null;
+        }
+        if (!value) return;
+
+        try {
+          await navigator.clipboard.writeText(value);
+          trigger.classList.add("is-copied");
+          trigger.dispatchEvent(new CustomEvent("dm:copied", { detail: { value }, bubbles: true }));
+          setTimeout(() => trigger.classList.remove("is-copied"), 1500);
+        } catch (error) {
+          console.error("Failed to copy to clipboard:", error);
+        }
+      });
+    });
+  });
+}
+
+/**
  * Initialize all utilities
  */
 export function initUtilities(): void {
   initActiveLinks();
   initFileDownload();
   initSeparators();
+  initCopyToClipboard();
   initWebflow();
 }
