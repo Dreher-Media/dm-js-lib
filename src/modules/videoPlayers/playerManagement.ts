@@ -184,7 +184,8 @@ export function initializePlayers(
         | "ardmediathek"
         | "other";
       const videoId = element.dataset.videoId;
-      const time = parseInt(element.dataset.time || "0", 10);
+      const parsedTime = parseInt(element.dataset.time || "0", 10);
+      const time = Number.isFinite(parsedTime) && parsedTime >= 0 ? parsedTime : 0;
 
       if (!videoId || !type) return;
 
