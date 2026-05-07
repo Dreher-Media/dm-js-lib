@@ -23,16 +23,19 @@ const getVideoSwipers = (): Swiper[] | undefined => {
 /**
  * Initializes Plyr players and sets up event listeners
  */
-export function initializePlyrPlayers(plyrPlayers: Plyr[]): void {
+export function initializePlyrPlayers(
+  plyrPlayers: Plyr[],
+  players: Record<string, PlayerInstance>
+): void {
   if (typeof window.Plyr !== "undefined") {
-    const players = window.Plyr.setup("._init-plyr");
-    plyrPlayers.push(...players);
+    const setupPlayers = window.Plyr.setup("._init-plyr");
+    plyrPlayers.push(...setupPlayers);
 
     // Set up Plyr player event listeners
-    players.forEach((plyrPlayer) => {
+    setupPlayers.forEach((plyrPlayer) => {
       plyrPlayer.on("play", () => {
         // When a Plyr player plays, pause all other players (exclude this one)
-        pauseAllPlayers(null, plyrPlayers, {}, plyrPlayer);
+        pauseAllPlayers(null, plyrPlayers, players, plyrPlayer);
         const swipers = getVideoSwipers();
         if (swipers) {
           swipers.forEach((swiper) => {

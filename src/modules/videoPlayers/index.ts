@@ -68,7 +68,7 @@ export function initVideoPlayers(): void {
         .then(() => {
           // Initialize Plyr players if needed
           if (needsPlyr) {
-            initializePlyrPlayers(plyrPlayers);
+            initializePlyrPlayers(plyrPlayers, players);
           }
 
           // Small delay to ensure APIs are fully ready
@@ -93,7 +93,7 @@ export function initVideoPlayers(): void {
           console.error("Error loading video player APIs:", error);
           // Still try to initialize in case some APIs loaded
           if (needsPlyr && typeof window.Plyr !== "undefined") {
-            initializePlyrPlayers(plyrPlayers);
+            initializePlyrPlayers(plyrPlayers, players);
           }
           setTimeout(() => {
             initializeAllPlayers();
@@ -103,7 +103,7 @@ export function initVideoPlayers(): void {
       // If no APIs need to be loaded (or only ARD Mediathek), initialize immediately
       // Check if Plyr is already available (might be loaded externally)
       if (needsPlyr && typeof window.Plyr !== "undefined") {
-        initializePlyrPlayers(plyrPlayers);
+        initializePlyrPlayers(plyrPlayers, players);
       }
       initializeAllPlayers();
     }
