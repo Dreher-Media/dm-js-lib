@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.7.0](https://github.com/Dreher-Media/dm-js-lib/compare/v1.6.3...v1.7.0) (2026-05-07)
+
+
+### Features
+
+* add copy-to-clipboard utility ([#13](https://github.com/Dreher-Media/dm-js-lib/issues/13)) ([17add11](https://github.com/Dreher-Media/dm-js-lib/commit/17add1186120cd216fddafe573d34273db504e86))
+
+
+### Bug Fixes
+
+* add rel=noopener noreferrer to download links ([#12](https://github.com/Dreher-Media/dm-js-lib/issues/12)) ([edd57cd](https://github.com/Dreher-Media/dm-js-lib/commit/edd57cdf353b1ae7084012a18e13d897eb5eda38))
+* **ci:** run CI on release-please PRs via PAT token ([#9](https://github.com/Dreher-Media/dm-js-lib/issues/9)) ([1007dd2](https://github.com/Dreher-Media/dm-js-lib/commit/1007dd2fcb71c6c8cbb6ee1b2514373aa87b9bb1))
+
 ## [1.6.3](https://github.com/Dreher-Media/dm-js-lib/compare/v1.6.2...v1.6.3) (2026-05-07)
 
 
