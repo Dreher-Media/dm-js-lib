@@ -5,12 +5,19 @@
  */
 export function initCookieConsent(): void {
   let initFsCCListener = false;
+  let waitAttempts = 0;
+  // ~10s total at 200ms intervals — covers slow networks but stops eventually
+  // if FsCC is not present on the page.
+  const MAX_WAIT_ATTEMPTS = 50;
 
   const handleFsCcReject = (): void => {
     if (!window.FsCC) {
-      setTimeout(handleFsCcReject, 200);
+      if (waitAttempts++ < MAX_WAIT_ATTEMPTS) {
+        setTimeout(handleFsCcReject, 200);
+      }
       return;
     }
+    waitAttempts = 0;
 
     if (!initFsCCListener) {
       // Add a listener for changes in consent preferences
