@@ -3,8 +3,8 @@
  * Standalone-first accordion behavior with optional item wrappers.
  */
 
-type AccordionMode = 'single' | 'multi';
-type TriggerAction = 'toggle' | 'open' | 'close';
+type AccordionMode = "single" | "multi";
+type TriggerAction = "toggle" | "open" | "close";
 
 interface AccordionItem {
   container: HTMLElement;
@@ -19,11 +19,11 @@ interface AccordionItem {
   isOpen: boolean;
 }
 
-const CONTAINER_SELECTOR = '[data-accordion]';
-const ITEM_SELECTOR = '[data-accordion-item]';
-const TRIGGER_SELECTOR = '[data-accordion-trigger]';
-const PANEL_SELECTOR = '[data-accordion-panel]';
-const REMOTE_TRIGGER_SELECTOR = '[data-accordion-remote], [data-accordion-remote-item]';
+const CONTAINER_SELECTOR = "[data-accordion]";
+const ITEM_SELECTOR = "[data-accordion-item]";
+const TRIGGER_SELECTOR = "[data-accordion-trigger]";
+const PANEL_SELECTOR = "[data-accordion-panel]";
+const REMOTE_TRIGGER_SELECTOR = "[data-accordion-remote], [data-accordion-remote-item]";
 
 let containerCounter = 0;
 let panelCounter = 0;
@@ -47,16 +47,16 @@ function toNumber(value: string | undefined, fallback: number): number {
 
 function getMode(container: HTMLElement): AccordionMode {
   const mode = container.dataset.accordionMode;
-  return mode === 'single' ? 'single' : 'multi';
+  return mode === "single" ? "single" : "multi";
 }
 
 function getTriggerAction(trigger: HTMLElement): TriggerAction {
   const action = trigger.dataset.accordionAction;
-  if (action === 'open' || action === 'close') {
+  if (action === "open" || action === "close") {
     return action;
   }
 
-  return 'toggle';
+  return "toggle";
 }
 
 function getScopeKey(container: HTMLElement): string {
@@ -89,7 +89,9 @@ function getItemGroups(
         return { itemElement: item as HTMLElement, triggers, panel };
       })
       .filter(
-        (value): value is { itemElement: HTMLElement; triggers: HTMLElement[]; panel: HTMLElement } =>
+        (
+          value
+        ): value is { itemElement: HTMLElement; triggers: HTMLElement[]; panel: HTMLElement } =>
           value !== null
       );
   }
@@ -126,28 +128,28 @@ function preparePanel(item: { panel: HTMLElement; duration: number; easing: stri
   const computed = window.getComputedStyle(panel);
   panelBasePaddingTop.set(panel, computed.paddingTop);
   panelBasePaddingBottom.set(panel, computed.paddingBottom);
-  panel.style.overflow = 'hidden';
-  panel.style.boxSizing = 'border-box';
+  panel.style.overflow = "hidden";
+  panel.style.boxSizing = "border-box";
   panel.style.transition = `height ${duration}ms ${easing}, padding-top ${duration}ms ${easing}, padding-bottom ${duration}ms ${easing}`;
   // Default accordion baseline: collapsed until explicitly opened.
-  panel.style.height = '0px';
-  panel.style.paddingTop = '0px';
-  panel.style.paddingBottom = '0px';
-  panel.style.visibility = 'hidden';
-  panel.style.pointerEvents = 'none';
+  panel.style.height = "0px";
+  panel.style.paddingTop = "0px";
+  panel.style.paddingBottom = "0px";
+  panel.style.visibility = "hidden";
+  panel.style.pointerEvents = "none";
 }
 
 function getPanelPadding(panel: HTMLElement): { top: string; bottom: string } {
   return {
-    top: panelBasePaddingTop.get(panel) ?? '0px',
-    bottom: panelBasePaddingBottom.get(panel) ?? '0px',
+    top: panelBasePaddingTop.get(panel) ?? "0px",
+    bottom: panelBasePaddingBottom.get(panel) ?? "0px",
   };
 }
 
 function clearPanelAnimation(panel: HTMLElement): void {
   const existingHandler = panelTransitionHandlers.get(panel);
   if (existingHandler) {
-    panel.removeEventListener('transitionend', existingHandler);
+    panel.removeEventListener("transitionend", existingHandler);
     panelTransitionHandlers.delete(panel);
   }
 
@@ -163,7 +165,7 @@ function onHeightTransitionEnd(item: AccordionItem, onDone: () => void): void {
   clearPanelAnimation(panel);
 
   const handler = (event: TransitionEvent) => {
-    if (event.propertyName !== 'height') {
+    if (event.propertyName !== "height") {
       return;
     }
 
@@ -172,7 +174,7 @@ function onHeightTransitionEnd(item: AccordionItem, onDone: () => void): void {
   };
 
   panelTransitionHandlers.set(panel, handler);
-  panel.addEventListener('transitionend', handler);
+  panel.addEventListener("transitionend", handler);
 }
 
 function ensurePanelId(panel: HTMLElement): string {
@@ -186,9 +188,9 @@ function ensurePanelId(panel: HTMLElement): string {
 
 function setAria(item: AccordionItem, isOpen: boolean): void {
   item.triggers.forEach((trigger) => {
-    trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    trigger.setAttribute("aria-expanded", isOpen ? "true" : "false");
   });
-  item.panel.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+  item.panel.setAttribute("aria-hidden", isOpen ? "false" : "true");
 }
 
 function syncTriggerVisibility(item: AccordionItem, openStateOverride?: boolean): void {
@@ -196,17 +198,17 @@ function syncTriggerVisibility(item: AccordionItem, openStateOverride?: boolean)
   item.triggers.forEach((trigger) => {
     const action = getTriggerAction(trigger);
 
-    if (action === 'open') {
-      trigger.style.display = isOpen ? 'none' : '';
+    if (action === "open") {
+      trigger.style.display = isOpen ? "none" : "";
       return;
     }
 
-    if (action === 'close') {
-      trigger.style.display = isOpen ? '' : 'none';
+    if (action === "close") {
+      trigger.style.display = isOpen ? "" : "none";
       return;
     }
 
-    trigger.style.display = '';
+    trigger.style.display = "";
   });
 }
 
@@ -215,11 +217,11 @@ function finalizeOpen(item: AccordionItem): void {
   item.panel.style.height = `${item.panel.scrollHeight}px`;
   item.panel.style.paddingTop = top;
   item.panel.style.paddingBottom = bottom;
-  item.panel.style.visibility = 'visible';
-  item.panel.style.pointerEvents = '';
-  item.panel.classList.add('active');
+  item.panel.style.visibility = "visible";
+  item.panel.style.pointerEvents = "";
+  item.panel.classList.add("active");
   item.triggers.forEach((trigger) => {
-    trigger.classList.add('active');
+    trigger.classList.add("active");
   });
   item.isAnimating = false;
   item.isOpen = true;
@@ -228,14 +230,14 @@ function finalizeOpen(item: AccordionItem): void {
 }
 
 function finalizeClose(item: AccordionItem): void {
-  item.panel.style.height = '0px';
-  item.panel.style.paddingTop = '0px';
-  item.panel.style.paddingBottom = '0px';
-  item.panel.style.visibility = 'hidden';
-  item.panel.style.pointerEvents = 'none';
-  item.panel.classList.remove('active');
+  item.panel.style.height = "0px";
+  item.panel.style.paddingTop = "0px";
+  item.panel.style.paddingBottom = "0px";
+  item.panel.style.visibility = "hidden";
+  item.panel.style.pointerEvents = "none";
+  item.panel.classList.remove("active");
   item.triggers.forEach((trigger) => {
-    trigger.classList.remove('active');
+    trigger.classList.remove("active");
   });
   item.isAnimating = false;
   item.isOpen = false;
@@ -253,12 +255,12 @@ function openItem(item: AccordionItem, instant = false): void {
 
   item.isAnimating = true;
   clearPanelAnimation(panel);
-  panel.classList.add('active');
+  panel.classList.add("active");
   item.triggers.forEach((trigger) => {
-    trigger.classList.add('active');
+    trigger.classList.add("active");
   });
-  panel.style.visibility = 'visible';
-  panel.style.pointerEvents = '';
+  panel.style.visibility = "visible";
+  panel.style.pointerEvents = "";
   // Switch dedicated open/close controls at animation start.
   syncTriggerVisibility(item, true);
 
@@ -266,9 +268,9 @@ function openItem(item: AccordionItem, instant = false): void {
     panel.style.paddingTop = top;
     panel.style.paddingBottom = bottom;
     panel.style.height = `${panel.scrollHeight}px`;
-    panel.classList.add('active');
+    panel.classList.add("active");
     item.triggers.forEach((trigger) => {
-      trigger.classList.add('active');
+      trigger.classList.add("active");
     });
     item.isAnimating = false;
     item.isOpen = true;
@@ -278,9 +280,9 @@ function openItem(item: AccordionItem, instant = false): void {
   }
 
   // Always start opening animation from a collapsed state.
-  panel.style.paddingTop = '0px';
-  panel.style.paddingBottom = '0px';
-  panel.style.height = '0px';
+  panel.style.paddingTop = "0px";
+  panel.style.paddingBottom = "0px";
+  panel.style.height = "0px";
   // Ensure browser applies start height before target height.
   void panel.offsetHeight;
   panel.style.paddingTop = top;
@@ -312,9 +314,9 @@ function closeItem(item: AccordionItem, instant = false): void {
 
   item.isAnimating = true;
   clearPanelAnimation(panel);
-  panel.classList.remove('active');
+  panel.classList.remove("active");
   item.triggers.forEach((trigger) => {
-    trigger.classList.remove('active');
+    trigger.classList.remove("active");
   });
   // Switch dedicated open/close controls at animation start.
   syncTriggerVisibility(item, false);
@@ -324,8 +326,8 @@ function closeItem(item: AccordionItem, instant = false): void {
     return;
   }
 
-  panel.style.visibility = 'visible';
-  panel.style.pointerEvents = '';
+  panel.style.visibility = "visible";
+  panel.style.pointerEvents = "";
   panel.style.paddingTop = top;
   panel.style.paddingBottom = bottom;
   const currentHeight = panel.getBoundingClientRect().height;
@@ -344,15 +346,15 @@ function closeItem(item: AccordionItem, instant = false): void {
   });
 
   const frameId = requestAnimationFrame(() => {
-    panel.style.height = '0px';
-    panel.style.paddingTop = '0px';
-    panel.style.paddingBottom = '0px';
+    panel.style.height = "0px";
+    panel.style.paddingTop = "0px";
+    panel.style.paddingBottom = "0px";
   });
   panelAnimationFrameIds.set(panel, frameId);
 }
 
 function toggleItem(item: AccordionItem): void {
-  if (item.mode === 'single' && !item.isOpen) {
+  if (item.mode === "single" && !item.isOpen) {
     const scopedItems = accordionItemsByScope.get(item.scopeKey) ?? [];
     scopedItems.forEach((scopedItem) => {
       if (scopedItem !== item) {
@@ -370,13 +372,13 @@ function toggleItem(item: AccordionItem): void {
 }
 
 function executeTriggerAction(item: AccordionItem, action: TriggerAction): void {
-  if (action === 'close') {
+  if (action === "close") {
     closeItem(item);
     return;
   }
 
-  if (action === 'open') {
-    if (item.mode === 'single') {
+  if (action === "open") {
+    if (item.mode === "single") {
       const scopedItems = accordionItemsByScope.get(item.scopeKey) ?? [];
       scopedItems.forEach((scopedItem) => {
         if (scopedItem !== item) {
@@ -398,20 +400,20 @@ function executeContainerRemoteAction(items: AccordionItem[], action: TriggerAct
 
   const mode = items[0].mode;
 
-  if (mode === 'single') {
+  if (mode === "single") {
     const targetItem = items[0];
     executeTriggerAction(targetItem, action);
     return;
   }
 
-  if (action === 'close') {
+  if (action === "close") {
     items.forEach((item) => {
       closeItem(item);
     });
     return;
   }
 
-  if (action === 'open') {
+  if (action === "open") {
     items.forEach((item) => {
       openItem(item);
     });
@@ -432,10 +434,10 @@ function executeContainerRemoteAction(items: AccordionItem[], action: TriggerAct
 }
 
 function bindRemoteTrigger(trigger: HTMLElement): void {
-  if (trigger.dataset.accordionRemoteBound === 'true') {
+  if (trigger.dataset.accordionRemoteBound === "true") {
     return;
   }
-  trigger.dataset.accordionRemoteBound = 'true';
+  trigger.dataset.accordionRemoteBound = "true";
 
   const runRemoteAction = (event: Event) => {
     event.preventDefault();
@@ -459,9 +461,9 @@ function bindRemoteTrigger(trigger: HTMLElement): void {
     executeContainerRemoteAction(items, action);
   };
 
-  trigger.addEventListener('click', runRemoteAction);
-  trigger.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter' || event.key === ' ' || event.key === 'Space') {
+  trigger.addEventListener("click", runRemoteAction);
+  trigger.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " " || event.key === "Space") {
       runRemoteAction(event);
     }
   });
@@ -475,14 +477,14 @@ function updateActionTriggerVisibilityForScope(scopeKey: string): void {
 }
 
 function initializeAccordionContainer(container: HTMLElement): void {
-  if (container.dataset.accordionInitialized === 'true') {
+  if (container.dataset.accordionInitialized === "true") {
     return;
   }
 
-  container.dataset.accordionInitialized = 'true';
+  container.dataset.accordionInitialized = "true";
   const mode = getMode(container);
   const duration = toNumber(container.dataset.accordionDuration, 300);
-  const easing = container.dataset.accordionEasing ?? 'ease';
+  const easing = container.dataset.accordionEasing ?? "ease";
   const scopeKey = getScopeKey(container);
   const groups = getItemGroups(container);
 
@@ -498,14 +500,14 @@ function initializeAccordionContainer(container: HTMLElement): void {
     });
 
     const panelId = ensurePanelId(panel);
-    panel.setAttribute('role', 'region');
+    panel.setAttribute("role", "region");
     triggers.forEach((trigger) => {
-      trigger.setAttribute('aria-controls', panelId);
+      trigger.setAttribute("aria-controls", panelId);
 
-      if (trigger.tagName !== 'BUTTON') {
-        trigger.setAttribute('role', 'button');
-        if (!trigger.hasAttribute('tabindex')) {
-          trigger.setAttribute('tabindex', '0');
+      if (trigger.tagName !== "BUTTON") {
+        trigger.setAttribute("role", "button");
+        if (!trigger.hasAttribute("tabindex")) {
+          trigger.setAttribute("tabindex", "0");
         }
       }
     });
@@ -513,10 +515,10 @@ function initializeAccordionContainer(container: HTMLElement): void {
     const isInitiallyOpen =
       triggers.some(
         (trigger) =>
-          trigger.classList.contains('active') || trigger.getAttribute('aria-expanded') === 'true'
+          trigger.classList.contains("active") || trigger.getAttribute("aria-expanded") === "true"
       ) ||
-      panel.classList.contains('active') ||
-      panel.getAttribute('aria-hidden') === 'false';
+      panel.classList.contains("active") ||
+      panel.getAttribute("aria-hidden") === "false";
 
     const item: AccordionItem = {
       container,
@@ -538,13 +540,13 @@ function initializeAccordionContainer(container: HTMLElement): void {
     }
 
     triggers.forEach((trigger) => {
-      trigger.addEventListener('click', (event) => {
+      trigger.addEventListener("click", (event) => {
         event.preventDefault();
         executeTriggerAction(item, getTriggerAction(trigger));
       });
 
-      trigger.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' || event.key === ' ' || event.key === 'Space') {
+      trigger.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " " || event.key === "Space") {
           event.preventDefault();
           executeTriggerAction(item, getTriggerAction(trigger));
         }
@@ -560,7 +562,7 @@ function initializeAccordionContainer(container: HTMLElement): void {
     registerRemoteTargets(item);
   });
 
-  if (mode === 'single') {
+  if (mode === "single") {
     let foundOpen = false;
     const scopedItems = accordionItemsByScope.get(scopeKey) ?? [];
     scopedItems.forEach((item) => {
@@ -595,10 +597,10 @@ export function initAccordion(): void {
     });
   };
 
-  document.addEventListener('DOMContentLoaded', runInit);
+  document.addEventListener("DOMContentLoaded", runInit);
 
   // Handle late script execution when DOM is already available.
-  if (document.readyState === 'interactive' || document.readyState === 'complete') {
+  if (document.readyState === "interactive" || document.readyState === "complete") {
     runInit();
   }
 }

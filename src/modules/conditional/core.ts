@@ -198,23 +198,19 @@ export function parseUrlCondition(condition: string): boolean {
 /** Tag names of elements that are not visible and should not count as "children" */
 const INVISIBLE_CHILD_TAGS = new Set(["script", "style", "template", "link", "noscript"]);
 
-type ConditionalDateToken =
-  | "current-year"
-  | "before:"
-  | "after:"
-  | "between:"
-  | "on:"
-  | "day:";
+type ConditionalDateToken = "current-year" | "before:" | "after:" | "between:" | "on:" | "day:";
 
-const CONDITIONAL_DATE_TOKEN_START_RE =
-  /(?:^|\s+)(current-year|before:|after:|between:|on:|day:)/g;
+const CONDITIONAL_DATE_TOKEN_START_RE = /(?:^|\s+)(current-year|before:|after:|between:|on:|day:)/g;
 
 function splitConditionalDateGroup(group: string): string[] {
   const trimmed = group.trim();
   if (!trimmed) return [];
 
   const tokenStarts: number[] = [];
-  const re = new RegExp(CONDITIONAL_DATE_TOKEN_START_RE.source, CONDITIONAL_DATE_TOKEN_START_RE.flags);
+  const re = new RegExp(
+    CONDITIONAL_DATE_TOKEN_START_RE.source,
+    CONDITIONAL_DATE_TOKEN_START_RE.flags
+  );
   let match: RegExpExecArray | null;
 
   while ((match = re.exec(trimmed)) !== null) {

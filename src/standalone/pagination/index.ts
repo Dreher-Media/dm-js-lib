@@ -116,7 +116,11 @@ const resolveOptions = (list: HTMLElement, instanceId: string): PaginationOption
     animationEngine: resolveAnimationEngine(list),
     animationStyle: resolveAnimationStyle(list),
     animationScope: resolveAnimationScope(list),
-    animationDuration: readNumberAttr(list, "paginationAnimationDuration", DEFAULT_ANIMATION_DURATION),
+    animationDuration: readNumberAttr(
+      list,
+      "paginationAnimationDuration",
+      DEFAULT_ANIMATION_DURATION
+    ),
     animationStagger: readNumberAttr(list, "paginationAnimationStagger", DEFAULT_ANIMATION_STAGGER),
     animationEasing: readStringAttr(list, "paginationAnimationEasing") ?? DEFAULT_ANIMATION_EASING,
   };
@@ -124,9 +128,12 @@ const resolveOptions = (list: HTMLElement, instanceId: string): PaginationOption
 
 const collectItems = (list: HTMLElement): HTMLElement[] => {
   const explicit = Array.from(list.querySelectorAll<HTMLElement>("[data-pagination-item]"));
-  const source = explicit.length > 0 ? explicit : Array.from(list.children).filter(
-    (node): node is HTMLElement => node instanceof HTMLElement
-  );
+  const source =
+    explicit.length > 0
+      ? explicit
+      : Array.from(list.children).filter(
+          (node): node is HTMLElement => node instanceof HTMLElement
+        );
   return source.filter((item) => {
     if (NON_RENDERED_ITEM_TAGS.has(item.tagName)) return false;
     if (item.classList.contains("pagination-exclude")) return false;
@@ -181,14 +188,19 @@ const collectSentinel = (root: HTMLElement): HTMLElement | null => {
   );
 };
 
-const computeTotalPages = (totalItems: number, pageSize: number, firstPageSize?: number): number => {
+const computeTotalPages = (
+  totalItems: number,
+  pageSize: number,
+  firstPageSize?: number
+): number => {
   const first = firstPageSize ?? pageSize;
   if (totalItems <= 0) return 1;
   if (totalItems <= first) return 1;
   return 1 + Math.ceil((totalItems - first) / pageSize);
 };
 
-const clamp = (value: number, min: number, max: number): number => Math.min(Math.max(value, min), max);
+const clamp = (value: number, min: number, max: number): number =>
+  Math.min(Math.max(value, min), max);
 
 const visibleIndexSet = (
   mode: PaginationMode,
@@ -325,18 +337,36 @@ const getKeyframes = (style: PaginationAnimationStyle, phase: "enter" | "exit"):
   if (style === "none") return [{ opacity: 1 }, { opacity: 1 }];
   if (style === "slide-up") {
     return phase === "enter"
-      ? [{ opacity: 0, transform: "translateY(12px)" }, { opacity: 1, transform: "translateY(0)" }]
-      : [{ opacity: 1, transform: "translateY(0)" }, { opacity: 0, transform: "translateY(-12px)" }];
+      ? [
+          { opacity: 0, transform: "translateY(12px)" },
+          { opacity: 1, transform: "translateY(0)" },
+        ]
+      : [
+          { opacity: 1, transform: "translateY(0)" },
+          { opacity: 0, transform: "translateY(-12px)" },
+        ];
   }
   if (style === "slide-left") {
     return phase === "enter"
-      ? [{ opacity: 0, transform: "translateX(12px)" }, { opacity: 1, transform: "translateX(0)" }]
-      : [{ opacity: 1, transform: "translateX(0)" }, { opacity: 0, transform: "translateX(-12px)" }];
+      ? [
+          { opacity: 0, transform: "translateX(12px)" },
+          { opacity: 1, transform: "translateX(0)" },
+        ]
+      : [
+          { opacity: 1, transform: "translateX(0)" },
+          { opacity: 0, transform: "translateX(-12px)" },
+        ];
   }
   if (style === "scale") {
     return phase === "enter"
-      ? [{ opacity: 0, transform: "scale(0.96)" }, { opacity: 1, transform: "scale(1)" }]
-      : [{ opacity: 1, transform: "scale(1)" }, { opacity: 0, transform: "scale(0.96)" }];
+      ? [
+          { opacity: 0, transform: "scale(0.96)" },
+          { opacity: 1, transform: "scale(1)" },
+        ]
+      : [
+          { opacity: 1, transform: "scale(1)" },
+          { opacity: 0, transform: "scale(0.96)" },
+        ];
   }
   return phase === "enter" ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 1 }, { opacity: 0 }];
 };
@@ -369,7 +399,9 @@ const runWaapiGroup = (
 const awaitAnimations = async (animations: Animation[], timeoutMs: number): Promise<void> => {
   if (animations.length === 0) return;
   await Promise.race([
-    Promise.all(animations.map((animation) => animation.finished.catch(() => undefined))).then(() => undefined),
+    Promise.all(animations.map((animation) => animation.finished.catch(() => undefined))).then(
+      () => undefined
+    ),
     new Promise<void>((resolve) => {
       window.setTimeout(resolve, timeoutMs);
     }),
@@ -398,10 +430,7 @@ const clearAnimationEffects = (animations: Animation[]): void => {
   });
 };
 
-const applyCssPhase = (
-  items: HTMLElement[],
-  phase: "enter" | "exit"
-): void => {
+const applyCssPhase = (items: HTMLElement[], phase: "enter" | "exit"): void => {
   const base = phase === "enter" ? "pagination-item-enter" : "pagination-item-exit";
   const active = `${base}-active`;
   items.forEach((item) => {
@@ -410,10 +439,7 @@ const applyCssPhase = (
   });
 };
 
-const clearCssPhase = (
-  items: HTMLElement[],
-  phase: "enter" | "exit"
-): void => {
+const clearCssPhase = (items: HTMLElement[], phase: "enter" | "exit"): void => {
   const base = phase === "enter" ? "pagination-item-enter" : "pagination-item-exit";
   const active = `${base}-active`;
   items.forEach((item) => {
@@ -464,7 +490,8 @@ const writePageToStorage = (key: string, page: number): void => {
 };
 
 const persistPage = (instance: PaginationInstanceState): void => {
-  if (instance.options.persistKey) writePageToStorage(instance.options.persistKey, instance.currentPage);
+  if (instance.options.persistKey)
+    writePageToStorage(instance.options.persistKey, instance.currentPage);
   if (instance.options.urlKey) writePageToUrl(instance.options.urlKey, instance.currentPage);
 };
 
@@ -601,7 +628,11 @@ const performRender = async (instance: PaginationInstanceState): Promise<void> =
   const activeItems = sourceItems.filter(isRuntimeEligibleItem);
   instance.elements.items = activeItems;
   const totalItems = activeItems.length;
-  instance.totalPages = computeTotalPages(totalItems, instance.options.pageSize, instance.options.firstPageSize);
+  instance.totalPages = computeTotalPages(
+    totalItems,
+    instance.options.pageSize,
+    instance.options.firstPageSize
+  );
   instance.currentPage = clamp(instance.currentPage, 1, instance.totalPages);
   const targetVisible = visibleIndexSet(
     instance.options.mode,
@@ -654,7 +685,10 @@ const performRender = async (instance: PaginationInstanceState): Promise<void> =
       if (instance.animationToken !== token) return;
 
       if (useListAnimation) {
-        instance.elements.list.classList.remove("pagination-list-exit", "pagination-list-exit-active");
+        instance.elements.list.classList.remove(
+          "pagination-list-exit",
+          "pagination-list-exit-active"
+        );
       }
       if (useItemAnimation) clearCssPhase(exiting, "exit");
 
@@ -662,7 +696,10 @@ const performRender = async (instance: PaginationInstanceState): Promise<void> =
       normalizeRenderedItems(nextItems);
 
       if (useListAnimation) {
-        instance.elements.list.classList.add("pagination-list-enter", "pagination-list-enter-active");
+        instance.elements.list.classList.add(
+          "pagination-list-enter",
+          "pagination-list-enter-active"
+        );
       }
       if (useItemAnimation) applyCssPhase(entering, "enter");
       await new Promise<void>((resolve) => {
@@ -671,7 +708,10 @@ const performRender = async (instance: PaginationInstanceState): Promise<void> =
       if (instance.animationToken !== token) return;
 
       if (useListAnimation) {
-        instance.elements.list.classList.remove("pagination-list-enter", "pagination-list-enter-active");
+        instance.elements.list.classList.remove(
+          "pagination-list-enter",
+          "pagination-list-enter-active"
+        );
       }
       if (useItemAnimation) clearCssPhase(entering, "enter");
     } else {
@@ -746,9 +786,14 @@ const performRender = async (instance: PaginationInstanceState): Promise<void> =
   if (instance.animationToken !== token) return;
   cancelAnimations(instance);
   const finalItems = activeItems.filter((_, index) => targetVisible.has(index));
-  if (!isSameItemSet(Array.from(instance.elements.list.children).filter(
-    (node): node is HTMLElement => node instanceof HTMLElement && sourceSet.has(node)
-  ), finalItems)) {
+  if (
+    !isSameItemSet(
+      Array.from(instance.elements.list.children).filter(
+        (node): node is HTMLElement => node instanceof HTMLElement && sourceSet.has(node)
+      ),
+      finalItems
+    )
+  ) {
     instance.elements.list.replaceChildren(...finalItems);
   }
   normalizeRenderedItems(finalItems);
@@ -897,7 +942,8 @@ const attachFilterHandlers = (): void => {
       instances.forEach((instance) => {
         if (instance.id !== filterInstanceId) return;
         const list = instance.elements.list;
-        const relevant = filterList === list || filterList.contains(list) || list.contains(filterList);
+        const relevant =
+          filterList === list || filterList.contains(list) || list.contains(filterList);
         if (relevant) void refreshInstance(instance, true);
       });
     });
