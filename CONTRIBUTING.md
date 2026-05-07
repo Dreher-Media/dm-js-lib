@@ -77,6 +77,7 @@ One-time, by the maintainer:
 - `main` is the default branch.
 - Branch protection on `main`: require PR + green CI before merge.
 - Repo secret `NPM_TOKEN`: npm automation token with publish rights for `@dreher-media/dm-js-lib`.
+- Repo secret `RELEASE_PLEASE_TOKEN`: a fine-grained personal access token (or GitHub App token) with `contents: read/write` and `pull-requests: read/write` on this repo. Required so release-please's PRs trigger CI — PRs opened by the default `GITHUB_TOKEN` do not run `pull_request` workflows.
 - Workflow permissions (Settings → Actions → General): "Read and write" so release-please can open PRs and create releases. Also enable "Allow GitHub Actions to create and approve pull requests."
 
 ## What we don't do
