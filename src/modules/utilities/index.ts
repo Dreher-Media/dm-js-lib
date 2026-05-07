@@ -60,6 +60,7 @@ function initFileDownload(): void {
       link.href = url;
       link.download = filename || url.split("/").pop() || "download";
       link.target = "_blank";
+      link.rel = "noopener noreferrer";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
