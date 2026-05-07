@@ -23,7 +23,10 @@ module.exports = {
         "revert",
       ],
     ],
-    "subject-case": [2, "always", "lower-case"],
+    // Inherit subject-case from config-conventional: disallow Sentence-case,
+    // Start-case, PascalCase, UPPER-CASE — but allow proper nouns inside the
+    // subject ("chore: migrate to Dreher-Media/standards" is fine, "Migrate to
+    // standards" is not).
     "header-max-length": [2, "always", 100],
   },
 };
