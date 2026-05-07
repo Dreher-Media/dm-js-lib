@@ -25,36 +25,46 @@ const getVideoSwipers = (): Swiper[] | undefined => {
  */
 export function initializePlyrPlayers(
   plyrPlayers: Plyr[],
-  players: Record<string, PlayerInstance>
+  players: Record<string, PlayerInstance>,
+  root: ParentNode = document
 ): void {
-  if (typeof window.Plyr !== "undefined") {
-    const setupPlayers = window.Plyr.setup("._init-plyr");
-    plyrPlayers.push(...setupPlayers);
+  if (typeof window.Plyr === "undefined") return;
 
-    // Set up Plyr player event listeners
-    setupPlayers.forEach((plyrPlayer) => {
-      plyrPlayer.on("play", () => {
-        // When a Plyr player plays, pause all other players (exclude this one)
-        pauseAllPlayers(null, plyrPlayers, players, plyrPlayer);
-        const swipers = getVideoSwipers();
-        if (swipers) {
-          swipers.forEach((swiper) => {
-            swiper.autoplay.stop();
-          });
-        }
-      });
+  const elements = Array.from(root.querySelectorAll<HTMLElement>("._init-plyr")).filter(
+    (el) => el.dataset.dmPlyrBound !== "true"
+  );
+  if (elements.length === 0) return;
+  elements.forEach((el) => (el.dataset.dmPlyrBound = "true"));
 
-      plyrPlayer.on("pause", () => {
-        // When a Plyr player pauses, resume swiper autoplay
-        const swipers = getVideoSwipers();
-        if (swipers) {
-          swipers.forEach((swiper) => {
-            swiper.autoplay.start();
-          });
-        }
-      });
+  const setupPlayers = window.Plyr.setup(elements);
+  if (!setupPlayers) return;
+
+  const newPlayers = Array.isArray(setupPlayers) ? setupPlayers : [setupPlayers];
+  plyrPlayers.push(...newPlayers);
+
+  // Set up Plyr player event listeners
+  newPlayers.forEach((plyrPlayer) => {
+    plyrPlayer.on("play", () => {
+      // When a Plyr player plays, pause all other players (exclude this one)
+      pauseAllPlayers(null, plyrPlayers, players, plyrPlayer);
+      const swipers = getVideoSwipers();
+      if (swipers) {
+        swipers.forEach((swiper) => {
+          swiper.autoplay.stop();
+        });
+      }
     });
-  }
+
+    plyrPlayer.on("pause", () => {
+      // When a Plyr player pauses, resume swiper autoplay
+      const swipers = getVideoSwipers();
+      if (swipers) {
+        swipers.forEach((swiper) => {
+          swiper.autoplay.start();
+        });
+      }
+    });
+  });
 }
 
 /**
