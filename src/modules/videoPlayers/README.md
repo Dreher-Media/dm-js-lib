@@ -43,7 +43,7 @@ Add the `_init-plyr` class to video elements:
 **Attributes:**
 - `data-type="youtube"` - Specifies YouTube player
 - `data-video-id` - YouTube video ID
-- `data-id` - Unique player ID
+- `data-id` - Optional identifier; does not need to be unique. The library assigns its own unique key internally, so the same video can appear multiple times on a page.
 - `data-time` - Start time in seconds (optional)
 
 ### Vimeo
@@ -87,7 +87,7 @@ Add the `_init-plyr` class to video elements:
 **Attributes:**
 - `data-type="ardmediathek"` - Specifies ARD Mediathek embed
 - `data-video-id` - ARD Mediathek video ID (base64-style from their URLs)
-- `data-id` - Unique player ID
+- `data-id` - Optional identifier; does not need to be unique. The library assigns its own unique key internally, so the same video can appear multiple times on a page.
 
 On click, the thumbnail is replaced with an iframe embed. No external script is loaded.
 
@@ -108,7 +108,7 @@ On click, the thumbnail is replaced with an iframe embed. No external script is 
 **Attributes:**
 - `data-type="other"` - Opens the URL in a new tab (no embed)
 - `data-video-id` - Full URL to the video page
-- `data-id` - Unique player ID
+- `data-id` - Optional identifier; does not need to be unique. The library assigns its own unique key internally, so the same video can appear multiple times on a page.
 
 Use this for platforms that can't be embedded (e.g. some streaming services). Clicking pauses other players and stops Swiper autoplay, then opens the URL in a new tab with `noopener,noreferrer`.
 

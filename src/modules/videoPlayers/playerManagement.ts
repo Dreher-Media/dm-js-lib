@@ -10,6 +10,10 @@ if (typeof window !== "undefined" && typeof window.videoSwipers === "undefined")
   window.videoSwipers = [];
 }
 
+// Monotonic counter so the same video can appear multiple times on a page
+// without colliding on data-id-based keys or duplicate DOM ids.
+let playerKeyCounter = 0;
+
 // Create a reference to window.videoSwipers for direct access
 // This allows the code to use videoSwipers directly while it's actually stored on window
 const getVideoSwipers = (): Swiper[] | undefined => {
@@ -148,6 +152,11 @@ export function initializePlayers(
     if ((el as HTMLElement).dataset.dmPlayerBound === "true") return;
     (el as HTMLElement).dataset.dmPlayerBound = "true";
 
+    // Assign a unique runtime key per element so duplicate `data-id`s
+    // (e.g. the same video rendered twice on a page) don't collide.
+    const id = `player_${++playerKeyCounter}`;
+    (el as HTMLElement).dataset.dmPlayerKey = id;
+
     el.addEventListener("click", () => {
       const customEmbed = el.querySelector("[data-custom-embed]");
       if (customEmbed) {
@@ -155,7 +164,6 @@ export function initializePlayers(
       }
 
       const element = el as HTMLElement;
-      const id = `player_${element.dataset.id}`;
       const type = element.dataset.type as
         | "youtube"
         | "vimeo"
