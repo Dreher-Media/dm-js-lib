@@ -1,6 +1,6 @@
 {
   "name": "@dreher-media/dm-js-lib",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "Centralized JavaScript library for Dreher.Media websites with CDN delivery",
   "type": "module",
   "main": "dist/dm-js-lib.min.js",
