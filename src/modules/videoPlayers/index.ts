@@ -121,6 +121,7 @@ export function initVideoPlayers(): void {
     window.dmReinitVideoPlayers = (container: HTMLElement) => {
       const elements = container.querySelectorAll<Element>(".youtube");
       initializePlayers(elements, players, plyrPlayers);
+      initializePlyrPlayers(plyrPlayers, players, container);
     };
   });
 }

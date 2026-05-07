@@ -14,7 +14,7 @@ declare global {
       push(callback: () => void): void;
     };
     Plyr?: {
-      setup(selector: string): Plyr[];
+      setup(targets: string | Element | NodeListOf<Element> | Element[]): Plyr[];
     };
     YT?: {
       Player: new (
