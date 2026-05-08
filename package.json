@@ -12,14 +12,14 @@
   "scripts": {
     "build": "rollup -c",
     "typecheck": "tsc --noEmit",
-    "format": "prettier --write \"src/**/*.{ts,js}\" \"*.{js,json,md}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,js}\" \"*.{js,json,md}\"",
+    "format": "prettier --write \"src/**/*.{ts,js}\" \"*.{js,cjs,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,js}\" \"*.{js,cjs,json,md}\"",
     "verify": "npm run format:check && npm run typecheck",
     "prepublishOnly": "npm run build",
     "prepare": "husky"
   },
   "lint-staged": {
-    "*.{ts,js,json,md}": "prettier --write"
+    "*.{ts,js,cjs,json,md}": "prettier --write"
   },
   "keywords": [
     "cdn",
@@ -29,6 +29,8 @@
   "author": "Tobias Laufersweiler <tobias@dreher-media.de>",
   "license": "MIT",
   "devDependencies": {
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.6",
     "husky": "^9.1.7",

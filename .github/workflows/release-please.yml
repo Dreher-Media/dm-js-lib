@@ -16,8 +16,8 @@ jobs:
         with:
           target-branch: main
           # Use a PAT (or GitHub App token) so the release PR is opened by a
-          # user account, not GITHUB_TOKEN. PRs opened with GITHUB_TOKEN do
-          # not trigger pull_request workflows, which means CI never runs on
-          # the release PR. Falls back to GITHUB_TOKEN if the secret is unset
+          # user account, not GITHUB_TOKEN. PRs opened with GITHUB_TOKEN do not
+          # trigger pull_request workflows, which means CI never runs on the
+          # release PR. Falls back to GITHUB_TOKEN if the secret is unset
           # (release PR will still open, just won't trigger CI).
           token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
