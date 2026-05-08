@@ -3,7 +3,7 @@
  * Functions for extracting filter values and matching items
  */
 
-import type { FilterCache } from "./types";
+import type { FilterCache } from './types';
 
 /**
  * Get filter instance identifier
@@ -25,21 +25,21 @@ export function getInstance(element: HTMLElement): string | null {
 export function getFilterValue(element: HTMLElement): string | null {
   const tagName = element.tagName.toLowerCase();
 
-  if (tagName === "input") {
+  if (tagName === 'input') {
     const type = (element as HTMLInputElement).type;
-    if (type === "checkbox" || type === "radio") {
+    if (type === 'checkbox' || type === 'radio') {
       return (element as HTMLInputElement).checked
-        ? (element as HTMLInputElement).value || "true"
+        ? (element as HTMLInputElement).value || 'true'
         : null;
     }
-    if (type === "text" || type === "search") {
+    if (type === 'text' || type === 'search') {
       const value = (element as HTMLInputElement).value.trim();
       return value || null;
     }
     return (element as HTMLInputElement).value || null;
   }
 
-  if (tagName === "select") {
+  if (tagName === 'select') {
     return (element as HTMLSelectElement).value || null;
   }
 
@@ -47,8 +47,8 @@ export function getFilterValue(element: HTMLElement): string | null {
   const dataValue = element.dataset.filterValue;
   if (dataValue) {
     // Tab-link / radio-style: only contribute value when this option is active
-    if (element.dataset.filterType === "radio") {
-      return element.classList.contains("active") ? dataValue : null;
+    if (element.dataset.filterType === 'radio') {
+      return element.classList.contains('active') ? dataValue : null;
     }
     return dataValue;
   }
@@ -69,7 +69,7 @@ export function getFieldFilters(field: string, instance: string | null): string[
   document.querySelectorAll(selector).forEach((control) => {
     const el = control as HTMLElement;
     // Skip list items - they are descendants of [data-filter-list] elements
-    if (el.closest("[data-filter-list]") !== null) {
+    if (el.closest('[data-filter-list]') !== null) {
       return;
     }
     const value = getFilterValue(el);
@@ -96,7 +96,7 @@ export function isSearchField(field: string, instance: string | null): boolean {
   for (const el of Array.from(allMatches)) {
     const element = el as HTMLElement;
     // Skip list items - they are descendants of [data-filter-list] elements
-    if (element.closest("[data-filter-list]") === null) {
+    if (element.closest('[data-filter-list]') === null) {
       control = element;
       break;
     }
@@ -105,9 +105,9 @@ export function isSearchField(field: string, instance: string | null): boolean {
   if (!control) return false;
 
   const tagName = control.tagName.toLowerCase();
-  if (tagName === "input") {
+  if (tagName === 'input') {
     const type = (control as HTMLInputElement).type;
-    return type === "text" || type === "search";
+    return type === 'text' || type === 'search';
   }
 
   return false;
@@ -119,7 +119,7 @@ export function isSearchField(field: string, instance: string | null): boolean {
 export function parseFieldList(value: string | null | undefined): string[] {
   if (!value) return [];
   return value
-    .split(",")
+    .split(',')
     .map((v) => v.trim())
     .filter((v) => v.length > 0);
 }
@@ -135,7 +135,7 @@ export function getAllFilters(instance: string | null): {
   const multifieldSearches: Record<string, string[]> = {};
   // Only match actual filter controls (form elements and interactive elements)
   // We'll filter out list items in the loop below
-  const baseSelector = "[data-filter-field]";
+  const baseSelector = '[data-filter-field]';
   const selector = instance
     ? `[data-filter-instance="${instance}"] ${baseSelector}, ${baseSelector}[data-filter-instance="${instance}"]`
     : `${baseSelector}:not([data-filter-instance])`;
@@ -146,7 +146,7 @@ export function getAllFilters(instance: string | null): {
     if (field) {
       // Skip list items - they are descendants of [data-filter-list] elements
       // List items should only be matched when checking item values, not when collecting filter controls
-      const isListItem = el.closest("[data-filter-list]") !== null;
+      const isListItem = el.closest('[data-filter-list]') !== null;
       if (isListItem) {
         return;
       }
@@ -155,15 +155,15 @@ export function getAllFilters(instance: string | null): {
 
       // Check if this is a select with an "all" value that should be ignored
       let shouldIgnore = false;
-      if (el.tagName.toLowerCase() === "select") {
+      if (el.tagName.toLowerCase() === 'select') {
         const select = el as HTMLSelectElement;
-        const allValue = select.dataset.filterAllValue || "";
-        const allText = select.dataset.filterAllText || "All";
+        const allValue = select.dataset.filterAllValue || '';
+        const allText = select.dataset.filterAllText || 'All';
 
         // If value is null/empty or matches the "all" value, treat it as no filter
         if (
           !value ||
-          value === "" ||
+          value === '' ||
           value === allValue ||
           (value.trim && value.trim() === allValue)
         ) {
@@ -175,17 +175,17 @@ export function getAllFilters(instance: string | null): {
         const selectedOption = select.options[select.selectedIndex];
         if (
           selectedOption &&
-          (!selectedOption.hasAttribute("value") || selectedOption.value === "")
+          (!selectedOption.hasAttribute('value') || selectedOption.value === '')
         ) {
-          const optionText = selectedOption.textContent?.trim().toLowerCase() || "";
+          const optionText = selectedOption.textContent?.trim().toLowerCase() || '';
           const lowerAllText = allText.toLowerCase();
           // Check if it's a placeholder option (starts with "select", "choose", "all", etc.)
           if (
             optionText === lowerAllText ||
-            optionText.startsWith("select") ||
-            optionText.startsWith("choose") ||
-            optionText === "all" ||
-            optionText === ""
+            optionText.startsWith('select') ||
+            optionText.startsWith('choose') ||
+            optionText === 'all' ||
+            optionText === ''
           ) {
             shouldIgnore = true;
           }
@@ -194,7 +194,7 @@ export function getAllFilters(instance: string | null): {
 
       // Only add non-empty values (empty string, null, or whitespace-only means no filter)
       // Also ignore values that match the "all" option or placeholder options
-      if (value && typeof value === "string" && value.trim().length > 0 && !shouldIgnore) {
+      if (value && typeof value === 'string' && value.trim().length > 0 && !shouldIgnore) {
         // Check if data-filter-search is specified (can be single or multiple fields)
         const searchFields = parseFieldList(el.dataset.filterSearch);
         if (searchFields.length > 0) {
@@ -220,9 +220,9 @@ export function getItemFieldValue(item: HTMLElement, field: string): string[] {
   // First check if item itself has the field
   const itemField = item.dataset.filterField;
   if (itemField === field) {
-    const value = item.dataset.filterValue || item.textContent?.trim() || "";
+    const value = item.dataset.filterValue || item.textContent?.trim() || '';
     const result = value
-      .split(",")
+      .split(',')
       .map((v) => v.trim().toLowerCase())
       .filter(Boolean);
     return result;
@@ -235,10 +235,10 @@ export function getItemFieldValue(item: HTMLElement, field: string): string[] {
     const value =
       fieldElement.dataset.filterValue ||
       fieldElement.textContent?.trim() ||
-      fieldElement.getAttribute("value") ||
-      "";
+      fieldElement.getAttribute('value') ||
+      '';
     return value
-      .split(",")
+      .split(',')
       .map((v) => v.trim().toLowerCase())
       .filter(Boolean);
   }
@@ -250,7 +250,7 @@ export function getItemFieldValue(item: HTMLElement, field: string): string[] {
     // Check if the item has data-filter-field matching the field we're looking for
     // If not, use the value as a fallback for any field (useful for general filtering)
     const itemValues = itemFilterValue
-      .split(",")
+      .split(',')
       .map((v) => v.trim().toLowerCase())
       .filter(Boolean);
 
@@ -272,9 +272,9 @@ export function getItemFilterValues(item: HTMLElement): string[] {
   if (filterValue) {
     values.push(
       ...filterValue
-        .split(",")
+        .split(',')
         .map((v) => v.trim().toLowerCase())
-        .filter(Boolean)
+        .filter(Boolean),
     );
   }
 
@@ -288,7 +288,7 @@ export function matchesFilters(
   item: HTMLElement,
   filters: Record<string, string[]>,
   multifieldSearches: Record<string, string[]>,
-  instance: string | null
+  instance: string | null,
 ): boolean {
   // Filter out empty filter arrays
   const activeFilters: Record<string, string[]> = {};
@@ -315,7 +315,7 @@ export function matchesFilters(
           const itemValues = getItemFieldValue(item, searchField);
           // Use partial matching for search
           return itemValues.some(
-            (itemValue) => itemValue.includes(filterValue) || filterValue.includes(itemValue)
+            (itemValue) => itemValue.includes(filterValue) || filterValue.includes(itemValue),
           );
         });
 
@@ -324,7 +324,7 @@ export function matchesFilters(
           const generalValues = getItemFilterValues(item);
           return generalValues.some(
             (generalValue) =>
-              generalValue.includes(filterValue) || filterValue.includes(generalValue)
+              generalValue.includes(filterValue) || filterValue.includes(generalValue),
           );
         }
 
@@ -358,7 +358,7 @@ export function matchesFilters(
           }
           // For checkboxes/radios/selects, use exact matching
           return itemValue === filterValue;
-        })
+        }),
       );
 
       if (!matches) {
@@ -378,11 +378,11 @@ export function updateCounts(
   total: number,
   visible: number,
   instance: string | null,
-  cache?: FilterCache
+  cache?: FilterCache,
 ): void {
   const countElements = cache?.countElements || [];
   if (countElements.length === 0) {
-    const baseSelector = "[data-filter-count], [data-filter-results]";
+    const baseSelector = '[data-filter-count], [data-filter-results]';
     const selector = instance
       ? `[data-filter-instance="${instance}"] ${baseSelector}, ${baseSelector}[data-filter-instance="${instance}"]`
       : `${baseSelector}:not([data-filter-instance])`;
@@ -393,11 +393,11 @@ export function updateCounts(
     const el = element as HTMLElement;
     if (el.dataset.filterCount !== undefined) {
       el.textContent = total.toString();
-      el.setAttribute("aria-label", `Total items: ${total}`);
+      el.setAttribute('aria-label', `Total items: ${total}`);
     }
     if (el.dataset.filterResults !== undefined) {
       el.textContent = visible.toString();
-      el.setAttribute("aria-label", `Showing ${visible} of ${total} items`);
+      el.setAttribute('aria-label', `Showing ${visible} of ${total} items`);
     }
   });
 }

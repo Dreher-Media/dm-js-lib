@@ -25,8 +25,8 @@ export function getTabTargetValue(link: HTMLElement): string | null {
     return tabLink;
   }
   // Priority 3: href attribute starting with #
-  const href = link.getAttribute("href");
-  if (href?.startsWith("#")) {
+  const href = link.getAttribute('href');
+  if (href?.startsWith('#')) {
     return href.slice(1);
   }
   return null;
@@ -53,7 +53,7 @@ export function getTabContentValuesForGroup(group: string): string[] {
   const contentValues: string[] = [];
   document
     .querySelectorAll(
-      `.tab-link[data-tab-group="${group}"]:not([data-lang-link]):not([data-lang]), [data-tab-link][data-tab-group="${group}"]`
+      `.tab-link[data-tab-group="${group}"]:not([data-lang-link]):not([data-lang]), [data-tab-link][data-tab-group="${group}"]`,
     )
     .forEach((link) => {
       const targetValue = getTabTargetValue(link as HTMLElement);
@@ -70,7 +70,7 @@ export function getTabContentValuesForGroup(group: string): string[] {
 export function getTabContentValuesForParent(parent: HTMLElement): string[] {
   const contentValues: string[] = [];
   parent
-    .querySelectorAll(".tab-link:not([data-lang-link]):not([data-lang]), [data-tab-link]")
+    .querySelectorAll('.tab-link:not([data-lang-link]):not([data-lang]), [data-tab-link]')
     .forEach((link) => {
       const targetValue = getTabTargetValue(link as HTMLElement);
       if (targetValue) {

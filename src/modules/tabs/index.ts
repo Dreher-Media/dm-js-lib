@@ -3,16 +3,16 @@
  * Handles tab link functionality for switching between tab content
  */
 
-import { getUrlParams, getTabTargetValue, findAllTabContentByAttribute } from "./utils";
-import { activateTab } from "./core";
-import { getTabContentValuesForGroup, getTabContentValuesForParent } from "./utils";
+import { getUrlParams, getTabTargetValue, findAllTabContentByAttribute } from './utils';
+import { activateTab } from './core';
+import { getTabContentValuesForGroup, getTabContentValuesForParent } from './utils';
 
 export function initTabs(): void {
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener('DOMContentLoaded', () => {
     // Handle URL parameters for setting default tab
     const urlParams = getUrlParams();
-    const urlTab = urlParams.get("tab");
-    const urlTabGroup = urlParams.get("tabGroup");
+    const urlTab = urlParams.get('tab');
+    const urlTabGroup = urlParams.get('tabGroup');
 
     if (urlTab) {
       // Find tab link by target value
@@ -22,7 +22,7 @@ export function initTabs(): void {
         // If tabGroup is specified, find tab link within that group
         document
           .querySelectorAll(
-            `.tab-link[data-tab-group="${urlTabGroup}"]:not([data-lang-link]):not([data-lang]), [data-tab-link][data-tab-group="${urlTabGroup}"]`
+            `.tab-link[data-tab-group="${urlTabGroup}"]:not([data-lang-link]):not([data-lang]), [data-tab-link][data-tab-group="${urlTabGroup}"]`,
           )
           .forEach((link) => {
             const targetValue = getTabTargetValue(link as HTMLElement);
@@ -35,10 +35,10 @@ export function initTabs(): void {
         // This ensures all tabs in the group are properly deactivated
         document
           .querySelectorAll(
-            `.tab-link[data-tab-group="${urlTabGroup}"]:not([data-lang-link]):not([data-lang]), [data-tab-link][data-tab-group="${urlTabGroup}"]`
+            `.tab-link[data-tab-group="${urlTabGroup}"]:not([data-lang-link]):not([data-lang]), [data-tab-link][data-tab-group="${urlTabGroup}"]`,
           )
           .forEach((link) => {
-            link.classList.remove("active");
+            link.classList.remove('active');
           });
 
         // Hide all content elements for this tab group
@@ -46,8 +46,8 @@ export function initTabs(): void {
         document
           .querySelectorAll(`[data-tab-content][data-tab-group="${urlTabGroup}"]`)
           .forEach((contentEl) => {
-            (contentEl as HTMLElement).style.display = "none";
-            contentEl.classList.remove("active");
+            (contentEl as HTMLElement).style.display = 'none';
+            contentEl.classList.remove('active');
           });
 
         // Also hide content elements based on tab link target values
@@ -55,14 +55,14 @@ export function initTabs(): void {
         contentValues.forEach((contentValue) => {
           const contentEls = findAllTabContentByAttribute(contentValue);
           contentEls.forEach((contentEl) => {
-            contentEl.style.display = "none";
-            contentEl.classList.remove("active");
+            contentEl.style.display = 'none';
+            contentEl.classList.remove('active');
           });
         });
       } else {
         // Find tab link without group restriction
         document
-          .querySelectorAll(".tab-link:not([data-lang-link]):not([data-lang]), [data-tab-link]")
+          .querySelectorAll('.tab-link:not([data-lang-link]):not([data-lang]), [data-tab-link]')
           .forEach((link) => {
             const targetValue = getTabTargetValue(link as HTMLElement);
             if (targetValue === urlTab) {
@@ -79,9 +79,9 @@ export function initTabs(): void {
 
     // Handle general tab links (both class-based and attribute-based)
     document
-      .querySelectorAll(".tab-link:not([data-lang-link]):not([data-lang]), [data-tab-link]")
+      .querySelectorAll('.tab-link:not([data-lang-link]):not([data-lang]), [data-tab-link]')
       .forEach((el) => {
-        el.addEventListener("click", (event) => {
+        el.addEventListener('click', (event) => {
           event.preventDefault();
           const target = event.currentTarget as HTMLElement;
           activateTab(target);
@@ -93,7 +93,7 @@ export function initTabs(): void {
     if (!urlTab) {
       document
         .querySelectorAll(
-          ".tab-link.active:not([data-lang-link]):not([data-lang]), [data-tab-link].active"
+          '.tab-link.active:not([data-lang-link]):not([data-lang]), [data-tab-link].active',
         )
         .forEach((link) => {
           const tabLink = link as HTMLElement;
@@ -113,8 +113,8 @@ export function initTabs(): void {
                 .forEach((contentEl) => {
                   // Only hide if it's not one of the target tab contents
                   if (!targetTabContents.includes(contentEl as HTMLElement)) {
-                    (contentEl as HTMLElement).style.display = "none";
-                    contentEl.classList.remove("active");
+                    (contentEl as HTMLElement).style.display = 'none';
+                    contentEl.classList.remove('active');
                   }
                 });
 
@@ -125,8 +125,8 @@ export function initTabs(): void {
                 contentEls.forEach((contentEl) => {
                   // Only hide if it's not one of the target tab contents
                   if (!targetTabContents.includes(contentEl)) {
-                    contentEl.style.display = "none";
-                    contentEl.classList.remove("active");
+                    contentEl.style.display = 'none';
+                    contentEl.classList.remove('active');
                   }
                 });
               });
@@ -139,8 +139,8 @@ export function initTabs(): void {
                   contentEls.forEach((contentEl) => {
                     // Only hide if it's not one of the target tab contents
                     if (!targetTabContents.includes(contentEl)) {
-                      contentEl.style.display = "none";
-                      contentEl.classList.remove("active");
+                      contentEl.style.display = 'none';
+                      contentEl.classList.remove('active');
                     }
                   });
                 });
@@ -149,8 +149,8 @@ export function initTabs(): void {
 
             // Show all active tab content elements
             targetTabContents.forEach((targetTabContent) => {
-              targetTabContent.style.display = "block";
-              targetTabContent.classList.add("active");
+              targetTabContent.style.display = 'block';
+              targetTabContent.classList.add('active');
             });
           }
         });
@@ -164,7 +164,7 @@ export function initTabs(): void {
       // Handle data-tab-first-active on tab links directly
       document
         .querySelectorAll(
-          ".tab-link[data-tab-first-active]:not([data-lang-link]):not([data-lang]), [data-tab-link][data-tab-first-active]"
+          '.tab-link[data-tab-first-active]:not([data-lang-link]):not([data-lang]), [data-tab-link][data-tab-first-active]',
         )
         .forEach((link) => {
           const tabLink = link as HTMLElement;
@@ -176,7 +176,7 @@ export function initTabs(): void {
           }
 
           // Skip if this tab is already active
-          if (tabLink.classList.contains("active")) {
+          if (tabLink.classList.contains('active')) {
             return;
           }
 
@@ -189,7 +189,7 @@ export function initTabs(): void {
             // Skip if a tab in this group is already active
             const hasActiveTabInGroup =
               document.querySelector(
-                `.tab-link.active[data-tab-group="${tabGroup}"]:not([data-lang-link]):not([data-lang]), [data-tab-link].active[data-tab-group="${tabGroup}"]`
+                `.tab-link.active[data-tab-group="${tabGroup}"]:not([data-lang-link]):not([data-lang]), [data-tab-link].active[data-tab-group="${tabGroup}"]`,
               ) !== null;
 
             if (hasActiveTabInGroup) {
@@ -201,7 +201,7 @@ export function initTabs(): void {
 
             // Activate the first tab in the group
             const firstTabLink = document.querySelector(
-              `.tab-link[data-tab-group="${tabGroup}"]:not([data-lang-link]):not([data-lang]), [data-tab-link][data-tab-group="${tabGroup}"]`
+              `.tab-link[data-tab-group="${tabGroup}"]:not([data-lang-link]):not([data-lang]), [data-tab-link][data-tab-group="${tabGroup}"]`,
             ) as HTMLElement | null;
 
             if (firstTabLink) {
@@ -213,7 +213,7 @@ export function initTabs(): void {
             if (parent) {
               const hasActiveTabInParent =
                 parent.querySelector(
-                  ".tab-link.active:not([data-lang-link]):not([data-lang]), [data-tab-link].active"
+                  '.tab-link.active:not([data-lang-link]):not([data-lang]), [data-tab-link].active',
                 ) !== null;
 
               if (!hasActiveTabInParent) {
@@ -228,7 +228,7 @@ export function initTabs(): void {
         });
 
       // Handle data-tab-first-active on containers with data-tab-group
-      document.querySelectorAll("[data-tab-first-active][data-tab-group]").forEach((element) => {
+      document.querySelectorAll('[data-tab-first-active][data-tab-group]').forEach((element) => {
         const tabGroup = (element as HTMLElement).dataset.tabGroup;
         if (!tabGroup) {
           return;
@@ -247,7 +247,7 @@ export function initTabs(): void {
         // Skip if a tab in this group is already active
         const hasActiveTabInGroup =
           document.querySelector(
-            `.tab-link.active[data-tab-group="${tabGroup}"]:not([data-lang-link]):not([data-lang]), [data-tab-link].active[data-tab-group="${tabGroup}"]`
+            `.tab-link.active[data-tab-group="${tabGroup}"]:not([data-lang-link]):not([data-lang]), [data-tab-link].active[data-tab-group="${tabGroup}"]`,
           ) !== null;
 
         if (hasActiveTabInGroup) {
@@ -259,7 +259,7 @@ export function initTabs(): void {
 
         // Find the first tab link in this group
         const firstTabLink = document.querySelector(
-          `.tab-link[data-tab-group="${tabGroup}"]:not([data-lang-link]):not([data-lang]), [data-tab-link][data-tab-group="${tabGroup}"]`
+          `.tab-link[data-tab-group="${tabGroup}"]:not([data-lang-link]):not([data-lang]), [data-tab-link][data-tab-group="${tabGroup}"]`,
         ) as HTMLElement | null;
 
         if (firstTabLink) {

@@ -8,11 +8,11 @@
 /** @type {import("prettier").Config} */
 export default {
   semi: true,
-  trailingComma: "es5",
-  singleQuote: false,
+  singleQuote: true,
+  trailingComma: 'all',
   printWidth: 100,
   tabWidth: 2,
   useTabs: false,
-  arrowParens: "always",
-  endOfLine: "lf",
+  arrowParens: 'always',
+  endOfLine: 'lf',
 };

@@ -8,7 +8,7 @@ import {
   findAllTabContentByAttribute,
   getTabContentValuesForGroup,
   getTabContentValuesForParent,
-} from "./utils";
+} from './utils';
 
 /**
  * Helper function to activate a tab programmatically
@@ -23,18 +23,18 @@ export function activateTab(tabLink: HTMLElement): void {
     // Remove active class from all tab links in the same group (across entire document)
     document
       .querySelectorAll(
-        `.tab-link[data-tab-group="${tabGroup}"]:not([data-lang-link]):not([data-lang]), [data-tab-link][data-tab-group="${tabGroup}"]`
+        `.tab-link[data-tab-group="${tabGroup}"]:not([data-lang-link]):not([data-lang]), [data-tab-link][data-tab-group="${tabGroup}"]`,
       )
       .forEach((link) => {
-        link.classList.remove("active");
+        link.classList.remove('active');
       });
 
     // Hide all content elements that have the data-tab-group attribute matching this group
     document
       .querySelectorAll(`[data-tab-content][data-tab-group="${tabGroup}"]`)
       .forEach((contentEl) => {
-        (contentEl as HTMLElement).style.display = "none";
-        contentEl.classList.remove("active");
+        (contentEl as HTMLElement).style.display = 'none';
+        contentEl.classList.remove('active');
       });
 
     // Also hide content elements based on tab link target values
@@ -42,8 +42,8 @@ export function activateTab(tabLink: HTMLElement): void {
     contentValues.forEach((contentValue) => {
       const contentEls = findAllTabContentByAttribute(contentValue);
       contentEls.forEach((contentEl) => {
-        contentEl.style.display = "none";
-        contentEl.classList.remove("active");
+        contentEl.style.display = 'none';
+        contentEl.classList.remove('active');
       });
     });
   } else {
@@ -52,9 +52,9 @@ export function activateTab(tabLink: HTMLElement): void {
     if (parent) {
       // Remove active class from all tab links in the same parent
       parent
-        .querySelectorAll(".tab-link:not([data-lang-link]):not([data-lang]), [data-tab-link]")
+        .querySelectorAll('.tab-link:not([data-lang-link]):not([data-lang]), [data-tab-link]')
         .forEach((link) => {
-          link.classList.remove("active");
+          link.classList.remove('active');
         });
 
       // Get all content values for links in this parent and hide all matching content elements
@@ -62,19 +62,19 @@ export function activateTab(tabLink: HTMLElement): void {
       contentValues.forEach((contentValue) => {
         const contentEls = findAllTabContentByAttribute(contentValue);
         contentEls.forEach((contentEl) => {
-          contentEl.style.display = "none";
-          contentEl.classList.remove("active");
+          contentEl.style.display = 'none';
+          contentEl.classList.remove('active');
         });
       });
     }
   }
 
   // Activate the tab link
-  tabLink.classList.add("active");
+  tabLink.classList.add('active');
 
   // Show all corresponding tab content elements
   targetTabContents.forEach((targetTabContent) => {
-    targetTabContent.style.display = "block";
-    targetTabContent.classList.add("active");
+    targetTabContent.style.display = 'block';
+    targetTabContent.classList.add('active');
   });
 }

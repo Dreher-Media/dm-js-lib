@@ -3,5 +3,5 @@
  * Provides attribute-based filtering functionality for lists
  */
 
-export { initFilter } from "./filter/index";
-export { filterAPI } from "./filter/api";
+export { initFilter } from './filter/index';
+export { filterAPI } from './filter/api';

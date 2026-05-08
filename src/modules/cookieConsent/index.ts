@@ -21,15 +21,15 @@ export function initCookieConsent(): void {
 
     if (!initFsCCListener) {
       // Add a listener for changes in consent preferences
-      window.FsCC.consentController.on("updateconsents", () => {
+      window.FsCC.consentController.on('updateconsents', () => {
         handleFsCcReject(); // Run the function whenever consent changes
       });
       initFsCCListener = true;
     }
 
     // Iterate through all elements with fs-cc-reject attributes
-    document.querySelectorAll("[fs-cc-reject]").forEach((rejectElement) => {
-      const category = rejectElement.getAttribute("fs-cc-reject");
+    document.querySelectorAll('[fs-cc-reject]').forEach((rejectElement) => {
+      const category = rejectElement.getAttribute('fs-cc-reject');
       if (!category) return;
 
       const isConsentGiven = window.FsCC?.store.consents[category] ?? false;
@@ -39,15 +39,15 @@ export function initCookieConsent(): void {
 
       // Toggle visibility based on consent state
       if (isConsentGiven) {
-        (rejectElement as HTMLElement).style.display = "none"; // Hide the reject element
-        if (consentElement) consentElement.style.display = "block"; // Show the consented content
+        (rejectElement as HTMLElement).style.display = 'none'; // Hide the reject element
+        if (consentElement) consentElement.style.display = 'block'; // Show the consented content
       } else {
-        (rejectElement as HTMLElement).style.display = "block"; // Show the reject element
-        if (consentElement) consentElement.style.display = "none"; // Hide the consented content
+        (rejectElement as HTMLElement).style.display = 'block'; // Show the reject element
+        if (consentElement) consentElement.style.display = 'none'; // Hide the consented content
       }
     });
   };
 
   // Run the script on page load
-  document.addEventListener("DOMContentLoaded", handleFsCcReject);
+  document.addEventListener('DOMContentLoaded', handleFsCcReject);
 }

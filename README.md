@@ -259,7 +259,7 @@ Create interactive interfaces where clicking preview elements shows correspondin
 <script>
   // Initialize
   PreviewDetailSwitcher.initPreviewDetailSwitcher({
-    container: ".my-container",
+    container: '.my-container',
   });
 </script>
 ```

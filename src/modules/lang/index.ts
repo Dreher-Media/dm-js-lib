@@ -4,17 +4,17 @@
  * Includes session storage persistence for selected language
  */
 
-import { getLangFromElement } from "./utils";
-import { switchLanguage, restoreLanguage } from "./core";
+import { getLangFromElement } from './utils';
+import { switchLanguage, restoreLanguage } from './core';
 
 /**
  * Initializes the language module
  */
 export function initLang(): void {
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener('DOMContentLoaded', () => {
     // Handle attribute-based language links
-    document.querySelectorAll("[data-lang-link]").forEach((el) => {
-      el.addEventListener("click", (event) => {
+    document.querySelectorAll('[data-lang-link]').forEach((el) => {
+      el.addEventListener('click', (event) => {
         event.preventDefault();
         const target = event.currentTarget as HTMLElement;
         const lang = getLangFromElement(target);
@@ -30,7 +30,7 @@ export function initLang(): void {
   });
 
   // Handle case where DOM is already loaded when script runs
-  if (document.readyState === "interactive" || document.readyState === "complete") {
+  if (document.readyState === 'interactive' || document.readyState === 'complete') {
     restoreLanguage();
   }
 }

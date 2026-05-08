@@ -3,10 +3,10 @@
  * Functions for initializing and managing video players
  */
 
-import type { PlayerInstance } from "./types";
+import type { PlayerInstance } from './types';
 
 // Initialize global videoSwipers array on window object
-if (typeof window !== "undefined" && typeof window.videoSwipers === "undefined") {
+if (typeof window !== 'undefined' && typeof window.videoSwipers === 'undefined') {
   window.videoSwipers = [];
 }
 
@@ -17,7 +17,7 @@ let playerKeyCounter = 0;
 // Create a reference to window.videoSwipers for direct access
 // This allows the code to use videoSwipers directly while it's actually stored on window
 const getVideoSwipers = (): Swiper[] | undefined => {
-  return typeof window !== "undefined" ? window.videoSwipers : undefined;
+  return typeof window !== 'undefined' ? window.videoSwipers : undefined;
 };
 
 /**
@@ -26,15 +26,15 @@ const getVideoSwipers = (): Swiper[] | undefined => {
 export function initializePlyrPlayers(
   plyrPlayers: Plyr[],
   players: Record<string, PlayerInstance>,
-  root: ParentNode = document
+  root: ParentNode = document,
 ): void {
-  if (typeof window.Plyr === "undefined") return;
+  if (typeof window.Plyr === 'undefined') return;
 
-  const elements = Array.from(root.querySelectorAll<HTMLElement>("._init-plyr")).filter(
-    (el) => el.dataset.dmPlyrBound !== "true"
+  const elements = Array.from(root.querySelectorAll<HTMLElement>('._init-plyr')).filter(
+    (el) => el.dataset.dmPlyrBound !== 'true',
   );
   if (elements.length === 0) return;
-  elements.forEach((el) => (el.dataset.dmPlyrBound = "true"));
+  elements.forEach((el) => (el.dataset.dmPlyrBound = 'true'));
 
   const setupPlayers = window.Plyr.setup(elements);
   if (!setupPlayers) return;
@@ -44,7 +44,7 @@ export function initializePlyrPlayers(
 
   // Set up Plyr player event listeners
   newPlayers.forEach((plyrPlayer) => {
-    plyrPlayer.on("play", () => {
+    plyrPlayer.on('play', () => {
       // When a Plyr player plays, pause all other players (exclude this one)
       pauseAllPlayers(null, plyrPlayers, players, plyrPlayer);
       const swipers = getVideoSwipers();
@@ -55,7 +55,7 @@ export function initializePlyrPlayers(
       }
     });
 
-    plyrPlayer.on("pause", () => {
+    plyrPlayer.on('pause', () => {
       // When a Plyr player pauses, resume swiper autoplay
       const swipers = getVideoSwipers();
       if (swipers) {
@@ -78,7 +78,7 @@ export function pauseAllPlayers(
   id: string | null = null,
   plyrPlayers: Plyr[],
   players: Record<string, PlayerInstance>,
-  excludePlyrPlayer: Plyr | null = null
+  excludePlyrPlayer: Plyr | null = null,
 ): void {
   // Pause all Plyr players except the one that just started playing
   plyrPlayers.forEach((plyrPlayer) => {
@@ -90,17 +90,17 @@ export function pauseAllPlayers(
   for (const [key, value] of Object.entries(players)) {
     if (id === key) continue;
 
-    if (value.type === "youtube") {
+    if (value.type === 'youtube') {
       const ytPlayer = value.player as {
         pauseVideo: () => void;
       };
       ytPlayer.pauseVideo();
-    } else if (value.type === "vimeo") {
+    } else if (value.type === 'vimeo') {
       const vimeoPlayer = value.player as {
         pause: () => void;
       };
       vimeoPlayer.pause();
-    } else if (value.type === "dailymotion") {
+    } else if (value.type === 'dailymotion') {
       const dmPlayer = value.player as {
         pause: () => void;
       };
@@ -115,7 +115,7 @@ export function pauseAllPlayers(
 export function onPlay(
   id: string,
   plyrPlayers: Plyr[],
-  players: Record<string, PlayerInstance>
+  players: Record<string, PlayerInstance>,
 ): void {
   pauseAllPlayers(id, plyrPlayers, players);
   const swipers = getVideoSwipers();
@@ -144,11 +144,11 @@ export function onPause(id: string): void {
  * the styled container node itself.
  */
 function createPlayerMountElement(container: HTMLElement, id: string): HTMLDivElement {
-  container.innerHTML = "";
-  const mountElement = document.createElement("div");
+  container.innerHTML = '';
+  const mountElement = document.createElement('div');
   mountElement.id = id;
-  mountElement.style.width = "100%";
-  mountElement.style.height = "100%";
+  mountElement.style.width = '100%';
+  mountElement.style.height = '100%';
   container.appendChild(mountElement);
   return mountElement;
 }
@@ -159,32 +159,32 @@ function createPlayerMountElement(container: HTMLElement, id: string): HTMLDivEl
 export function initializePlayers(
   youtubeElements: NodeListOf<Element>,
   players: Record<string, PlayerInstance>,
-  plyrPlayers: Plyr[]
+  plyrPlayers: Plyr[],
 ): void {
   youtubeElements.forEach((el) => {
-    if ((el as HTMLElement).dataset.dmPlayerBound === "true") return;
-    (el as HTMLElement).dataset.dmPlayerBound = "true";
+    if ((el as HTMLElement).dataset.dmPlayerBound === 'true') return;
+    (el as HTMLElement).dataset.dmPlayerBound = 'true';
 
     // Assign a unique runtime key per element so duplicate `data-id`s
     // (e.g. the same video rendered twice on a page) don't collide.
     const id = `player_${++playerKeyCounter}`;
     (el as HTMLElement).dataset.dmPlayerKey = id;
 
-    el.addEventListener("click", () => {
-      const customEmbed = el.querySelector("[data-custom-embed]");
+    el.addEventListener('click', () => {
+      const customEmbed = el.querySelector('[data-custom-embed]');
       if (customEmbed) {
         el.innerHTML = customEmbed.innerHTML;
       }
 
       const element = el as HTMLElement;
       const type = element.dataset.type as
-        | "youtube"
-        | "vimeo"
-        | "dailymotion"
-        | "ardmediathek"
-        | "other";
+        | 'youtube'
+        | 'vimeo'
+        | 'dailymotion'
+        | 'ardmediathek'
+        | 'other';
       const videoId = element.dataset.videoId;
-      const parsedTime = parseInt(element.dataset.time || "0", 10);
+      const parsedTime = parseInt(element.dataset.time || '0', 10);
       const time = Number.isFinite(parsedTime) && parsedTime >= 0 ? parsedTime : 0;
 
       if (!videoId || !type) return;
@@ -192,28 +192,28 @@ export function initializePlayers(
       onPlay(id, plyrPlayers, players);
 
       // Other (open URL in new tab, no embed)
-      if (type === "other") {
-        window.open(videoId, "_blank", "noopener,noreferrer");
+      if (type === 'other') {
+        window.open(videoId, '_blank', 'noopener,noreferrer');
         return;
       }
 
       // ARD Mediathek (iframe embed, no JS API)
-      if (type === "ardmediathek") {
+      if (type === 'ardmediathek') {
         const embedSrc = `https://www.ardmediathek.de/embed/${encodeURIComponent(videoId)}`;
-        const iframe = document.createElement("iframe");
+        const iframe = document.createElement('iframe');
         iframe.src = embedSrc;
-        iframe.setAttribute("allowfullscreen", "");
-        iframe.setAttribute("allow", "fullscreen");
-        iframe.setAttribute("frameborder", "0");
-        iframe.style.width = "100%";
-        iframe.style.aspectRatio = "16/9";
-        element.innerHTML = "";
+        iframe.setAttribute('allowfullscreen', '');
+        iframe.setAttribute('allow', 'fullscreen');
+        iframe.setAttribute('frameborder', '0');
+        iframe.style.width = '100%';
+        iframe.style.aspectRatio = '16/9';
+        element.innerHTML = '';
         element.appendChild(iframe);
         return;
       }
 
       // YouTube Player
-      if (type === "youtube" && window.YT) {
+      if (type === 'youtube' && window.YT) {
         const mountElement = createPlayerMountElement(element, id);
         const player = new window.YT.Player(mountElement.id, {
           videoId: videoId,
@@ -241,7 +241,7 @@ export function initializePlayers(
         players[id] = { type, player };
       }
       // Vimeo Player
-      else if (type === "vimeo" && window.Vimeo) {
+      else if (type === 'vimeo' && window.Vimeo) {
         const mountElement = createPlayerMountElement(element, id);
         const player = new window.Vimeo.Player(mountElement.id, {
           id: videoId,
@@ -249,13 +249,13 @@ export function initializePlayers(
           start: time,
         });
 
-        player.on("play", () => onPlay(id, plyrPlayers, players));
-        player.on("pause", () => onPause(id));
+        player.on('play', () => onPlay(id, plyrPlayers, players));
+        player.on('pause', () => onPause(id));
 
         players[id] = { type, player };
       }
       // Dailymotion Player
-      else if (type === "dailymotion" && window.dailymotion) {
+      else if (type === 'dailymotion' && window.dailymotion) {
         const mountElement = createPlayerMountElement(element, id);
         window.dailymotion
           .createPlayer(mountElement.id, {
@@ -268,15 +268,15 @@ export function initializePlayers(
           })
           .then((playerInstance) => {
             // Attach event listeners
-            playerInstance.on("play", () => onPlay(id, plyrPlayers, players));
-            playerInstance.on("pause", () => onPause(id));
-            playerInstance.on("ended", () => onPause(id));
+            playerInstance.on('play', () => onPlay(id, plyrPlayers, players));
+            playerInstance.on('pause', () => onPause(id));
+            playerInstance.on('ended', () => onPause(id));
 
             // Store the player instance
-            players[id] = { type: "dailymotion", player: playerInstance };
+            players[id] = { type: 'dailymotion', player: playerInstance };
           })
           .catch((error) => {
-            console.error("Error initializing Dailymotion player:", error);
+            console.error('Error initializing Dailymotion player:', error);
           });
       }
     });
