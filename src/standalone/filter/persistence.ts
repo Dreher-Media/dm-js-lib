@@ -8,7 +8,7 @@
  */
 export function updateUrlParams(instance: string | null, filters: Record<string, string[]>): void {
   const params = new URLSearchParams(window.location.search);
-  const prefix = instance ? `filter_${instance}_` : "filter_";
+  const prefix = instance ? `filter_${instance}_` : 'filter_';
 
   // Clear existing filter params
   const keysToDelete: string[] = [];
@@ -20,12 +20,12 @@ export function updateUrlParams(instance: string | null, filters: Record<string,
   // Add current filter params
   Object.entries(filters).forEach(([field, values]) => {
     if (values.length > 0) {
-      params.set(`${prefix}${field}`, values.join(","));
+      params.set(`${prefix}${field}`, values.join(','));
     }
   });
 
-  const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}${window.location.hash}`;
-  window.history.pushState({}, "", newUrl);
+  const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}${window.location.hash}`;
+  window.history.pushState({}, '', newUrl);
 }
 
 /**
@@ -33,12 +33,12 @@ export function updateUrlParams(instance: string | null, filters: Record<string,
  */
 export function restoreFromUrl(instance: string | null): void {
   const params = new URLSearchParams(window.location.search);
-  const prefix = instance ? `filter_${instance}_` : "filter_";
+  const prefix = instance ? `filter_${instance}_` : 'filter_';
 
   params.forEach((value, key) => {
     if (key.startsWith(prefix)) {
-      const field = key.replace(prefix, "");
-      const values = value.split(",").map((v) => v.trim());
+      const field = key.replace(prefix, '');
+      const values = value.split(',').map((v) => v.trim());
 
       const baseSelector = `[data-filter-field="${field}"]`;
       const selector = instance
@@ -49,15 +49,15 @@ export function restoreFromUrl(instance: string | null): void {
         const el = control as HTMLElement;
         const tagName = el.tagName.toLowerCase();
 
-        if (tagName === "input") {
+        if (tagName === 'input') {
           const input = el as HTMLInputElement;
           const controlValue = input.value.toLowerCase();
-          if (input.type === "checkbox" || input.type === "radio") {
+          if (input.type === 'checkbox' || input.type === 'radio') {
             input.checked = values.includes(controlValue);
-          } else if (input.type === "text" || input.type === "search") {
-            input.value = values[0] || "";
+          } else if (input.type === 'text' || input.type === 'search') {
+            input.value = values[0] || '';
           }
-        } else if (tagName === "select") {
+        } else if (tagName === 'select') {
           const select = el as HTMLSelectElement;
           if (values.length > 0) {
             select.value = values[0];
@@ -74,14 +74,14 @@ export function restoreFromUrl(instance: string | null): void {
 export function saveToLocalStorage(
   key: string,
   instance: string | null,
-  filters: Record<string, string[]>
+  filters: Record<string, string[]>,
 ): void {
   try {
-    const storageKey = `filter_${key}_${instance || "default"}`;
+    const storageKey = `filter_${key}_${instance || 'default'}`;
     localStorage.setItem(storageKey, JSON.stringify(filters));
   } catch (e) {
     // localStorage may be disabled
-    console.warn("Failed to save filter state to localStorage", e);
+    console.warn('Failed to save filter state to localStorage', e);
   }
 }
 
@@ -90,7 +90,7 @@ export function saveToLocalStorage(
  */
 export function restoreFromLocalStorage(key: string, instance: string | null): void {
   try {
-    const storageKey = `filter_${key}_${instance || "default"}`;
+    const storageKey = `filter_${key}_${instance || 'default'}`;
     const saved = localStorage.getItem(storageKey);
     if (saved) {
       const filters = JSON.parse(saved) as Record<string, string[]>;
@@ -104,15 +104,15 @@ export function restoreFromLocalStorage(key: string, instance: string | null): v
           const el = control as HTMLElement;
           const tagName = el.tagName.toLowerCase();
 
-          if (tagName === "input") {
+          if (tagName === 'input') {
             const input = el as HTMLInputElement;
             const controlValue = input.value.toLowerCase();
-            if (input.type === "checkbox" || input.type === "radio") {
+            if (input.type === 'checkbox' || input.type === 'radio') {
               input.checked = values.includes(controlValue);
-            } else if (input.type === "text" || input.type === "search") {
-              input.value = values[0] || "";
+            } else if (input.type === 'text' || input.type === 'search') {
+              input.value = values[0] || '';
             }
-          } else if (tagName === "select") {
+          } else if (tagName === 'select') {
             const select = el as HTMLSelectElement;
             if (values.length > 0) {
               select.value = values[0];
@@ -122,6 +122,6 @@ export function restoreFromLocalStorage(key: string, instance: string | null): v
       });
     }
   } catch (e) {
-    console.warn("Failed to restore filter state from localStorage", e);
+    console.warn('Failed to restore filter state from localStorage', e);
   }
 }

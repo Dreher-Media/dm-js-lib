@@ -46,17 +46,17 @@ export interface PreviewDetailSwitcherOptions {
 export function initPreviewDetailSwitcher(options: PreviewDetailSwitcherOptions = {}): void {
   const {
     container,
-    itemSelector = "[data-detail-item]",
-    previewIdAttribute = "data-preview-id",
-    detailIdAttribute = "data-detail-id",
+    itemSelector = '[data-detail-item]',
+    previewIdAttribute = 'data-preview-id',
+    detailIdAttribute = 'data-detail-id',
     initialIndex = 0,
-    displayValue = "block",
+    displayValue = 'block',
   } = options;
 
   // Resolve container element
   const getContainer = (): HTMLElement | Document => {
     if (!container) return document;
-    if (typeof container === "string") {
+    if (typeof container === 'string') {
       const element = document.querySelector<HTMLElement>(container);
       return element || document;
     }
@@ -75,7 +75,7 @@ export function initPreviewDetailSwitcher(options: PreviewDetailSwitcherOptions 
     // Find the detail view item with matching detail-id within the container scope
     // The detail item must also match the item selector
     const detailItem = scope.querySelector(
-      `${itemSelector}[${detailIdAttribute}="${previewId}"]`
+      `${itemSelector}[${detailIdAttribute}="${previewId}"]`,
     ) as HTMLElement | null;
 
     if (!detailItem) return;
@@ -84,7 +84,7 @@ export function initPreviewDetailSwitcher(options: PreviewDetailSwitcherOptions 
     const allDetailItems = scope.querySelectorAll<HTMLElement>(itemSelector);
     allDetailItems.forEach((item) => {
       if (item) {
-        item.style.display = "none";
+        item.style.display = 'none';
       }
     });
 
@@ -101,7 +101,7 @@ export function initPreviewDetailSwitcher(options: PreviewDetailSwitcherOptions 
     // Hide all detail view items first
     detailItems.forEach((item) => {
       if (item) {
-        item.style.display = "none";
+        item.style.display = 'none';
       }
     });
 
@@ -122,13 +122,13 @@ export function initPreviewDetailSwitcher(options: PreviewDetailSwitcherOptions 
 
     previewElements.forEach((element) => {
       if (element) {
-        element.addEventListener("click", handleClick);
+        element.addEventListener('click', handleClick);
       }
     });
   };
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
   }
@@ -142,7 +142,7 @@ export function initPreviewDetailSwitcher(options: PreviewDetailSwitcherOptions 
  */
 export function initPreviewDetailSwitchers(
   containerSelector: string,
-  options: Omit<PreviewDetailSwitcherOptions, "container"> = {}
+  options: Omit<PreviewDetailSwitcherOptions, 'container'> = {},
 ): void {
   const init = (): void => {
     const containers = document.querySelectorAll<HTMLElement>(containerSelector);
@@ -156,8 +156,8 @@ export function initPreviewDetailSwitchers(
     });
   };
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
   }

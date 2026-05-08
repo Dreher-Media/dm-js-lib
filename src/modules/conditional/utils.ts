@@ -16,7 +16,7 @@ export function getUrlParams(): URLSearchParams {
  * @returns Day name (monday, tuesday, etc.)
  */
 export function getDayOfWeek(): string {
-  const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
   return days[new Date().getDay()];
 }
 

@@ -3,10 +3,10 @@
  * Handles conditional visibility of elements based on dates, times, and URL parameters
  */
 
-import { applyConditionalVisibility } from "./core";
+import { applyConditionalVisibility } from './core';
 
 const CONDITIONAL_SELECTOR =
-  "[data-conditional], [data-conditional-date], [data-conditional-url], [data-conditional-children]";
+  '[data-conditional], [data-conditional-date], [data-conditional-url], [data-conditional-children]';
 
 /** Debounce timer for DOM observer to avoid excessive re-evaluation */
 let reEvaluateDebounce: ReturnType<typeof setTimeout> | null = null;
@@ -48,17 +48,17 @@ function runReEvaluateConditions(): void {
  * Initializes the conditional module
  */
 export function initConditional(): void {
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener('DOMContentLoaded', () => {
     // Initial evaluation
     runReEvaluateConditions();
 
     // Re-evaluate when URL changes (back/forward navigation)
-    window.addEventListener("popstate", () => {
+    window.addEventListener('popstate', () => {
       runReEvaluateConditions();
     });
 
     // Re-evaluate when URL hash changes (some frameworks use this)
-    window.addEventListener("hashchange", () => {
+    window.addEventListener('hashchange', () => {
       runReEvaluateConditions();
     });
 
@@ -66,7 +66,7 @@ export function initConditional(): void {
     const observer = new MutationObserver((mutations) => {
       if (elementsUpdatedThisRun !== null) {
         const onlyOurUpdates = mutations.every((m) =>
-          elementsUpdatedThisRun!.has(m.target as Element)
+          elementsUpdatedThisRun!.has(m.target as Element),
         );
         if (onlyOurUpdates) return;
       }
@@ -76,12 +76,12 @@ export function initConditional(): void {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ["class", "style", "hidden"],
+      attributeFilter: ['class', 'style', 'hidden'],
     });
   });
 
   // Handle case where DOM is already loaded when script runs
-  if (document.readyState === "interactive" || document.readyState === "complete") {
+  if (document.readyState === 'interactive' || document.readyState === 'complete') {
     runReEvaluateConditions();
   }
 }

@@ -29,7 +29,7 @@ declare global {
             onReady?: (event: { target: YT.Player }) => void;
             onStateChange?: (event: { data: number; target: YT.Player }) => void;
           };
-        }
+        },
       ) => YT.Player;
       PlayerState: {
         PLAYING: number;
@@ -44,7 +44,7 @@ declare global {
           id: string;
           autoplay?: boolean;
           start?: number;
-        }
+        },
       ) => Vimeo.Player;
     };
     dailymotion?: {
@@ -57,7 +57,7 @@ declare global {
             start?: number;
             mute?: boolean;
           };
-        }
+        },
       ): Promise<DailymotionPlayer>;
     };
     videoSwipers?: Swiper[];
@@ -85,7 +85,7 @@ declare global {
             onReady?: (event: { target: YT.Player }) => void;
             onStateChange?: (event: { data: number; target: YT.Player }) => void;
           };
-        }
+        },
       ): YT.Player;
     };
     PlayerState: {
@@ -110,7 +110,7 @@ declare global {
           id: string;
           autoplay?: boolean;
           start?: number;
-        }
+        },
       ): Vimeo.Player;
     };
   }

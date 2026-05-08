@@ -1,7 +1,7 @@
-export type PaginationMode = "numbers" | "load-more" | "infinite";
-export type PaginationAnimationEngine = "js" | "css";
-export type PaginationAnimationStyle = "fade" | "slide-up" | "slide-left" | "scale" | "none";
-export type PaginationAnimationScope = "list" | "items" | "both";
+export type PaginationMode = 'numbers' | 'load-more' | 'infinite';
+export type PaginationAnimationEngine = 'js' | 'css';
+export type PaginationAnimationStyle = 'fade' | 'slide-up' | 'slide-left' | 'scale' | 'none';
+export type PaginationAnimationScope = 'list' | 'items' | 'both';
 
 export interface PaginationElements {
   list: HTMLElement;

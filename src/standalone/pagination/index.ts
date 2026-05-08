@@ -5,19 +5,19 @@ import type {
   PaginationInstanceState,
   PaginationMode,
   PaginationOptions,
-} from "./types";
+} from './types';
 
 type InstancesMap = Map<string, PaginationInstanceState>;
 
-const DEFAULT_INSTANCE_ID = "default";
-const PAGINATION_ACTIVE_CLASS = "pagination-active";
-const PAGINATION_DISABLED_CLASS = "pagination-disabled";
+const DEFAULT_INSTANCE_ID = 'default';
+const PAGINATION_ACTIVE_CLASS = 'pagination-active';
+const PAGINATION_DISABLED_CLASS = 'pagination-disabled';
 const DEFAULT_ANIMATION_DURATION = 220;
 const DEFAULT_ANIMATION_STAGGER = 30;
-const DEFAULT_ANIMATION_EASING = "cubic-bezier(0.22, 1, 0.36, 1)";
+const DEFAULT_ANIMATION_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)';
 const ANIMATION_TIMEOUT_BUFFER_MS = 120;
 const MAX_ITEM_ANIMATIONS = 64;
-const NON_RENDERED_ITEM_TAGS = new Set(["SCRIPT", "STYLE", "TEMPLATE", "NOSCRIPT", "LINK", "META"]);
+const NON_RENDERED_ITEM_TAGS = new Set(['SCRIPT', 'STYLE', 'TEMPLATE', 'NOSCRIPT', 'LINK', 'META']);
 const instances: InstancesMap = new Map();
 const renderQueues = new Map<string, Promise<void>>();
 const sourceItemsByInstance = new Map<string, HTMLElement[]>();
@@ -28,18 +28,18 @@ const getInstanceId = (element: HTMLElement | null): string => {
   if (!element) return DEFAULT_INSTANCE_ID;
   const own = element.dataset.paginationInstance;
   if (own && own.trim()) return own.trim();
-  const scoped = element.closest<HTMLElement>("[data-pagination-instance]");
+  const scoped = element.closest<HTMLElement>('[data-pagination-instance]');
   if (scoped?.dataset.paginationInstance?.trim()) return scoped.dataset.paginationInstance.trim();
   return DEFAULT_INSTANCE_ID;
 };
 
 const isReducedMotion = (): boolean =>
-  typeof window !== "undefined" &&
-  Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
+  typeof window !== 'undefined' &&
+  Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 
 const readStringAttr = (
   source: HTMLElement | null,
-  attr: keyof HTMLElement["dataset"]
+  attr: keyof HTMLElement['dataset'],
 ): string | undefined => {
   if (!source) return undefined;
   const attrKey = String(attr);
@@ -55,8 +55,8 @@ const readStringAttr = (
 
 const readNumberAttr = (
   source: HTMLElement | null,
-  attr: keyof HTMLElement["dataset"],
-  defaultValue: number
+  attr: keyof HTMLElement['dataset'],
+  defaultValue: number,
 ): number => {
   const raw = readStringAttr(source, attr);
   if (!raw) return defaultValue;
@@ -65,49 +65,49 @@ const readNumberAttr = (
 };
 
 const resolveMode = (list: HTMLElement): PaginationMode => {
-  const mode = readStringAttr(list, "paginationMode");
-  if (mode === "load-more" || mode === "infinite") return mode;
-  return "numbers";
+  const mode = readStringAttr(list, 'paginationMode');
+  if (mode === 'load-more' || mode === 'infinite') return mode;
+  return 'numbers';
 };
 
 const resolveAnimationEngine = (list: HTMLElement): PaginationAnimationEngine =>
-  readStringAttr(list, "paginationAnimationEngine") === "css" ? "css" : "js";
+  readStringAttr(list, 'paginationAnimationEngine') === 'css' ? 'css' : 'js';
 
 const resolveAnimationStyle = (list: HTMLElement): PaginationAnimationStyle => {
-  const style = readStringAttr(list, "paginationAnimationStyle");
-  if (style === "slide-up" || style === "slide-left" || style === "scale" || style === "none") {
+  const style = readStringAttr(list, 'paginationAnimationStyle');
+  if (style === 'slide-up' || style === 'slide-left' || style === 'scale' || style === 'none') {
     return style;
   }
-  return "fade";
+  return 'fade';
 };
 
 const resolveAnimationScope = (list: HTMLElement): PaginationAnimationScope => {
-  const scope = readStringAttr(list, "paginationAnimationScope");
-  if (scope === "list" || scope === "both") return scope;
-  return "items";
+  const scope = readStringAttr(list, 'paginationAnimationScope');
+  if (scope === 'list' || scope === 'both') return scope;
+  return 'items';
 };
 
 const resolveOptions = (list: HTMLElement, instanceId: string): PaginationOptions => {
-  const pageSize = readNumberAttr(list, "paginationPageSize", 12);
-  const firstRaw = readStringAttr(list, "paginationFirstPageSize");
+  const pageSize = readNumberAttr(list, 'paginationPageSize', 12);
+  const firstRaw = readStringAttr(list, 'paginationFirstPageSize');
   const firstParsed = firstRaw ? Number.parseInt(firstRaw, 10) : NaN;
   const firstPageSize = Number.isFinite(firstParsed) && firstParsed > 0 ? firstParsed : undefined;
-  const urlKey = list.dataset.paginationUrl === "true" ? instanceId : undefined;
+  const urlKey = list.dataset.paginationUrl === 'true' ? instanceId : undefined;
   const persistKey = list.dataset.paginationPersist || undefined;
   const hideLoadMoreWhenComplete =
-    list.dataset.paginationHideLoadMoreWhenComplete !== "false" &&
+    list.dataset.paginationHideLoadMoreWhenComplete !== 'false' &&
     list.closest<HTMLElement>('[data-pagination-hide-load-more-when-complete="false"]') === null;
   const infiniteOffsetRaw = list.dataset.paginationInfiniteOffset;
   const infiniteOffset = infiniteOffsetRaw ? Number.parseFloat(infiniteOffsetRaw) : 0.5;
   const animate =
-    list.dataset.paginationAnimate !== "false" &&
+    list.dataset.paginationAnimate !== 'false' &&
     list.closest<HTMLElement>('[data-pagination-animate="false"]') === null;
 
   return {
     mode: resolveMode(list),
     pageSize,
     firstPageSize,
-    startPage: readNumberAttr(list, "paginationStartPage", 1),
+    startPage: readNumberAttr(list, 'paginationStartPage', 1),
     urlKey,
     persistKey,
     infiniteOffset: Number.isFinite(infiniteOffset) ? infiniteOffset : 0.5,
@@ -118,46 +118,46 @@ const resolveOptions = (list: HTMLElement, instanceId: string): PaginationOption
     animationScope: resolveAnimationScope(list),
     animationDuration: readNumberAttr(
       list,
-      "paginationAnimationDuration",
-      DEFAULT_ANIMATION_DURATION
+      'paginationAnimationDuration',
+      DEFAULT_ANIMATION_DURATION,
     ),
-    animationStagger: readNumberAttr(list, "paginationAnimationStagger", DEFAULT_ANIMATION_STAGGER),
-    animationEasing: readStringAttr(list, "paginationAnimationEasing") ?? DEFAULT_ANIMATION_EASING,
+    animationStagger: readNumberAttr(list, 'paginationAnimationStagger', DEFAULT_ANIMATION_STAGGER),
+    animationEasing: readStringAttr(list, 'paginationAnimationEasing') ?? DEFAULT_ANIMATION_EASING,
   };
 };
 
 const collectItems = (list: HTMLElement): HTMLElement[] => {
-  const explicit = Array.from(list.querySelectorAll<HTMLElement>("[data-pagination-item]"));
+  const explicit = Array.from(list.querySelectorAll<HTMLElement>('[data-pagination-item]'));
   const source =
     explicit.length > 0
       ? explicit
       : Array.from(list.children).filter(
-          (node): node is HTMLElement => node instanceof HTMLElement
+          (node): node is HTMLElement => node instanceof HTMLElement,
         );
   return source.filter((item) => {
     if (NON_RENDERED_ITEM_TAGS.has(item.tagName)) return false;
-    if (item.classList.contains("pagination-exclude")) return false;
-    if (item.classList.contains("filter-hidden")) return false;
+    if (item.classList.contains('pagination-exclude')) return false;
+    if (item.classList.contains('filter-hidden')) return false;
     return true;
   });
 };
 
 const isRuntimeEligibleItem = (item: HTMLElement): boolean => {
   if (NON_RENDERED_ITEM_TAGS.has(item.tagName)) return false;
-  if (item.classList.contains("pagination-exclude")) return false;
-  if (item.classList.contains("filter-hidden")) return false;
+  if (item.classList.contains('pagination-exclude')) return false;
+  if (item.classList.contains('filter-hidden')) return false;
   return true;
 };
 
 const queryByInstance = (selector: string, instanceId: string): HTMLElement[] =>
   Array.from(document.querySelectorAll<HTMLElement>(selector)).filter(
-    (el) => getInstanceId(el) === instanceId
+    (el) => getInstanceId(el) === instanceId,
   );
 
 const collectControls = (
   _root: HTMLElement,
-  instanceId: string
-): PaginationInstanceState["elements"]["controls"] => {
+  instanceId: string,
+): PaginationInstanceState['elements']['controls'] => {
   return {
     prev: queryByInstance('[data-pagination-control="prev"]', instanceId),
     next: queryByInstance('[data-pagination-control="next"]', instanceId),
@@ -169,20 +169,20 @@ const collectControls = (
 
 const collectStatus = (
   _root: HTMLElement,
-  instanceId: string
-): PaginationInstanceState["elements"]["status"] => {
+  instanceId: string,
+): PaginationInstanceState['elements']['status'] => {
   return {
-    currentPage: queryByInstance("[data-pagination-current-page]", instanceId),
-    totalPages: queryByInstance("[data-pagination-total-pages]", instanceId),
-    totalItems: queryByInstance("[data-pagination-total-items]", instanceId),
-    visibleItems: queryByInstance("[data-pagination-visible-items]", instanceId),
+    currentPage: queryByInstance('[data-pagination-current-page]', instanceId),
+    totalPages: queryByInstance('[data-pagination-total-pages]', instanceId),
+    totalItems: queryByInstance('[data-pagination-total-items]', instanceId),
+    visibleItems: queryByInstance('[data-pagination-visible-items]', instanceId),
   };
 };
 
 const collectSentinel = (root: HTMLElement): HTMLElement | null => {
   const instanceId = getInstanceId(root);
   return (
-    queryByInstance("[data-pagination-sentinel]", instanceId)[0] ??
+    queryByInstance('[data-pagination-sentinel]', instanceId)[0] ??
     queryByInstance('[data-pagination-control="load-more"]', instanceId)[0] ??
     null
   );
@@ -191,7 +191,7 @@ const collectSentinel = (root: HTMLElement): HTMLElement | null => {
 const computeTotalPages = (
   totalItems: number,
   pageSize: number,
-  firstPageSize?: number
+  firstPageSize?: number,
 ): number => {
   const first = firstPageSize ?? pageSize;
   if (totalItems <= 0) return 1;
@@ -207,13 +207,13 @@ const visibleIndexSet = (
   currentPage: number,
   totalItems: number,
   pageSize: number,
-  firstPageSize?: number
+  firstPageSize?: number,
 ): Set<number> => {
   const first = firstPageSize ?? pageSize;
   const visible = new Set<number>();
   if (totalItems <= 0) return visible;
 
-  if (mode === "numbers") {
+  if (mode === 'numbers') {
     if (currentPage <= 1) {
       for (let i = 0; i < Math.min(first, totalItems); i += 1) visible.add(i);
       return visible;
@@ -233,25 +233,25 @@ const visibleIndexSet = (
 const setDisabled = (elements: HTMLElement[], disabled: boolean): void => {
   elements.forEach((element) => {
     element.classList.toggle(PAGINATION_DISABLED_CLASS, disabled);
-    element.classList.toggle("is-disabled", disabled);
-    if (disabled) element.setAttribute("aria-disabled", "true");
-    else element.removeAttribute("aria-disabled");
+    element.classList.toggle('is-disabled', disabled);
+    if (disabled) element.setAttribute('aria-disabled', 'true');
+    else element.removeAttribute('aria-disabled');
   });
 };
 
 const normalizeRenderedItem = (item: HTMLElement): void => {
-  item.style.display = "";
-  item.style.visibility = "visible";
-  item.style.opacity = "1";
-  item.style.transform = "";
-  item.style.willChange = "";
+  item.style.display = '';
+  item.style.visibility = 'visible';
+  item.style.opacity = '1';
+  item.style.transform = '';
+  item.style.willChange = '';
 };
 
 const normalizeRenderedDescendants = (item: HTMLElement): void => {
-  const descendants = item.querySelectorAll<HTMLElement>("[data-w-id]");
+  const descendants = item.querySelectorAll<HTMLElement>('[data-w-id]');
   descendants.forEach((descendant) => {
-    descendant.style.visibility = "visible";
-    descendant.style.opacity = "1";
+    descendant.style.visibility = 'visible';
+    descendant.style.opacity = '1';
   });
 };
 
@@ -273,7 +273,7 @@ const clearReconcileTimers = (instanceId: string): void => {
 const collectRenderedItems = (instance: PaginationInstanceState): HTMLElement[] =>
   Array.from(instance.elements.list.children).filter(
     (node): node is HTMLElement =>
-      node instanceof HTMLElement && !NON_RENDERED_ITEM_TAGS.has(node.tagName)
+      node instanceof HTMLElement && !NON_RENDERED_ITEM_TAGS.has(node.tagName),
   );
 
 const runReconcilePass = (instance: PaginationInstanceState, token: number): void => {
@@ -312,8 +312,8 @@ const ensureStyleObserver = (instance: PaginationInstanceState): void => {
         touchesRenderedItem = true;
         break;
       }
-      if (mutation.target.closest("[data-w-id]")) {
-        const host = mutation.target.closest<HTMLElement>("[data-pagination-item], .cal-item");
+      if (mutation.target.closest('[data-w-id]')) {
+        const host = mutation.target.closest<HTMLElement>('[data-pagination-item], .cal-item');
         if (host && rendered.has(host)) {
           touchesRenderedItem = true;
           break;
@@ -328,47 +328,47 @@ const ensureStyleObserver = (instance: PaginationInstanceState): void => {
     attributes: true,
     childList: true,
     subtree: true,
-    attributeFilter: ["style", "class"],
+    attributeFilter: ['style', 'class'],
   });
   styleObserversByInstance.set(instance.id, observer);
 };
 
-const getKeyframes = (style: PaginationAnimationStyle, phase: "enter" | "exit"): Keyframe[] => {
-  if (style === "none") return [{ opacity: 1 }, { opacity: 1 }];
-  if (style === "slide-up") {
-    return phase === "enter"
+const getKeyframes = (style: PaginationAnimationStyle, phase: 'enter' | 'exit'): Keyframe[] => {
+  if (style === 'none') return [{ opacity: 1 }, { opacity: 1 }];
+  if (style === 'slide-up') {
+    return phase === 'enter'
       ? [
-          { opacity: 0, transform: "translateY(12px)" },
-          { opacity: 1, transform: "translateY(0)" },
+          { opacity: 0, transform: 'translateY(12px)' },
+          { opacity: 1, transform: 'translateY(0)' },
         ]
       : [
-          { opacity: 1, transform: "translateY(0)" },
-          { opacity: 0, transform: "translateY(-12px)" },
+          { opacity: 1, transform: 'translateY(0)' },
+          { opacity: 0, transform: 'translateY(-12px)' },
         ];
   }
-  if (style === "slide-left") {
-    return phase === "enter"
+  if (style === 'slide-left') {
+    return phase === 'enter'
       ? [
-          { opacity: 0, transform: "translateX(12px)" },
-          { opacity: 1, transform: "translateX(0)" },
+          { opacity: 0, transform: 'translateX(12px)' },
+          { opacity: 1, transform: 'translateX(0)' },
         ]
       : [
-          { opacity: 1, transform: "translateX(0)" },
-          { opacity: 0, transform: "translateX(-12px)" },
+          { opacity: 1, transform: 'translateX(0)' },
+          { opacity: 0, transform: 'translateX(-12px)' },
         ];
   }
-  if (style === "scale") {
-    return phase === "enter"
+  if (style === 'scale') {
+    return phase === 'enter'
       ? [
-          { opacity: 0, transform: "scale(0.96)" },
-          { opacity: 1, transform: "scale(1)" },
+          { opacity: 0, transform: 'scale(0.96)' },
+          { opacity: 1, transform: 'scale(1)' },
         ]
       : [
-          { opacity: 1, transform: "scale(1)" },
-          { opacity: 0, transform: "scale(0.96)" },
+          { opacity: 1, transform: 'scale(1)' },
+          { opacity: 0, transform: 'scale(0.96)' },
         ];
   }
-  return phase === "enter" ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 1 }, { opacity: 0 }];
+  return phase === 'enter' ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 1 }, { opacity: 0 }];
 };
 
 const runWaapiGroup = (
@@ -376,20 +376,20 @@ const runWaapiGroup = (
   keyframes: Keyframe[],
   duration: number,
   easing: string,
-  stagger: number
+  stagger: number,
 ): Animation[] => {
   const animations: Animation[] = [];
   elements.forEach((element, index) => {
     if (!element.isConnected) return;
-    element.style.willChange = "opacity, transform";
+    element.style.willChange = 'opacity, transform';
     const animation = element.animate(keyframes, {
       duration,
       easing,
       delay: Math.max(0, stagger) * index,
-      fill: "both",
+      fill: 'both',
     });
     animation.finished.finally(() => {
-      element.style.willChange = "";
+      element.style.willChange = '';
     });
     animations.push(animation);
   });
@@ -400,7 +400,7 @@ const awaitAnimations = async (animations: Animation[], timeoutMs: number): Prom
   if (animations.length === 0) return;
   await Promise.race([
     Promise.all(animations.map((animation) => animation.finished.catch(() => undefined))).then(
-      () => undefined
+      () => undefined,
     ),
     new Promise<void>((resolve) => {
       window.setTimeout(resolve, timeoutMs);
@@ -430,8 +430,8 @@ const clearAnimationEffects = (animations: Animation[]): void => {
   });
 };
 
-const applyCssPhase = (items: HTMLElement[], phase: "enter" | "exit"): void => {
-  const base = phase === "enter" ? "pagination-item-enter" : "pagination-item-exit";
+const applyCssPhase = (items: HTMLElement[], phase: 'enter' | 'exit'): void => {
+  const base = phase === 'enter' ? 'pagination-item-enter' : 'pagination-item-exit';
   const active = `${base}-active`;
   items.forEach((item) => {
     item.classList.add(base);
@@ -439,8 +439,8 @@ const applyCssPhase = (items: HTMLElement[], phase: "enter" | "exit"): void => {
   });
 };
 
-const clearCssPhase = (items: HTMLElement[], phase: "enter" | "exit"): void => {
-  const base = phase === "enter" ? "pagination-item-enter" : "pagination-item-exit";
+const clearCssPhase = (items: HTMLElement[], phase: 'enter' | 'exit'): void => {
+  const base = phase === 'enter' ? 'pagination-item-enter' : 'pagination-item-exit';
   const active = `${base}-active`;
   items.forEach((item) => {
     item.classList.remove(base);
@@ -464,7 +464,7 @@ const writePageToUrl = (key: string, page: number): void => {
   try {
     const url = new URL(window.location.href);
     url.searchParams.set(`page_${key}`, String(page));
-    window.history.replaceState({}, "", url.toString());
+    window.history.replaceState({}, '', url.toString());
   } catch {
     // noop
   }
@@ -498,7 +498,7 @@ const persistPage = (instance: PaginationInstanceState): void => {
 const visibleCountForState = (instance: PaginationInstanceState): number => {
   const totalItems = instance.elements.items.length;
   const first = instance.options.firstPageSize ?? instance.options.pageSize;
-  if (instance.options.mode === "numbers") {
+  if (instance.options.mode === 'numbers') {
     if (instance.currentPage <= 1) return Math.min(first, totalItems);
     const start = first + (instance.currentPage - 2) * instance.options.pageSize;
     return Math.max(0, Math.min(instance.options.pageSize, totalItems - start));
@@ -528,42 +528,42 @@ const updateControls = (instance: PaginationInstanceState): void => {
   const atStart = instance.currentPage <= 1;
   const atEnd = instance.currentPage >= instance.totalPages;
 
-  if (instance.options.mode === "numbers") {
+  if (instance.options.mode === 'numbers') {
     setDisabled(instance.elements.controls.prev, atStart);
     setDisabled(instance.elements.controls.first, atStart);
     setDisabled(instance.elements.controls.next, atEnd);
     setDisabled(instance.elements.controls.last, atEnd);
     instance.elements.controls.prev.forEach((button) => {
-      button.style.visibility = atStart ? "hidden" : "";
-      button.style.pointerEvents = atStart ? "none" : "";
+      button.style.visibility = atStart ? 'hidden' : '';
+      button.style.pointerEvents = atStart ? 'none' : '';
     });
     instance.elements.controls.next.forEach((button) => {
-      button.style.visibility = atEnd ? "hidden" : "";
-      button.style.pointerEvents = atEnd ? "none" : "";
+      button.style.visibility = atEnd ? 'hidden' : '';
+      button.style.pointerEvents = atEnd ? 'none' : '';
     });
   } else {
     const complete = atEnd;
     setDisabled(instance.elements.controls.loadMore, complete);
     instance.elements.controls.loadMore.forEach((button) => {
-      if (complete) button.setAttribute("data-pagination-complete", "true");
-      else button.removeAttribute("data-pagination-complete");
+      if (complete) button.setAttribute('data-pagination-complete', 'true');
+      else button.removeAttribute('data-pagination-complete');
       if (instance.options.hideLoadMoreWhenComplete) {
-        button.style.display = complete ? "none" : "";
+        button.style.display = complete ? 'none' : '';
       }
     });
   }
 
-  const pageButtons = queryByInstance("[data-pagination-page]", instance.id);
+  const pageButtons = queryByInstance('[data-pagination-page]', instance.id);
   pageButtons.forEach((button) => {
     const pageAttr = button.dataset.paginationPage;
-    if (!pageAttr || pageAttr === "*") return;
+    if (!pageAttr || pageAttr === '*') return;
     const page = Number.parseInt(pageAttr, 10);
     if (!Number.isFinite(page)) return;
     const active = page === instance.currentPage;
     button.classList.toggle(PAGINATION_ACTIVE_CLASS, active);
-    button.classList.toggle("is-active", active);
-    if (active) button.setAttribute("aria-current", "page");
-    else button.removeAttribute("aria-current");
+    button.classList.toggle('is-active', active);
+    if (active) button.setAttribute('aria-current', 'page');
+    else button.removeAttribute('aria-current');
   });
 };
 
@@ -574,21 +574,21 @@ const dispatchChangeEvents = (instance: PaginationInstanceState): void => {
     totalPages: instance.totalPages,
     totalItems: instance.elements.items.length,
   };
-  instance.elements.list.dispatchEvent(new CustomEvent("pagination:change", { detail }));
+  instance.elements.list.dispatchEvent(new CustomEvent('pagination:change', { detail }));
   if (instance.currentPage >= instance.totalPages) {
-    instance.elements.list.dispatchEvent(new CustomEvent("pagination:end", { detail }));
+    instance.elements.list.dispatchEvent(new CustomEvent('pagination:end', { detail }));
   }
 };
 
 const applyAnimationVars = (instance: PaginationInstanceState): void => {
   const list = instance.elements.list;
-  list.style.setProperty("--pagination-anim-duration", `${instance.options.animationDuration}ms`);
-  list.style.setProperty("--pagination-anim-stagger", `${instance.options.animationStagger}ms`);
-  list.style.setProperty("--pagination-anim-easing", instance.options.animationEasing);
+  list.style.setProperty('--pagination-anim-duration', `${instance.options.animationDuration}ms`);
+  list.style.setProperty('--pagination-anim-stagger', `${instance.options.animationStagger}ms`);
+  list.style.setProperty('--pagination-anim-easing', instance.options.animationEasing);
 };
 
 const ensureObserver = (instance: PaginationInstanceState): void => {
-  if (instance.options.mode !== "infinite" || !("IntersectionObserver" in window)) {
+  if (instance.options.mode !== 'infinite' || !('IntersectionObserver' in window)) {
     if (instance.observer) {
       instance.observer.disconnect();
       instance.observer = undefined;
@@ -612,7 +612,7 @@ const ensureObserver = (instance: PaginationInstanceState): void => {
     {
       root: null,
       threshold: instance.options.infiniteOffset ?? 0.5,
-    }
+    },
   );
   observer.observe(sentinel);
   instance.observer = observer;
@@ -631,7 +631,7 @@ const performRender = async (instance: PaginationInstanceState): Promise<void> =
   instance.totalPages = computeTotalPages(
     totalItems,
     instance.options.pageSize,
-    instance.options.firstPageSize
+    instance.options.firstPageSize,
   );
   instance.currentPage = clamp(instance.currentPage, 1, instance.totalPages);
   const targetVisible = visibleIndexSet(
@@ -639,12 +639,12 @@ const performRender = async (instance: PaginationInstanceState): Promise<void> =
     instance.currentPage,
     totalItems,
     instance.options.pageSize,
-    instance.options.firstPageSize
+    instance.options.firstPageSize,
   );
   const nextItems = activeItems.filter((_, index) => targetVisible.has(index));
   const sourceSet = new Set(sourceItems);
   const currentItems = Array.from(instance.elements.list.children).filter(
-    (node): node is HTMLElement => node instanceof HTMLElement && sourceSet.has(node)
+    (node): node is HTMLElement => node instanceof HTMLElement && sourceSet.has(node),
   );
 
   const token = (instance.animationToken ?? 0) + 1;
@@ -658,15 +658,15 @@ const performRender = async (instance: PaginationInstanceState): Promise<void> =
   const shouldAnimate =
     hasDomChange &&
     instance.options.animate &&
-    instance.options.animationStyle !== "none" &&
+    instance.options.animationStyle !== 'none' &&
     !isReducedMotion() &&
     (entering.length > 0 || exiting.length > 0);
 
   if (shouldAnimate) {
     const useListAnimation =
-      instance.options.animationScope === "list" || instance.options.animationScope === "both";
+      instance.options.animationScope === 'list' || instance.options.animationScope === 'both';
     const useItemAnimation =
-      (instance.options.animationScope === "items" || instance.options.animationScope === "both") &&
+      (instance.options.animationScope === 'items' || instance.options.animationScope === 'both') &&
       entering.length + exiting.length <= MAX_ITEM_ANIMATIONS;
 
     const timeout =
@@ -674,11 +674,11 @@ const performRender = async (instance: PaginationInstanceState): Promise<void> =
       Math.max(entering.length, exiting.length) * instance.options.animationStagger +
       ANIMATION_TIMEOUT_BUFFER_MS;
 
-    if (instance.options.animationEngine === "css") {
+    if (instance.options.animationEngine === 'css') {
       if (useListAnimation) {
-        instance.elements.list.classList.add("pagination-list-exit", "pagination-list-exit-active");
+        instance.elements.list.classList.add('pagination-list-exit', 'pagination-list-exit-active');
       }
-      if (useItemAnimation) applyCssPhase(exiting, "exit");
+      if (useItemAnimation) applyCssPhase(exiting, 'exit');
       await new Promise<void>((resolve) => {
         window.setTimeout(resolve, timeout);
       });
@@ -686,22 +686,22 @@ const performRender = async (instance: PaginationInstanceState): Promise<void> =
 
       if (useListAnimation) {
         instance.elements.list.classList.remove(
-          "pagination-list-exit",
-          "pagination-list-exit-active"
+          'pagination-list-exit',
+          'pagination-list-exit-active',
         );
       }
-      if (useItemAnimation) clearCssPhase(exiting, "exit");
+      if (useItemAnimation) clearCssPhase(exiting, 'exit');
 
       instance.elements.list.replaceChildren(...nextItems);
       normalizeRenderedItems(nextItems);
 
       if (useListAnimation) {
         instance.elements.list.classList.add(
-          "pagination-list-enter",
-          "pagination-list-enter-active"
+          'pagination-list-enter',
+          'pagination-list-enter-active',
         );
       }
-      if (useItemAnimation) applyCssPhase(entering, "enter");
+      if (useItemAnimation) applyCssPhase(entering, 'enter');
       await new Promise<void>((resolve) => {
         window.setTimeout(resolve, timeout);
       });
@@ -709,33 +709,33 @@ const performRender = async (instance: PaginationInstanceState): Promise<void> =
 
       if (useListAnimation) {
         instance.elements.list.classList.remove(
-          "pagination-list-enter",
-          "pagination-list-enter-active"
+          'pagination-list-enter',
+          'pagination-list-enter-active',
         );
       }
-      if (useItemAnimation) clearCssPhase(entering, "enter");
+      if (useItemAnimation) clearCssPhase(entering, 'enter');
     } else {
       const exitAnimations: Animation[] = [];
       if (useListAnimation) {
         exitAnimations.push(
           ...runWaapiGroup(
             [instance.elements.list],
-            getKeyframes(instance.options.animationStyle, "exit"),
+            getKeyframes(instance.options.animationStyle, 'exit'),
             instance.options.animationDuration,
             instance.options.animationEasing,
-            0
-          )
+            0,
+          ),
         );
       }
       if (useItemAnimation) {
         exitAnimations.push(
           ...runWaapiGroup(
             exiting,
-            getKeyframes(instance.options.animationStyle, "exit"),
+            getKeyframes(instance.options.animationStyle, 'exit'),
             instance.options.animationDuration,
             instance.options.animationEasing,
-            instance.options.animationStagger
-          )
+            instance.options.animationStagger,
+          ),
         );
       }
       instance.activeAnimations = exitAnimations;
@@ -751,22 +751,22 @@ const performRender = async (instance: PaginationInstanceState): Promise<void> =
         enterAnimations.push(
           ...runWaapiGroup(
             [instance.elements.list],
-            getKeyframes(instance.options.animationStyle, "enter"),
+            getKeyframes(instance.options.animationStyle, 'enter'),
             instance.options.animationDuration,
             instance.options.animationEasing,
-            0
-          )
+            0,
+          ),
         );
       }
       if (useItemAnimation) {
         enterAnimations.push(
           ...runWaapiGroup(
             entering,
-            getKeyframes(instance.options.animationStyle, "enter"),
+            getKeyframes(instance.options.animationStyle, 'enter'),
             instance.options.animationDuration,
             instance.options.animationEasing,
-            instance.options.animationStagger
-          )
+            instance.options.animationStagger,
+          ),
         );
       }
       instance.activeAnimations = enterAnimations;
@@ -789,9 +789,9 @@ const performRender = async (instance: PaginationInstanceState): Promise<void> =
   if (
     !isSameItemSet(
       Array.from(instance.elements.list.children).filter(
-        (node): node is HTMLElement => node instanceof HTMLElement && sourceSet.has(node)
+        (node): node is HTMLElement => node instanceof HTMLElement && sourceSet.has(node),
       ),
-      finalItems
+      finalItems,
     )
   ) {
     instance.elements.list.replaceChildren(...finalItems);
@@ -901,32 +901,32 @@ const attachControlHandlers = (): void => {
   if (controlsAttached) return;
   controlsAttached = true;
 
-  document.addEventListener("click", (event) => {
+  document.addEventListener('click', (event) => {
     const target = event.target as HTMLElement | null;
     if (!target) return;
-    const control = target.closest<HTMLElement>("[data-pagination-control]");
+    const control = target.closest<HTMLElement>('[data-pagination-control]');
     if (!control) return;
     const type = control.dataset.paginationControl;
     if (!type) return;
     event.preventDefault();
 
     const instanceId = getInstanceId(control);
-    if (type === "prev") void prevInternal(instanceId);
-    else if (type === "next" || type === "load-more") void nextInternal(instanceId);
-    else if (type === "first") void goToPageInternal(instanceId, 1);
-    else if (type === "last") {
+    if (type === 'prev') void prevInternal(instanceId);
+    else if (type === 'next' || type === 'load-more') void nextInternal(instanceId);
+    else if (type === 'first') void goToPageInternal(instanceId, 1);
+    else if (type === 'last') {
       const instance = instances.get(instanceId);
       if (instance) void goToPageInternal(instanceId, instance.totalPages);
     }
   });
 
-  document.addEventListener("click", (event) => {
+  document.addEventListener('click', (event) => {
     const target = event.target as HTMLElement | null;
     if (!target) return;
-    const pageButton = target.closest<HTMLElement>("[data-pagination-page]");
+    const pageButton = target.closest<HTMLElement>('[data-pagination-page]');
     if (!pageButton) return;
     const attr = pageButton.dataset.paginationPage;
-    if (!attr || attr === "*") return;
+    if (!attr || attr === '*') return;
     const page = Number.parseInt(attr, 10);
     if (!Number.isFinite(page) || page <= 0) return;
     event.preventDefault();
@@ -935,9 +935,9 @@ const attachControlHandlers = (): void => {
 };
 
 const attachFilterHandlers = (): void => {
-  const filterLists = document.querySelectorAll<HTMLElement>("[data-filter-list]");
+  const filterLists = document.querySelectorAll<HTMLElement>('[data-filter-list]');
   filterLists.forEach((filterList) => {
-    filterList.addEventListener("filter:change", () => {
+    filterList.addEventListener('filter:change', () => {
       const filterInstanceId = getInstanceId(filterList);
       instances.forEach((instance) => {
         if (instance.id !== filterInstanceId) return;
@@ -959,7 +959,7 @@ function initializePaginationModule(): void {
     return;
   }
 
-  document.querySelectorAll<HTMLElement>("[data-pagination-list]").forEach((list) => {
+  document.querySelectorAll<HTMLElement>('[data-pagination-list]').forEach((list) => {
     initInstance(list);
   });
   attachControlHandlers();
@@ -968,8 +968,8 @@ function initializePaginationModule(): void {
 }
 
 export function initPagination(): void {
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initializePaginationModule);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializePaginationModule);
   } else {
     initializePaginationModule();
   }
@@ -1006,12 +1006,12 @@ declare global {
   }
 }
 
-if (typeof window !== "undefined" && !window.paginationAPI) {
+if (typeof window !== 'undefined' && !window.paginationAPI) {
   window.paginationAPI = paginationAPI;
 }
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initializePaginationModule);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializePaginationModule);
 } else {
   initializePaginationModule();
 }

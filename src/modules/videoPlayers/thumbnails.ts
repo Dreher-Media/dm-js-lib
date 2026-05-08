@@ -7,8 +7,8 @@
  * Initializes YouTube thumbnail quality upgrade
  */
 export function initYouTubeThumbnails(): void {
-  document.addEventListener("DOMContentLoaded", () => {
-    const thumbnailSizes = ["maxresdefault", "sddefault", "hqdefault", "mqdefault", "default"];
+  document.addEventListener('DOMContentLoaded', () => {
+    const thumbnailSizes = ['maxresdefault', 'sddefault', 'hqdefault', 'mqdefault', 'default'];
 
     const checkYouTubeThumbnails = (el: HTMLImageElement, currentIndex = 0): void => {
       if (el.naturalWidth > 120) return;
@@ -34,7 +34,7 @@ export function initYouTubeThumbnails(): void {
       img.src = originalSrc.replace(/maxresdefault/, size);
     };
 
-    document.querySelectorAll(".youtube img").forEach((el) => {
+    document.querySelectorAll('.youtube img').forEach((el) => {
       checkYouTubeThumbnails(el as HTMLImageElement);
     });
   });

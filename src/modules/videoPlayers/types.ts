@@ -3,7 +3,7 @@
  */
 
 interface PlayerInstance {
-  type: "youtube" | "vimeo" | "dailymotion" | "ardmediathek" | "other";
+  type: 'youtube' | 'vimeo' | 'dailymotion' | 'ardmediathek' | 'other';
   player: unknown;
 }
 

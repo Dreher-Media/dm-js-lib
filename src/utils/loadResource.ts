@@ -3,7 +3,7 @@
  * Handles dynamic loading of scripts, stylesheets, and other resources
  */
 
-export type ResourceType = "script" | "stylesheet";
+export type ResourceType = 'script' | 'stylesheet';
 
 /**
  * Loads a resource (script or stylesheet) dynamically and returns a promise
@@ -11,27 +11,27 @@ export type ResourceType = "script" | "stylesheet";
  * @param type - The type of resource ('script' or 'stylesheet')
  * @returns A promise that resolves when the resource is loaded
  */
-export function loadResource(src: string, type: ResourceType = "script"): Promise<void> {
+export function loadResource(src: string, type: ResourceType = 'script'): Promise<void> {
   return new Promise((resolve, reject) => {
     // Check if resource is already loaded
     const selector =
-      type === "script" ? `script[src="${src}"]` : `link[rel="stylesheet"][href="${src}"]`;
+      type === 'script' ? `script[src="${src}"]` : `link[rel="stylesheet"][href="${src}"]`;
     const existingResource = document.querySelector(selector);
     if (existingResource) {
       resolve();
       return;
     }
 
-    if (type === "script") {
-      const script = document.createElement("script");
+    if (type === 'script') {
+      const script = document.createElement('script');
       script.src = src;
       script.async = true;
       script.onload = () => resolve();
       script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
       document.head.appendChild(script);
-    } else if (type === "stylesheet") {
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
+    } else if (type === 'stylesheet') {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
       link.href = src;
       link.onload = () => resolve();
       link.onerror = () => reject(new Error(`Failed to load stylesheet: ${src}`));
@@ -48,7 +48,7 @@ export function loadResource(src: string, type: ResourceType = "script"): Promis
  * @returns A promise that resolves when the script is loaded
  */
 export function loadScript(src: string): Promise<void> {
-  return loadResource(src, "script");
+  return loadResource(src, 'script');
 }
 
 /**
@@ -57,5 +57,5 @@ export function loadScript(src: string): Promise<void> {
  * @returns A promise that resolves when the stylesheet is loaded
  */
 export function loadStylesheet(href: string): Promise<void> {
-  return loadResource(href, "stylesheet");
+  return loadResource(href, 'stylesheet');
 }

@@ -11,10 +11,10 @@ import {
   loadYouTubeAPI,
   loadVimeoAPI,
   loadDailymotionAPI,
-} from "./apiLoaders";
-import { initializePlyrPlayers, initializePlayers, pauseAllPlayers } from "./playerManagement";
-import { initYouTubeThumbnails } from "./thumbnails";
-import type { PlayerInstance } from "./types";
+} from './apiLoaders';
+import { initializePlyrPlayers, initializePlayers, pauseAllPlayers } from './playerManagement';
+import { initYouTubeThumbnails } from './thumbnails';
+import type { PlayerInstance } from './types';
 
 let players: Record<string, PlayerInstance> = {};
 let plyrPlayers: Plyr[] = [];
@@ -23,15 +23,15 @@ export function initVideoPlayers(): void {
   // Initialize YouTube thumbnail upgrades
   initYouTubeThumbnails();
 
-  document.addEventListener("DOMContentLoaded", () => {
-    const youtubeElements = document.querySelectorAll(".youtube");
+  document.addEventListener('DOMContentLoaded', () => {
+    const youtubeElements = document.querySelectorAll('.youtube');
     let init = false;
 
     // Check which platforms are needed and load their APIs
     const needsPlyr = hasPlyrPlayers();
-    const needsYouTube = hasPlayersOfType("youtube");
-    const needsVimeo = hasPlayersOfType("vimeo");
-    const needsDailymotion = hasPlayersOfType("dailymotion");
+    const needsYouTube = hasPlayersOfType('youtube');
+    const needsVimeo = hasPlayersOfType('vimeo');
+    const needsDailymotion = hasPlayersOfType('dailymotion');
 
     const initializeAllPlayers = (): void => {
       if (init) return;
@@ -90,9 +90,9 @@ export function initVideoPlayers(): void {
           }
         })
         .catch((error) => {
-          console.error("Error loading video player APIs:", error);
+          console.error('Error loading video player APIs:', error);
           // Still try to initialize in case some APIs loaded
-          if (needsPlyr && typeof window.Plyr !== "undefined") {
+          if (needsPlyr && typeof window.Plyr !== 'undefined') {
             initializePlyrPlayers(plyrPlayers, players);
           }
           setTimeout(() => {
@@ -102,24 +102,24 @@ export function initVideoPlayers(): void {
     } else {
       // If no APIs need to be loaded (or only ARD Mediathek), initialize immediately
       // Check if Plyr is already available (might be loaded externally)
-      if (needsPlyr && typeof window.Plyr !== "undefined") {
+      if (needsPlyr && typeof window.Plyr !== 'undefined') {
         initializePlyrPlayers(plyrPlayers, players);
       }
       initializeAllPlayers();
     }
 
     // Set up Swiper integration
-    const swipers = typeof window !== "undefined" ? window.videoSwipers : undefined;
+    const swipers = typeof window !== 'undefined' ? window.videoSwipers : undefined;
     if (swipers) {
       swipers.forEach((swiper) => {
-        swiper.on("slideChange", () => {
+        swiper.on('slideChange', () => {
           pauseAllPlayers(null, plyrPlayers, players);
         });
       });
     }
 
     window.dmReinitVideoPlayers = (container: HTMLElement) => {
-      const elements = container.querySelectorAll<Element>(".youtube");
+      const elements = container.querySelectorAll<Element>('.youtube');
       initializePlayers(elements, players, plyrPlayers);
       initializePlyrPlayers(plyrPlayers, players, container);
     };

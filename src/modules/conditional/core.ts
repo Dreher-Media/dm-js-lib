@@ -11,7 +11,7 @@ import {
   isDateInRange,
   isTimeInRange,
   normalizeDate,
-} from "./utils";
+} from './utils';
 
 /**
  * Parses and evaluates a date condition
@@ -22,7 +22,7 @@ export function parseDateCondition(condition: string): boolean {
   const now = new Date();
   const trimmed = condition.trim();
 
-  if (trimmed.toLowerCase() === "current-year") {
+  if (trimmed.toLowerCase() === 'current-year') {
     const year = now.getFullYear();
     const start = new Date(year, 0, 1);
     const end = new Date(year, 11, 31);
@@ -30,7 +30,7 @@ export function parseDateCondition(condition: string): boolean {
   }
 
   // Handle before: conditions
-  if (trimmed.startsWith("before:")) {
+  if (trimmed.startsWith('before:')) {
     const value = trimmed.substring(7);
     const targetDate = parseDate(value);
     if (!targetDate) return false;
@@ -44,7 +44,7 @@ export function parseDateCondition(condition: string): boolean {
   }
 
   // Handle after: conditions
-  if (trimmed.startsWith("after:")) {
+  if (trimmed.startsWith('after:')) {
     const value = trimmed.substring(6);
     const targetDate = parseDate(value);
     if (!targetDate) return false;
@@ -57,10 +57,10 @@ export function parseDateCondition(condition: string): boolean {
   }
 
   // Handle between: conditions
-  if (trimmed.startsWith("between:")) {
+  if (trimmed.startsWith('between:')) {
     const value = trimmed.substring(8);
     // Use comma as separator to avoid conflicts with time colons
-    const parts = value.split(",");
+    const parts = value.split(',');
     if (parts.length !== 2) return false;
 
     const startDate = parseDate(parts[0].trim());
@@ -81,7 +81,7 @@ export function parseDateCondition(condition: string): boolean {
   }
 
   // Handle on: conditions
-  if (trimmed.startsWith("on:")) {
+  if (trimmed.startsWith('on:')) {
     const value = trimmed.substring(3);
     const targetDate = parseDate(value);
     if (!targetDate) return false;
@@ -108,7 +108,7 @@ export function parseTimeCondition(condition: string): boolean {
   const now = new Date();
 
   // Handle before: conditions
-  if (condition.startsWith("before:")) {
+  if (condition.startsWith('before:')) {
     const value = condition.substring(7);
     const targetTime = parseTime(value);
     if (!targetTime) return false;
@@ -116,7 +116,7 @@ export function parseTimeCondition(condition: string): boolean {
   }
 
   // Handle after: conditions
-  if (condition.startsWith("after:")) {
+  if (condition.startsWith('after:')) {
     const value = condition.substring(6);
     const targetTime = parseTime(value);
     if (!targetTime) return false;
@@ -124,10 +124,10 @@ export function parseTimeCondition(condition: string): boolean {
   }
 
   // Handle between: conditions
-  if (condition.startsWith("between:")) {
+  if (condition.startsWith('between:')) {
     const value = condition.substring(8);
     // Use comma as separator to avoid conflicts with time colons
-    const parts = value.split(",");
+    const parts = value.split(',');
     if (parts.length !== 2) return false;
 
     const startTime = parseTime(parts[0].trim());
@@ -138,20 +138,20 @@ export function parseTimeCondition(condition: string): boolean {
   }
 
   // Handle day: conditions
-  if (condition.startsWith("day:")) {
+  if (condition.startsWith('day:')) {
     const value = condition.substring(4);
     const currentDay = getDayOfWeek();
 
     // Handle weekday/weekend
-    if (value === "weekday") {
-      return ["monday", "tuesday", "wednesday", "thursday", "friday"].includes(currentDay);
+    if (value === 'weekday') {
+      return ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'].includes(currentDay);
     }
-    if (value === "weekend") {
-      return ["saturday", "sunday"].includes(currentDay);
+    if (value === 'weekend') {
+      return ['saturday', 'sunday'].includes(currentDay);
     }
 
     // Handle specific days (pipe-separated)
-    const days = value.split("|").map((d) => d.trim().toLowerCase());
+    const days = value.split('|').map((d) => d.trim().toLowerCase());
     return days.includes(currentDay);
   }
 
@@ -164,7 +164,7 @@ export function parseTimeCondition(condition: string): boolean {
  * @returns True if condition passes, false otherwise
  */
 export function parseUrlCondition(condition: string): boolean {
-  if (!condition.startsWith("param:")) {
+  if (!condition.startsWith('param:')) {
     return false;
   }
 
@@ -172,21 +172,21 @@ export function parseUrlCondition(condition: string): boolean {
   const params = getUrlParams();
 
   // Handle negation (!key)
-  if (value.startsWith("!")) {
+  if (value.startsWith('!')) {
     const key = value.substring(1);
     return !params.has(key);
   }
 
   // Handle key!=value
-  if (value.includes("!=")) {
-    const [key, expectedValue] = value.split("!=");
+  if (value.includes('!=')) {
+    const [key, expectedValue] = value.split('!=');
     const paramValue = params.get(key);
     return paramValue !== expectedValue;
   }
 
   // Handle key=value
-  if (value.includes("=")) {
-    const [key, expectedValue] = value.split("=");
+  if (value.includes('=')) {
+    const [key, expectedValue] = value.split('=');
     const paramValue = params.get(key);
     return paramValue === expectedValue;
   }
@@ -196,9 +196,9 @@ export function parseUrlCondition(condition: string): boolean {
 }
 
 /** Tag names of elements that are not visible and should not count as "children" */
-const INVISIBLE_CHILD_TAGS = new Set(["script", "style", "template", "link", "noscript"]);
+const INVISIBLE_CHILD_TAGS = new Set(['script', 'style', 'template', 'link', 'noscript']);
 
-type ConditionalDateToken = "current-year" | "before:" | "after:" | "between:" | "on:" | "day:";
+type ConditionalDateToken = 'current-year' | 'before:' | 'after:' | 'between:' | 'on:' | 'day:';
 
 const CONDITIONAL_DATE_TOKEN_START_RE = /(?:^|\s+)(current-year|before:|after:|between:|on:|day:)/g;
 
@@ -209,7 +209,7 @@ function splitConditionalDateGroup(group: string): string[] {
   const tokenStarts: number[] = [];
   const re = new RegExp(
     CONDITIONAL_DATE_TOKEN_START_RE.source,
-    CONDITIONAL_DATE_TOKEN_START_RE.flags
+    CONDITIONAL_DATE_TOKEN_START_RE.flags,
   );
   let match: RegExpExecArray | null;
 
@@ -242,12 +242,12 @@ function splitConditionalDateGroup(group: string): string[] {
 function isElementVisible(el: Element): boolean {
   const tag = el.tagName.toLowerCase();
   if (INVISIBLE_CHILD_TAGS.has(tag)) return false;
-  if (el.getAttribute("hidden") !== null) return false;
+  if (el.getAttribute('hidden') !== null) return false;
   try {
     const style = window.getComputedStyle(el);
     if (
-      style.display === "none" ||
-      style.visibility === "hidden" ||
+      style.display === 'none' ||
+      style.visibility === 'hidden' ||
       parseFloat(style.opacity) === 0
     ) {
       return false;
@@ -265,9 +265,9 @@ function isElementVisible(el: Element): boolean {
 function isElementCountedAsChild(el: Element): boolean {
   const tag = el.tagName.toLowerCase();
   if (INVISIBLE_CHILD_TAGS.has(tag)) return false;
-  if (el.getAttribute("hidden") !== null) return false;
+  if (el.getAttribute('hidden') !== null) return false;
   const htmlEl = el as HTMLElement;
-  if (htmlEl.style?.display === "none") return false;
+  if (htmlEl.style?.display === 'none') return false;
   return true;
 }
 
@@ -279,7 +279,7 @@ function isElementCountedAsChild(el: Element): boolean {
  */
 function getVisibleChildCount(el: Element, conditionalElement: HTMLElement | null): number {
   const useOwnStateOnly =
-    conditionalElement?.classList.contains("conditional-hidden") &&
+    conditionalElement?.classList.contains('conditional-hidden') &&
     (el === conditionalElement || conditionalElement.contains(el));
 
   const countAsVisible = useOwnStateOnly ? isElementCountedAsChild : isElementVisible;
@@ -300,12 +300,12 @@ export function parseChildrenCondition(element: HTMLElement, condition: string):
   const value = condition.trim();
 
   // Empty or "self": check if current element has visible children
-  if (!value || value.toLowerCase() === "self") {
+  if (!value || value.toLowerCase() === 'self') {
     return getVisibleChildCount(element, element) > 0;
   }
 
   // "self selector": check if a descendant of current element matches and has visible children
-  const selfPrefix = "self ";
+  const selfPrefix = 'self ';
   if (value.toLowerCase().startsWith(selfPrefix)) {
     const selector = value.slice(selfPrefix.length).trim();
     if (!selector) return false;
@@ -330,19 +330,19 @@ export function evaluateConditions(element: HTMLElement): boolean {
 
   const dateGroups = dateAttr
     ? dateAttr
-        .split("|")
+        .split('|')
         .map((c) => c.trim())
         .filter((c) => c)
     : [];
   const urlConditions = urlAttr
     ? urlAttr
-        .split("|")
+        .split('|')
         .map((c) => c.trim())
         .filter((c) => c)
     : [];
   const childrenConditions = childrenAttr
     ? childrenAttr
-        .split("|")
+        .split('|')
         .map((c) => c.trim())
         .filter((c) => c)
     : [];
@@ -359,7 +359,7 @@ export function evaluateConditions(element: HTMLElement): boolean {
         // Date patterns: before:/after:/between:/on: with dates (YYYY-MM-DD)
         // Time patterns: before:/after:/between: with times (HH:MM), or day:
         const isTimePattern =
-          cond.startsWith("day:") || cond.match(/^(before|after|between):\d{1,2}:\d{2}/); // HH:MM format
+          cond.startsWith('day:') || cond.match(/^(before|after|between):\d{1,2}:\d{2}/); // HH:MM format
 
         if (isTimePattern) {
           return parseTimeCondition(cond);
@@ -400,16 +400,16 @@ export function evaluateConditions(element: HTMLElement): boolean {
  */
 export function applyConditionalVisibility(element: HTMLElement): void {
   const conditionsPass = evaluateConditions(element);
-  const mode = element.dataset.conditionalMode || "show";
-  const shouldShow = mode === "show" ? conditionsPass : !conditionsPass;
+  const mode = element.dataset.conditionalMode || 'show';
+  const shouldShow = mode === 'show' ? conditionsPass : !conditionsPass;
 
   if (shouldShow) {
-    element.style.removeProperty("display");
-    element.classList.add("conditional-active");
-    element.classList.remove("conditional-hidden");
+    element.style.removeProperty('display');
+    element.classList.add('conditional-active');
+    element.classList.remove('conditional-hidden');
   } else {
-    element.style.display = "none";
-    element.classList.add("conditional-hidden");
-    element.classList.remove("conditional-active");
+    element.style.display = 'none';
+    element.classList.add('conditional-hidden');
+    element.classList.remove('conditional-active');
   }
 }
