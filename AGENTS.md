@@ -17,6 +17,8 @@ These apply to every change. AI agents should treat them as inviolable.
 - **No `git commit --no-verify`.** Fix the underlying issue, or fix the hook.
 - **No manual `npm publish`, manual `npm version`, or `CHANGELOG.md` edits.** release-please owns the release flow end-to-end.
 - **Run `npm run verify` locally before opening a PR.** Same checks CI runs.
+- **No `pull_request_target` triggers in GitHub workflows.** Use `pull_request`. `pull_request_target` runs the base branch's workflow with secrets against fork content — the TanStack 2026-05-11 npm compromise was this exact vector. See [`base/security-posture.md`](https://github.com/Dreher-Media/standards/blob/main/base/security-posture.md).
+- **No git-based dependencies** in `package.json` or `package-lock.json`. No `git+ssh://`, no `git+https://`, no `github:user/repo`, no commit-pinned git URLs. Use registry tarballs only.
 
 ---
 
