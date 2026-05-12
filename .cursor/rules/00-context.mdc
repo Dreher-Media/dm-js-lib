@@ -26,6 +26,8 @@ Inviolable across every change in this repo:
 - **No `git commit --no-verify`.** Fix the underlying issue, or fix the hook.
 - **No manual `npm publish`, manual `npm version`, or `CHANGELOG.md` edits.** release-please owns the release flow.
 - **Run `npm run verify` locally before opening a PR.** Same checks CI runs.
+- **No `pull_request_target` triggers in GitHub workflows.** Use `pull_request`. The TanStack 2026-05-11 npm compromise was this attack vector. See [`base/security-posture.md`](https://github.com/Dreher-Media/standards/blob/main/base/security-posture.md).
+- **No git-based dependencies** in `package.json` or `package-lock.json`. No `git+ssh://`, no `github:user/repo`, no commit-pinned URLs. Use registry tarballs only.
 - **No new dependencies without a clear justification.** This is a small library; every dep is a permanent maintenance commitment.
 - **Maintain compatibility with the existing Webflow HTML structure** (data attributes, FsCC interop, etc.). Modules must work as drop-in CDN scripts.
 

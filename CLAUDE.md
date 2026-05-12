@@ -15,6 +15,8 @@ These apply to every change. Treat them as inviolable.
 - **No `git commit --no-verify`.** Fix the underlying issue, or fix the hook.
 - **No manual `npm publish`, manual `npm version`, or `CHANGELOG.md` edits.** release-please owns the release flow.
 - **Run `npm run verify` locally before opening a PR.** Same checks CI runs.
+- **No `pull_request_target` triggers in GitHub workflows.** Use `pull_request`. The TanStack 2026-05-11 npm compromise was this attack vector.
+- **No git-based dependencies** in `package.json` or `package-lock.json`. Use registry tarballs only.
 
 ---
 
