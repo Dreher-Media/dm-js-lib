@@ -6,6 +6,20 @@ The top section is **self-contained** — everything an external contributor nee
 
 ---
 
+## Hard rules
+
+These apply to every change. AI agents should treat them as inviolable.
+
+- **PRs target `main`.** This is a single-trunk repo (public-package overlay). Working branches cut from `main` (`feat/*`, `fix/*`, `chore/*`, `docs/*`, `refactor/*`, `ci/*`, `build/*`, `perf/*`, `test/*`).
+- **PR titles are Conventional Commits.** `feat:` / `fix:` / `chore:` / etc. release-please reads PR titles to determine the next version and changelog — malformed titles break the release pipeline.
+- **No `Co-Authored-By: Claude` or "Generated with …" trailers** in commits, PRs, or issues. Project history reads as if a human author produced the work.
+- **No direct pushes to `main`.** Always go through a PR.
+- **No `git commit --no-verify`.** Fix the underlying issue, or fix the hook.
+- **No manual `npm publish`, manual `npm version`, or `CHANGELOG.md` edits.** release-please owns the release flow end-to-end.
+- **Run `npm run verify` locally before opening a PR.** Same checks CI runs.
+
+---
+
 ## Quick start (everyone)
 
 This is a small TypeScript library bundled to a single CDN-distributable file (`dist/dm-js-lib.min.js`) plus a few standalone helpers. It's published to npm as `@dreher-media/dm-js-lib`.

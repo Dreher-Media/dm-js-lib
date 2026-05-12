@@ -1,0 +1,34 @@
+---
+description: Root context for dm-js-lib. Read this first on every task.
+alwaysApply: true
+---
+
+# Project context
+
+`@dreher-media/dm-js-lib` is a small public TypeScript library that bundles a single CDN-distributable file plus a handful of standalone helpers (filter, pagination, videoPlayer, accordion, etc.). It powers shared interactive behaviour on Webflow client sites.
+
+The repo is **public**; everything that lands here is visible to the world. Treat the standards-system bundled configs and inline workflow files as deliberate — see [`decisions/0003`](https://github.com/Dreher-Media/standards/blob/main/decisions/0003-public-repos-cannot-use-private-reusable-workflows.md) for the rationale.
+
+## Before doing anything
+
+1. Read `AGENTS.md` at the repo root for the project's process rules and the canonical conventions.
+2. Look at `CONTRIBUTING.md` for the contributor-facing quick-start (it points back at `AGENTS.md`).
+3. Match existing patterns in `src/` rather than inventing new ones.
+
+## Hard rules
+
+Inviolable across every change in this repo:
+
+- **PRs target `main`.** Single-trunk repo. Working branches cut from `main`.
+- **PR titles are Conventional Commits.** `feat:` / `fix:` / `chore:` / etc. release-please reads PR titles to determine the next version and changelog — malformed titles break the release pipeline.
+- **No `Co-Authored-By: Claude` or "Generated with …" trailers** in commits, PRs, or issues. Project history reads as if a human author produced the work.
+- **No direct pushes to `main`.** Always go through a PR.
+- **No `git commit --no-verify`.** Fix the underlying issue, or fix the hook.
+- **No manual `npm publish`, manual `npm version`, or `CHANGELOG.md` edits.** release-please owns the release flow.
+- **Run `npm run verify` locally before opening a PR.** Same checks CI runs.
+- **No new dependencies without a clear justification.** This is a small library; every dep is a permanent maintenance commitment.
+- **Maintain compatibility with the existing Webflow HTML structure** (data attributes, FsCC interop, etc.). Modules must work as drop-in CDN scripts.
+
+## When unsure
+
+Ask. Do not guess. Do not invent abstractions to fill gaps in your understanding. If it's a structural decision (new dep, new pattern, breaking convention), ask the human first.
