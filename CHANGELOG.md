@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.1](https://github.com/Dreher-Media/dm-js-lib/compare/v1.7.0...v1.7.1) (2026-05-22)
+
+
+### Bug Fixes
+
+* **filter:** restore tab-link radio state from URL and localStorage ([#19](https://github.com/Dreher-Media/dm-js-lib/issues/19)) ([afc08eb](https://github.com/Dreher-Media/dm-js-lib/commit/afc08eb5de61e4a23cc00b968886465ee6378d58))
+
 ## [1.7.0](https://github.com/Dreher-Media/dm-js-lib/compare/v1.6.3...v1.7.0) (2026-05-07)
 
 
