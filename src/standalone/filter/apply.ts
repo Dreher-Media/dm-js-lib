@@ -24,12 +24,20 @@ export function applyFilters(listElement: HTMLElement): void {
     cache.loadingElement.classList.add('filter-loading-active');
   }
 
+  // When require-selection is enabled, the list stays empty until at least one
+  // real filter is active. The "All" option / no selection shows nothing instead
+  // of everything.
+  const requireSelection = listElement.dataset.filterRequireSelection === 'true';
+  const hasActiveFilters =
+    Object.keys(filters).length > 0 || Object.keys(multifieldSearches).length > 0;
+  const showNothing = requireSelection && !hasActiveFilters;
+
   // Use requestAnimationFrame for smooth updates
   requestAnimationFrame(() => {
     let visibleCount = 0;
 
     items.forEach((item) => {
-      const matches = matchesFilters(item, filters, multifieldSearches, instance);
+      const matches = !showNothing && matchesFilters(item, filters, multifieldSearches, instance);
 
       if (matches) {
         item.style.display = '';
