@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/Dreher-Media/dm-js-lib/compare/v1.7.1...v1.8.0) (2026-06-01)
+
+
+### Features
+
+* **filter:** add data-filter-require-selection to hide items until filtered ([#21](https://github.com/Dreher-Media/dm-js-lib/issues/21)) ([d63dc81](https://github.com/Dreher-Media/dm-js-lib/commit/d63dc81b9ea241306a8c10d7a9609f0814f2650f))
+
 ## [1.7.1](https://github.com/Dreher-Media/dm-js-lib/compare/v1.7.0...v1.7.1) (2026-05-22)
 
 
