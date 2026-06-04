@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.0](https://github.com/Dreher-Media/dm-js-lib/compare/v1.8.0...v1.9.0) (2026-06-04)
+
+
+### Features
+
+* support grouped detail items sharing a detail-id ([#23](https://github.com/Dreher-Media/dm-js-lib/issues/23)) ([8d95100](https://github.com/Dreher-Media/dm-js-lib/commit/8d95100cbddfec17c62f6e464c134d901d279fef))
+
 ## [1.8.0](https://github.com/Dreher-Media/dm-js-lib/compare/v1.7.1...v1.8.0) (2026-06-01)
 
 
