@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.1](https://github.com/Dreher-Media/dm-js-lib/compare/v1.9.0...v1.9.1) (2026-06-04)
+
+
+### Bug Fixes
+
+* restore previewDetailSwitcher standalone build ([#25](https://github.com/Dreher-Media/dm-js-lib/issues/25)) ([b8890f4](https://github.com/Dreher-Media/dm-js-lib/commit/b8890f4229eaf781d97044232971c4af6b25bff3))
+
 ## [1.9.0](https://github.com/Dreher-Media/dm-js-lib/compare/v1.8.0...v1.9.0) (2026-06-04)
 
 
