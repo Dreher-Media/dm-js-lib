@@ -1,7 +1,8 @@
 /**
  * Preview Detail Switcher Module
  * Handles switching between preview and detail views.
- * Only one detail view is shown at a time. Preview buttons select which detail view to display.
+ * Only one detail group is shown at a time. Preview buttons select which detail group to display.
+ * Multiple detail items may share the same detail-id; all items in the selected group are shown together.
  */
 
 export interface PreviewDetailSwitcherOptions {
@@ -12,8 +13,9 @@ export interface PreviewDetailSwitcherOptions {
    */
   container?: HTMLElement | string;
   /**
-   * Selector for the detail view items. Only one is shown at a time.
-   * @default '[data-disco-item]'
+   * Selector for the detail view items. Only one detail group is shown at a time;
+   * multiple items sharing the same detail-id form a group and are shown together.
+   * @default '[data-detail-item]'
    */
   itemSelector?: string;
   /**
@@ -23,6 +25,7 @@ export interface PreviewDetailSwitcherOptions {
   previewIdAttribute?: string;
   /**
    * Attribute name on detail view elements. Must match the preview-id value to be shown.
+   * Multiple detail items may share the same detail-id; they are then shown together.
    * @default 'data-detail-id'
    */
   detailIdAttribute?: string;
@@ -40,7 +43,8 @@ export interface PreviewDetailSwitcherOptions {
 
 /**
  * Initializes the preview detail switcher functionality.
- * Only one detail view is shown at a time. Clicking preview buttons selects which detail view to display.
+ * Only one detail group is shown at a time. Clicking preview buttons selects which detail group to display.
+ * All detail items sharing the selected detail-id are shown together.
  * @param options - Configuration options for the preview detail switcher
  */
 export function initPreviewDetailSwitcher(options: PreviewDetailSwitcherOptions = {}): void {
@@ -72,15 +76,16 @@ export function initPreviewDetailSwitcher(options: PreviewDetailSwitcherOptions 
     const previewId = previewElement.getAttribute(previewIdAttribute);
     if (!previewId) return;
 
-    // Find the detail view item with matching detail-id within the container scope
-    // The detail item must also match the item selector
-    const detailItem = scope.querySelector(
+    // Find all detail view items with matching detail-id within the container scope.
+    // The detail items must also match the item selector. Multiple items may share the
+    // same detail-id; all of them are shown together.
+    const matchingItems = scope.querySelectorAll<HTMLElement>(
       `${itemSelector}[${detailIdAttribute}="${previewId}"]`,
-    ) as HTMLElement | null;
+    );
 
-    if (!detailItem) return;
+    if (matchingItems.length === 0) return;
 
-    // Hide all detail view items (only one is shown at a time)
+    // Hide all detail view items (only one detail group is shown at a time)
     const allDetailItems = scope.querySelectorAll<HTMLElement>(itemSelector);
     allDetailItems.forEach((item) => {
       if (item) {
@@ -88,8 +93,12 @@ export function initPreviewDetailSwitcher(options: PreviewDetailSwitcherOptions 
       }
     });
 
-    // Show only the selected detail view item
-    detailItem.style.display = displayValue;
+    // Show all detail view items in the selected group
+    matchingItems.forEach((item) => {
+      if (item) {
+        item.style.display = displayValue;
+      }
+    });
   };
 
   // Initialize on DOM ready
@@ -105,16 +114,23 @@ export function initPreviewDetailSwitcher(options: PreviewDetailSwitcherOptions 
       }
     });
 
-    // Show initial detail view item (only one is shown at a time)
-    const initialDetailItem = detailItems[initialIndex];
-    if (initialDetailItem) {
-      // Show only the initial detail view item
+    // Determine the initial detail group from the item at initialIndex
+    // (falling back to the first item), then show every item sharing its detail-id.
+    const initialDetailItem = detailItems[initialIndex] ?? detailItems[0];
+    const initialDetailId = initialDetailItem?.getAttribute(detailIdAttribute);
+
+    if (initialDetailId) {
+      // Show all detail view items in the initial group
+      scope
+        .querySelectorAll<HTMLElement>(`${itemSelector}[${detailIdAttribute}="${initialDetailId}"]`)
+        .forEach((item) => {
+          if (item) {
+            item.style.display = displayValue;
+          }
+        });
+    } else if (initialDetailItem) {
+      // Item has no detail-id; show just that single item
       initialDetailItem.style.display = displayValue;
-    } else {
-      // Show the first detail view item
-      if (detailItems[0]) {
-        detailItems[0].style.display = displayValue;
-      }
     }
 
     // Set up click handlers on preview elements within the container scope
