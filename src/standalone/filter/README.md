@@ -3,7 +3,7 @@
 A powerful, flexible filtering system for lists and collections. Filter items by multiple criteria using checkboxes, radio buttons, selects, or search inputs.
 
 > **Note:** This is a standalone module. It's not included in the main library bundle and must be loaded separately.
-> 
+>
 > **Auto-initialization:** The filter module automatically initializes when the DOM is ready. No manual setup required!
 
 ## What It Does
@@ -31,15 +31,15 @@ Add `data-filter-field` to your filter controls (checkboxes, radios, selects, in
 ```html
 <div>
   <label>
-    <input type="checkbox" data-filter-field="category" value="design">
+    <input type="checkbox" data-filter-field="category" value="design" />
     Design
   </label>
   <label>
-    <input type="checkbox" data-filter-field="category" value="development">
+    <input type="checkbox" data-filter-field="category" value="development" />
     Development
   </label>
   <label>
-    <input type="checkbox" data-filter-field="category" value="marketing">
+    <input type="checkbox" data-filter-field="category" value="marketing" />
     Marketing
   </label>
 </div>
@@ -50,13 +50,13 @@ Add `data-filter-field` to your filter controls (checkboxes, radios, selects, in
 ### Checkboxes (Multiple Selection)
 
 ```html
-<input type="checkbox" data-filter-field="category" value="design">
+<input type="checkbox" data-filter-field="category" value="design" />
 ```
 
 ### Radio Buttons (Single Selection)
 
 ```html
-<input type="radio" data-filter-field="category" value="design" name="category">
+<input type="radio" data-filter-field="category" value="design" name="category" />
 ```
 
 ### Tab-link Buttons (Single Selection)
@@ -65,9 +65,26 @@ Button or link elements can act as radio-style selectors (only one active per gr
 
 ```html
 <div role="tablist">
-  <button type="button" data-filter-field="category" data-filter-type="radio" data-filter-value="design" class="active">Design</button>
-  <button type="button" data-filter-field="category" data-filter-type="radio" data-filter-value="development">Development</button>
-  <button type="button" data-filter-field="category" data-filter-type="radio" data-filter-value="">All</button>
+  <button
+    type="button"
+    data-filter-field="category"
+    data-filter-type="radio"
+    data-filter-value="design"
+    class="active"
+  >
+    Design
+  </button>
+  <button
+    type="button"
+    data-filter-field="category"
+    data-filter-type="radio"
+    data-filter-value="development"
+  >
+    Development
+  </button>
+  <button type="button" data-filter-field="category" data-filter-type="radio" data-filter-value="">
+    All
+  </button>
 </div>
 ```
 
@@ -97,6 +114,7 @@ Select dropdowns can automatically populate with all available options from your
 ```
 
 The autofill feature:
+
 - Scans all list items for unique values matching the field
 - Automatically creates options for each unique value
 - Sorts options alphabetically
@@ -119,10 +137,7 @@ By default, select elements use manually defined options:
 **Customize "All" Option:**
 
 ```html
-<select 
-  data-filter-field="category"
-  data-filter-all-value=""
-  data-filter-all-text="Show All">
+<select data-filter-field="category" data-filter-all-value="" data-filter-all-text="Show All">
   <!-- Auto-generated options with custom "All" option -->
 </select>
 ```
@@ -130,9 +145,7 @@ By default, select elements use manually defined options:
 **Disable "All" Option:**
 
 ```html
-<select 
-  data-filter-field="category"
-  data-filter-autofill-all="false">
+<select data-filter-field="category" data-filter-autofill-all="false">
   <!-- Auto-generated options without "All" option -->
 </select>
 ```
@@ -142,9 +155,7 @@ By default, select elements use manually defined options:
 To regenerate options (useful when items are added dynamically):
 
 ```html
-<select 
-  data-filter-field="category"
-  data-filter-autofill-refresh="true">
+<select data-filter-field="category" data-filter-autofill-refresh="true">
   <!-- Options will be regenerated on each refresh -->
 </select>
 ```
@@ -152,7 +163,7 @@ To regenerate options (useful when items are added dynamically):
 ### Search Inputs
 
 ```html
-<input type="text" data-filter-field="search" placeholder="Search...">
+<input type="text" data-filter-field="search" placeholder="Search..." />
 ```
 
 ## Advanced Features
@@ -166,19 +177,23 @@ Use `data-filter-instance` to have multiple independent filters on one page. **Y
 ```html
 <!-- First filter: instance on wrapper is enough -->
 <div data-filter-instance="products">
-  <ul data-filter-list>...</ul>
-  <input data-filter-field="category" value="electronics">
+  <ul data-filter-list>
+    ...
+  </ul>
+  <input data-filter-field="category" value="electronics" />
 </div>
 
 <!-- Second filter -->
 <div data-filter-instance="articles">
-  <ul data-filter-list>...</ul>
-  <input data-filter-field="category" value="tech">
+  <ul data-filter-list>
+    ...
+  </ul>
+  <input data-filter-field="category" value="tech" />
 </div>
 
 <!-- Override: this control belongs to "products" even if moved under "articles" -->
 <div data-filter-instance="articles">
-  <input data-filter-field="category" data-filter-instance="products" value="tech">
+  <input data-filter-field="category" data-filter-instance="products" value="tech" />
 </div>
 ```
 
@@ -187,11 +202,12 @@ Use `data-filter-instance` to have multiple independent filters on one page. **Y
 Use `data-filter-search` to search across multiple fields:
 
 ```html
-<input 
-  type="text" 
-  data-filter-field="search" 
+<input
+  type="text"
+  data-filter-field="search"
   data-filter-search="title,description,tags"
-  placeholder="Search...">
+  placeholder="Search..."
+/>
 ```
 
 ### Item Count Display
@@ -199,8 +215,10 @@ Use `data-filter-search` to search across multiple fields:
 Show total and filtered item counts:
 
 ```html
-<span data-filter-count>0</span> <!-- Total items -->
-<span data-filter-results>0</span> <!-- Filtered items -->
+<span data-filter-count>0</span>
+<!-- Total items -->
+<span data-filter-results>0</span>
+<!-- Filtered items -->
 ```
 
 ### Empty State
@@ -221,6 +239,28 @@ Custom empty message:
 </div>
 ```
 
+### Require Selection (hide items until filtered)
+
+By default the list shows all items when no filter is active (e.g. the "All"
+option is selected). Add `data-filter-require-selection="true"` to keep the list
+empty until at least one real filter is chosen:
+
+```html
+<ul data-filter-list data-filter-require-selection="true">
+  ...
+</ul>
+```
+
+With this set, "All" / no selection shows nothing instead of everything; items
+only appear once a specific filter is selected. The empty state (if present) is
+shown in the initial unfiltered state, so it doubles as a "pick a filter" prompt:
+
+```html
+<div data-filter-empty data-filter-empty-text="Select a filter to see results.">
+  <!-- Message will be inserted here -->
+</div>
+```
+
 ### Clear Button
 
 Add a button to reset all filters:
@@ -234,7 +274,9 @@ Add a button to reset all filters:
 Save filter state to URL:
 
 ```html
-<ul data-filter-list data-filter-url="true">...</ul>
+<ul data-filter-list data-filter-url="true">
+  ...
+</ul>
 ```
 
 Filters will be saved as URL parameters and restored on page load.
@@ -244,7 +286,9 @@ Filters will be saved as URL parameters and restored on page load.
 Save filter state to browser storage:
 
 ```html
-<ul data-filter-list data-filter-persist="myFilters">...</ul>
+<ul data-filter-list data-filter-persist="myFilters">
+  ...
+</ul>
 ```
 
 ### Loading Indicator
@@ -260,13 +304,17 @@ Show a loading state during filtering:
 Automatically scroll to top when filtering:
 
 ```html
-<ul data-filter-list data-filter-scroll="top">...</ul>
+<ul data-filter-list data-filter-scroll="top">
+  ...
+</ul>
 ```
 
 Or scroll to a specific anchor:
 
 ```html
-<ul data-filter-list data-filter-scroll="anchor" data-filter-scroll-anchor="#results">...</ul>
+<ul data-filter-list data-filter-scroll="anchor" data-filter-scroll-anchor="#results">
+  ...
+</ul>
 ```
 
 ### Debounce Search
@@ -274,11 +322,7 @@ Or scroll to a specific anchor:
 Configure debounce delay for search inputs (default: 300ms):
 
 ```html
-<input 
-  type="text" 
-  data-filter-field="search" 
-  data-filter-debounce="500"
-  placeholder="Search...">
+<input type="text" data-filter-field="search" data-filter-debounce="500" placeholder="Search..." />
 ```
 
 ## Item Marking
@@ -372,9 +416,14 @@ The module adds classes you can style:
   <select data-filter-field="category" data-filter-autofill="true">
     <!-- Options auto-populated from list items -->
   </select>
-  
-  <input type="checkbox" data-filter-field="status" value="active"> Active
-  <input type="text" data-filter-field="search" data-filter-search="title,description" placeholder="Search...">
+
+  <input type="checkbox" data-filter-field="status" value="active" /> Active
+  <input
+    type="text"
+    data-filter-field="search"
+    data-filter-search="title,description"
+    placeholder="Search..."
+  />
   <button data-filter-clear>Clear</button>
 </div>
 
@@ -411,7 +460,7 @@ This module is available as a standalone script:
 <script>
   // Optional: Manually initialize (useful for dynamic content)
   Filter.initFilter();
-  
+
   // Access the programmatic API
   Filter.filterAPI.setFilter(null, 'category', 'design');
   Filter.filterAPI.clear(null);
@@ -419,18 +468,19 @@ This module is available as a standalone script:
 ```
 
 The standalone build exposes:
+
 - `Filter.initFilter()` - Manually initialize the filter module (auto-initializes by default)
 - `Filter.filterAPI` - Programmatic API for controlling filters
 
 ## Autofill Attributes Reference
 
-| Attribute | Values | Description |
-|-----------|--------|-------------|
-| `data-filter-autofill` | `"true"`, `"false"` (default) | Enable/disable autofill for select elements |
-| `data-filter-autofill-all` | `"true"` (default), `"false"` | Include/exclude "All" option in autofilled selects |
-| `data-filter-all-value` | string | Value for the "All" option (default: empty string) |
-| `data-filter-all-text` | string | Text for the "All" option (default: "All") |
-| `data-filter-autofill-refresh` | `"true"`, `"false"` (default) | Force refresh of options on each update |
+| Attribute                      | Values                        | Description                                        |
+| ------------------------------ | ----------------------------- | -------------------------------------------------- |
+| `data-filter-autofill`         | `"true"`, `"false"` (default) | Enable/disable autofill for select elements        |
+| `data-filter-autofill-all`     | `"true"` (default), `"false"` | Include/exclude "All" option in autofilled selects |
+| `data-filter-all-value`        | string                        | Value for the "All" option (default: empty string) |
+| `data-filter-all-text`         | string                        | Text for the "All" option (default: "All")         |
+| `data-filter-autofill-refresh` | `"true"`, `"false"` (default) | Force refresh of options on each update            |
 
 ## Notes
 
