@@ -587,6 +587,33 @@ const applyAnimationVars = (instance: PaginationInstanceState): void => {
   list.style.setProperty('--pagination-anim-easing', instance.options.animationEasing);
 };
 
+// Infinite mode needs something to watch for the "load next page" trigger.
+// Prefer an author-provided [data-pagination-sentinel] (or load-more button);
+// if the markup has neither — e.g. pagination auto-applied by the build with no
+// sentinel injected — create one just after the list so the observer has a target.
+// Without this, infinite mode renders page 1 and silently never advances.
+const ensureSentinel = (instance: PaginationInstanceState): HTMLElement | null => {
+  if (instance.elements.sentinel) return instance.elements.sentinel;
+  const existing = collectSentinel(instance.elements.list);
+  if (existing) {
+    instance.elements.sentinel = existing;
+    return existing;
+  }
+  if (typeof document === 'undefined') return null;
+  const list = instance.elements.list;
+  if (!list.parentElement) return null;
+  const sentinel = document.createElement('div');
+  sentinel.setAttribute('data-pagination-sentinel', '');
+  sentinel.setAttribute('data-pagination-sentinel-auto', '');
+  sentinel.setAttribute('aria-hidden', 'true');
+  // Tie the sentinel to this instance so a later collectSentinel() (e.g. on refresh)
+  // re-discovers it instead of creating a duplicate.
+  sentinel.dataset.paginationInstance = instance.id;
+  list.insertAdjacentElement('afterend', sentinel);
+  instance.elements.sentinel = sentinel;
+  return sentinel;
+};
+
 const ensureObserver = (instance: PaginationInstanceState): void => {
   if (instance.options.mode !== 'infinite' || !('IntersectionObserver' in window)) {
     if (instance.observer) {
@@ -597,7 +624,7 @@ const ensureObserver = (instance: PaginationInstanceState): void => {
   }
 
   if (instance.observer) instance.observer.disconnect();
-  const sentinel = instance.elements.sentinel;
+  const sentinel = ensureSentinel(instance);
   if (!sentinel) return;
 
   const observer = new IntersectionObserver(
