@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.3](https://github.com/Dreher-Media/dm-js-lib/compare/v1.9.2...v1.9.3) (2026-07-14)
+
+
+### Bug Fixes
+
+* keep filter URL updates out of browser history ([#29](https://github.com/Dreher-Media/dm-js-lib/issues/29)) ([083d556](https://github.com/Dreher-Media/dm-js-lib/commit/083d5563a69d1312ee0b0ec048a42779a72c83ac))
+
 ## [1.9.2](https://github.com/Dreher-Media/dm-js-lib/compare/v1.9.1...v1.9.2) (2026-06-10)
 
 
