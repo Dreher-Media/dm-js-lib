@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.2](https://github.com/Dreher-Media/dm-js-lib/compare/v1.9.1...v1.9.2) (2026-06-10)
+
+
+### Bug Fixes
+
+* **pagination:** auto-create sentinel in infinite mode when markup has none ([#27](https://github.com/Dreher-Media/dm-js-lib/issues/27)) ([fb7b1dc](https://github.com/Dreher-Media/dm-js-lib/commit/fb7b1dc314e958686f391586bfe359615e07a0cc))
+
 ## [1.9.1](https://github.com/Dreher-Media/dm-js-lib/compare/v1.9.0...v1.9.1) (2026-06-04)
 
 
