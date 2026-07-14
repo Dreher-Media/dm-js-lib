@@ -25,7 +25,11 @@ export function updateUrlParams(instance: string | null, filters: Record<string,
   });
 
   const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}${window.location.hash}`;
-  window.history.pushState({}, '', newUrl);
+  // replaceState (not pushState): filter state updates the URL in place. Using
+  // pushState here injected a duplicate history entry on every applyFilters()
+  // call — including the one that runs on initial load — which trapped the
+  // browser back button on the current URL. Matches the pagination module.
+  window.history.replaceState({}, '', newUrl);
 }
 
 /**

@@ -222,7 +222,9 @@ export function initializeClear(): void {
           });
           keysToDelete.forEach((key) => params.delete(key));
           const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}${window.location.hash}`;
-          window.history.pushState({}, '', newUrl);
+          // replaceState (not pushState): keep filter clears out of history so
+          // the back button returns to the previous page, not a prior filter state.
+          window.history.replaceState({}, '', newUrl);
         }
 
         // Clear localStorage if enabled
