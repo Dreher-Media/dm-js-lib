@@ -3,9 +3,15 @@
  * Handles tab link functionality for switching between tab content
  */
 
-import { getUrlParams, getTabTargetValue, findAllTabContentByAttribute } from './utils';
+import {
+  getUrlParams,
+  getTabTargetValue,
+  findAllTabContentByAttribute,
+  findTabContents,
+  getTabContentValuesForGroup,
+  getTabContentValuesForParent,
+} from './utils';
 import { activateTab } from './core';
-import { getTabContentValuesForGroup, getTabContentValuesForParent } from './utils';
 
 export function initTabs(): void {
   document.addEventListener('DOMContentLoaded', () => {
@@ -53,7 +59,7 @@ export function initTabs(): void {
         // Also hide content elements based on tab link target values
         const contentValues = getTabContentValuesForGroup(urlTabGroup);
         contentValues.forEach((contentValue) => {
-          const contentEls = findAllTabContentByAttribute(contentValue);
+          const contentEls = findTabContents(contentValue, urlTabGroup);
           contentEls.forEach((contentEl) => {
             contentEl.style.display = 'none';
             contentEl.classList.remove('active');
@@ -99,9 +105,7 @@ export function initTabs(): void {
           const tabLink = link as HTMLElement;
           const tabGroup = tabLink.dataset.tabGroup;
           const tabTargetValue = getTabTargetValue(tabLink);
-          const targetTabContents = tabTargetValue
-            ? findAllTabContentByAttribute(tabTargetValue)
-            : [];
+          const targetTabContents = tabTargetValue ? findTabContents(tabTargetValue, tabGroup) : [];
 
           // Show the corresponding tab content
           if (targetTabContents.length > 0) {
@@ -121,7 +125,7 @@ export function initTabs(): void {
               // Also hide content elements based on tab link target values
               const contentValues = getTabContentValuesForGroup(tabGroup);
               contentValues.forEach((contentValue) => {
-                const contentEls = findAllTabContentByAttribute(contentValue);
+                const contentEls = findTabContents(contentValue, tabGroup);
                 contentEls.forEach((contentEl) => {
                   // Only hide if it's not one of the target tab contents
                   if (!targetTabContents.includes(contentEl)) {

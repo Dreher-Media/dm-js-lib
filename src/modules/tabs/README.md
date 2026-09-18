@@ -45,6 +45,7 @@ Add `data-tab-content` to content sections:
 
 You can also use the `data-tab-link` attribute instead of classes:
 
+<!-- prettier-ignore -->
 ```html
 <button data-tab-link="tab1">Tab 1</button>
 <button data-tab-link="tab2">Tab 2</button>
@@ -69,7 +70,32 @@ Use `data-tab-group` to create multiple independent tab sets on one page:
   <button class="tab-link" data-tab-target="feature1" data-tab-group="features">Feature 1</button>
   <button class="tab-link" data-tab-target="feature2" data-tab-group="features">Feature 2</button>
 </div>
+
+<div data-tab-content="feature1" data-tab-group="features">...</div>
+<div data-tab-content="feature2" data-tab-group="features">...</div>
 ```
+
+#### How grouped links find their content
+
+When a tab link has `data-tab-group`, its content is resolved **within that group first**: the module looks for `[data-tab-content="<value>"][data-tab-group="<group>"]`. Only if no panel with that value carries the group does it fall back to every `[data-tab-content="<value>"]` on the page. The same scoping applies when switching tabs, to the initial `.active` / `data-tab-first-active` handling and to the `?tab=&tabGroup=` URL parameters.
+
+This means two groups may reuse the same content value, e.g. a main tab `video` and a nested sub-tab `video`, as long as each panel carries its own `data-tab-group`:
+
+```html
+<div data-tab-link="video" data-tab-group="media">Video</div>
+<div data-tab-link="press" data-tab-group="media">Press</div>
+
+<div data-tab-content="video" data-tab-group="media">Main video panel</div>
+<div data-tab-content="press" data-tab-group="media">
+  <div data-tab-link="print" data-tab-group="press">Print</div>
+  <div data-tab-link="video" data-tab-group="press">Video</div>
+
+  <div data-tab-content="print" data-tab-group="press">...</div>
+  <div data-tab-content="video" data-tab-group="press">Press video panel</div>
+</div>
+```
+
+If the panels **don't** carry `data-tab-group`, content values must stay unique across groups — otherwise every panel with that value is shown and hidden together.
 
 ### URL Parameters
 
@@ -125,5 +151,6 @@ Style active tabs:
 ## Notes
 
 - Tab links with `data-lang-link` or `data-lang` are excluded (used by language module)
+- Grouped links resolve content within their `data-tab-group` first, so groups can share content values when panels carry `data-tab-group` too
 - The module respects existing `active` classes in HTML
 - URL parameters take precedence over HTML `active` classes
