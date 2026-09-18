@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.4](https://github.com/Dreher-Media/dm-js-lib/compare/v1.9.3...v1.9.4) (2026-09-18)
+
+
+### Bug Fixes
+
+* **tabs:** scope content lookup to data-tab-group ([#31](https://github.com/Dreher-Media/dm-js-lib/issues/31)) ([270d98b](https://github.com/Dreher-Media/dm-js-lib/commit/270d98bf00cbfbf248b6707f798c7a7d975253fa))
+
 ## [1.9.3](https://github.com/Dreher-Media/dm-js-lib/compare/v1.9.2...v1.9.3) (2026-07-14)
 
 
