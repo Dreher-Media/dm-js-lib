@@ -6,6 +6,7 @@
 import {
   getTabTargetValue,
   findAllTabContentByAttribute,
+  findTabContents,
   getTabContentValuesForGroup,
   getTabContentValuesForParent,
 } from './utils';
@@ -16,7 +17,7 @@ import {
 export function activateTab(tabLink: HTMLElement): void {
   const tabGroup = tabLink.dataset.tabGroup;
   const tabTargetValue = getTabTargetValue(tabLink);
-  const targetTabContents = tabTargetValue ? findAllTabContentByAttribute(tabTargetValue) : [];
+  const targetTabContents = tabTargetValue ? findTabContents(tabTargetValue, tabGroup) : [];
 
   if (tabGroup) {
     // Handle tab groups via data-tab-group attribute
@@ -40,7 +41,7 @@ export function activateTab(tabLink: HTMLElement): void {
     // Also hide content elements based on tab link target values
     const contentValues = getTabContentValuesForGroup(tabGroup);
     contentValues.forEach((contentValue) => {
-      const contentEls = findAllTabContentByAttribute(contentValue);
+      const contentEls = findTabContents(contentValue, tabGroup);
       contentEls.forEach((contentEl) => {
         contentEl.style.display = 'none';
         contentEl.classList.remove('active');

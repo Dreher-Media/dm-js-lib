@@ -47,6 +47,24 @@ export function findAllTabContentByAttribute(value: string): HTMLElement[] {
 }
 
 /**
+ * Helper function to find the tab content elements for a tab value, scoped to a tab group.
+ * When a group is given, panels matching both value and group win, so two groups can share
+ * a content value without colliding. Falls back to the unscoped lookup when no panel carries
+ * the group (keeps markup whose panels lack data-tab-group working).
+ */
+export function findTabContents(value: string, group?: string): HTMLElement[] {
+  if (group) {
+    const scoped = Array.from(
+      document.querySelectorAll(`[data-tab-content="${value}"][data-tab-group="${group}"]`),
+    ) as HTMLElement[];
+    if (scoped.length > 0) {
+      return scoped;
+    }
+  }
+  return findAllTabContentByAttribute(value);
+}
+
+/**
  * Helper function to get all tab content values for a given tab group
  */
 export function getTabContentValuesForGroup(group: string): string[] {
