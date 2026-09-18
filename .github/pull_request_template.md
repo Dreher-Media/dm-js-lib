@@ -8,7 +8,7 @@
 
 ## Test plan
 
-<!-- How you verified manually. There are no automated tests yet. -->
+<!-- How you verified. `npm run verify` runs the Vitest suite; note any manual checks. -->
 
 - [ ] `npm run verify` passes locally
 - [ ] `npm run build` passes locally
