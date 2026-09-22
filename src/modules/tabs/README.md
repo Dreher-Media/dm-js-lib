@@ -111,6 +111,8 @@ For tab groups:
 ?tab=product1&tabGroup=products
 ```
 
+Landing on a tab this way scrolls the activated tab link into view (smooth scroll), since the tab bar may be below the fold on page load. Give the tab bar a `scroll-margin-top` if it needs to clear a fixed header. Clicking a tab link directly does not scroll, since it's already on screen.
+
 ### Auto-Activate First Tab
 
 Add `data-tab-first-active` to automatically activate the first tab in a group:

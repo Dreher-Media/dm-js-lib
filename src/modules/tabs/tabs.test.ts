@@ -4,6 +4,10 @@ import { activateTab } from './core';
 import { initTabs } from './index';
 import { findTabContents } from './utils';
 
+// jsdom doesn't implement scrollIntoView; stub it so activateTab's rAF-scheduled
+// call has something to land on in every test, not just the ones that assert on it.
+Element.prototype.scrollIntoView = Element.prototype.scrollIntoView ?? (() => {});
+
 // Two groups sharing the content value "video": the main "media" group and the
 // "press" sub-tabs nested inside the press panel (mirrors a real client page).
 const nestedGroups = (options: { mainActive?: string; pressAttrs?: string } = {}) => `
@@ -38,9 +42,12 @@ function runInitTabs(): void {
   (call?.[1] as () => void)();
 }
 
-afterEach(() => {
+afterEach(async () => {
   document.body.innerHTML = '';
   window.history.replaceState({}, '', '/');
+  // Drain any requestAnimationFrame scheduled by activateTab's scrollIntoView
+  // option, so it fires against this test's mocks instead of leaking into the next.
+  await new Promise((resolve) => requestAnimationFrame(resolve));
 });
 
 describe('findTabContents', () => {
@@ -132,6 +139,34 @@ describe('two tab groups sharing a content value', () => {
     expect(byId('media-video').classList.contains('active')).toBe(false);
     expect(link('press', 'video').classList.contains('active')).toBe(true);
     expect(link('media', 'video').classList.contains('active')).toBe(false);
+  });
+
+  it('?tab=&tabGroup= scrolls the activated tab link into view', async () => {
+    document.body.innerHTML = nestedGroups();
+    const scrollIntoView = vi
+      .spyOn(Element.prototype, 'scrollIntoView')
+      .mockImplementation(() => {});
+    window.history.replaceState({}, '', '/?tab=video&tabGroup=press');
+    runInitTabs();
+
+    expect(scrollIntoView).not.toHaveBeenCalled();
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
+    expect(scrollIntoView.mock.instances[0]).toBe(link('press', 'video'));
+    scrollIntoView.mockRestore();
+  });
+});
+
+describe('scrollIntoView', () => {
+  it('does not scroll on a plain activateTab call (e.g. a click)', () => {
+    document.body.innerHTML = nestedGroups();
+    const scrollIntoView = vi
+      .spyOn(Element.prototype, 'scrollIntoView')
+      .mockImplementation(() => {});
+    activateTab(link('media', 'video'));
+    expect(scrollIntoView).not.toHaveBeenCalled();
+    scrollIntoView.mockRestore();
   });
 });
 

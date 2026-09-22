@@ -11,10 +11,22 @@ import {
   getTabContentValuesForParent,
 } from './utils';
 
+export interface ActivateTabOptions {
+  /**
+   * Scroll the activated tab link into view after activation. Off by default so a
+   * plain click (the target is already on-screen) keeps its current behaviour;
+   * callers landing on a tab from elsewhere (e.g. the `?tab=&tabGroup=` deep link)
+   * opt in explicitly. Uses the same `scrollIntoView({ behavior: 'smooth', block:
+   * 'start' })` call as the filter module's anchor scroll, so it honours a
+   * `scroll-margin-top` set for a fixed header the same way.
+   */
+  scrollIntoView?: boolean;
+}
+
 /**
  * Helper function to activate a tab programmatically
  */
-export function activateTab(tabLink: HTMLElement): void {
+export function activateTab(tabLink: HTMLElement, options: ActivateTabOptions = {}): void {
   const tabGroup = tabLink.dataset.tabGroup;
   const tabTargetValue = getTabTargetValue(tabLink);
   const targetTabContents = tabTargetValue ? findTabContents(tabTargetValue, tabGroup) : [];
@@ -78,4 +90,10 @@ export function activateTab(tabLink: HTMLElement): void {
     targetTabContent.style.display = 'block';
     targetTabContent.classList.add('active');
   });
+
+  if (options.scrollIntoView) {
+    requestAnimationFrame(() => {
+      tabLink.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
 }
