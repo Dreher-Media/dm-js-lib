@@ -77,9 +77,10 @@ export function initTabs(): void {
           });
       }
 
-      // Activate the tab if found
+      // Activate the tab if found. Scroll it into view: a URL deep link means the
+      // user is landing on this tab from elsewhere, so it may be below the fold.
       if (targetTabLink) {
-        activateTab(targetTabLink);
+        activateTab(targetTabLink, { scrollIntoView: true });
       }
     }
 
