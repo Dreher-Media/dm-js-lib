@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.5](https://github.com/Dreher-Media/dm-js-lib/compare/v1.9.4...v1.9.5) (2026-09-22)
+
+
+### Bug Fixes
+
+* **tabs:** scroll the activated tab into view on URL deep link ([#33](https://github.com/Dreher-Media/dm-js-lib/issues/33)) ([4eceec9](https://github.com/Dreher-Media/dm-js-lib/commit/4eceec927b4553b50100796052e68b28171f4eca))
+
 ## [1.9.4](https://github.com/Dreher-Media/dm-js-lib/compare/v1.9.3...v1.9.4) (2026-09-18)
 
 
