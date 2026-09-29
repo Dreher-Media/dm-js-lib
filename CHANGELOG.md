@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.6](https://github.com/Dreher-Media/dm-js-lib/compare/v1.9.5...v1.9.6) (2026-09-29)
+
+
+### Bug Fixes
+
+* publish via npm trusted publishing and render data-separator as text ([#35](https://github.com/Dreher-Media/dm-js-lib/issues/35)) ([683e480](https://github.com/Dreher-Media/dm-js-lib/commit/683e48035de65e0439febb090593c45beab36da6))
+
 ## [1.9.5](https://github.com/Dreher-Media/dm-js-lib/compare/v1.9.4...v1.9.5) (2026-09-22)
 
 
