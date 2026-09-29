@@ -107,8 +107,10 @@ function initSeparators(): void {
           if (index < children.length - 1) {
             // No separator after the last child
             // Create a new separator element
+            // textContent, not innerHTML: the attribute value is text. Entities such
+            // as &nbsp; are already decoded by the HTML parser, so nothing is lost.
             const separator = document.createElement('span');
-            separator.innerHTML = `${separatorText}`;
+            separator.textContent = separatorText;
 
             // Insert the separator after the current child
             child.insertAdjacentElement('afterend', separator);

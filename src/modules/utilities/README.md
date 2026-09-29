@@ -26,6 +26,7 @@ This utility automatically adds the `w--current` class to navigation links that 
 No setup required! The utility works automatically on all `<a>` tags with `href` attributes.
 
 **Example:**
+
 ```html
 <nav>
   <a href="/">Home</a>
@@ -37,6 +38,7 @@ No setup required! The utility works automatically on all `<a>` tags with `href`
 When you're on the `/about` page, the About link will automatically get the `w--current` class.
 
 **Styling:**
+
 ```css
 a.w--current {
   font-weight: bold;
@@ -45,6 +47,7 @@ a.w--current {
 ```
 
 **Notes:**
+
 - Only same-origin links are considered (external links are ignored)
 - Hash links (`#anchor`) and JavaScript links are skipped
 - The utility normalizes paths, so `/about` and `/about.html` are treated the same
@@ -62,34 +65,32 @@ This utility allows you to trigger file downloads from any element (buttons, div
 ### Usage
 
 **Basic Download:**
+
 ```html
-<button data-download-href="/files/document.pdf">
-  Download PDF
-</button>
+<button data-download-href="/files/document.pdf">Download PDF</button>
 ```
 
 **Custom Filename:**
+
 ```html
-<button 
-  data-download-href="/files/document.pdf"
-  data-download-filename="my-custom-name.pdf">
+<button data-download-href="/files/document.pdf" data-download-filename="my-custom-name.pdf">
   Download with Custom Name
 </button>
 ```
 
 **Examples:**
+
 ```html
 <!-- Download Button -->
-<a href="#" class="button" data-download-href="/files/report.pdf">
-  Download Report
-</a>
+<a href="#" class="button" data-download-href="/files/report.pdf"> Download Report </a>
 
 <!-- Image as Download Trigger -->
-<img 
-  src="/images/download-icon.png" 
+<img
+  src="/images/download-icon.png"
   data-download-href="/files/brochure.pdf"
   alt="Download brochure"
-  style="cursor: pointer;">
+  style="cursor: pointer;"
+/>
 
 <!-- Card with Download -->
 <div class="card" data-download-href="/files/presentation.pptx">
@@ -99,6 +100,7 @@ This utility allows you to trigger file downloads from any element (buttons, div
 ```
 
 **Notes:**
+
 - Works with any file type (PDF, images, documents, etc.)
 - If no filename is specified, the filename is extracted from the URL
 - The download happens in the browser - no page navigation occurs
@@ -130,6 +132,7 @@ This will render as: `Item 1 , Item 2 , Item 3`
 **Common Examples:**
 
 **Breadcrumbs:**
+
 ```html
 <nav data-separator="/">
   <a href="/">Home</a>
@@ -139,6 +142,7 @@ This will render as: `Item 1 , Item 2 , Item 3`
 ```
 
 **Tag List:**
+
 ```html
 <div data-separator=", ">
   <span>JavaScript</span>
@@ -148,6 +152,7 @@ This will render as: `Item 1 , Item 2 , Item 3`
 ```
 
 **Pipe Separators:**
+
 ```html
 <div data-separator=" | ">
   <a href="/about">About</a>
@@ -157,8 +162,9 @@ This will render as: `Item 1 , Item 2 , Item 3`
 ```
 
 **Notes:**
+
 - Only direct children are processed (nested elements are ignored)
-- The separator is wrapped in non-breaking spaces (`&nbsp;`) for proper spacing
+- The separator is inserted as plain text in a `<span>`. Include any spacing in the attribute itself (`data-separator=", "`); markup in the attribute is shown literally, not rendered
 - Works with any HTML elements as children
 
 ---
@@ -184,6 +190,7 @@ Simply add the `copyright-year` class to any element:
 The year will automatically update to the current year when the page loads.
 
 **Requirements:**
+
 - Requires Webflow to be loaded on your page
 - It will only run if `window.Webflow` is available
 
