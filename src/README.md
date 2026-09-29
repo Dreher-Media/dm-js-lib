@@ -155,6 +155,7 @@ The project uses Rollup for bundling:
 ### Build Output
 
 The build process:
+
 1. Compiles TypeScript to JavaScript
 2. Bundles all modules into a single file
 3. Minifies the output
@@ -168,7 +169,7 @@ All modules follow this initialization pattern:
 
 ```typescript
 export function initModuleName(): void {
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener('DOMContentLoaded', () => {
     // Module initialization code
   });
 }
@@ -179,7 +180,7 @@ export function initModuleName(): void {
 Modules are registered in `src/index.ts`:
 
 ```typescript
-import { initModuleName } from "./modules/moduleName";
+import { initModuleName } from './modules/moduleName';
 
 // Initialize all modules
 initModuleName();
@@ -191,7 +192,7 @@ Modules use data attributes for configuration:
 
 ```typescript
 // Find elements with data attribute
-document.querySelectorAll("[data-module-attribute]").forEach((element) => {
+document.querySelectorAll('[data-module-attribute]').forEach((element) => {
   // Process element
 });
 ```
@@ -201,8 +202,10 @@ document.querySelectorAll("[data-module-attribute]").forEach((element) => {
 Modules dispatch custom events for extensibility:
 
 ```typescript
-const event = new CustomEvent("module:event", {
-  detail: { /* event data */ },
+const event = new CustomEvent('module:event', {
+  detail: {
+    /* event data */
+  },
 });
 element.dispatchEvent(event);
 ```
@@ -242,52 +245,11 @@ element.dispatchEvent(event);
 
 ## Release Process
 
-### Versioning
-
-The project follows [Semantic Versioning](https://semver.org/):
-- **MAJOR**: Breaking changes
-- **MINOR**: New features (backward compatible)
-- **PATCH**: Bug fixes (backward compatible)
-
-### Release Scripts
-
-```bash
-# Patch release (1.0.0 -> 1.0.1)
-npm run release:patch
-
-# Minor release (1.0.0 -> 1.1.0)
-npm run release:minor
-
-# Major release (1.0.0 -> 2.0.0)
-npm run release:major
-```
-
-### Release Workflow
-
-1. **Update version**: `npm version [patch|minor|major]`
-2. **Build**: Automatically runs via `prepublishOnly` hook
-3. **Publish**: `npm publish`
-4. **Push**: Commits and tags are pushed to remote
-
-### Patching Old Versions
-
-To patch an older version while main has moved forward:
-
-```bash
-# 1. Checkout the old version
-git checkout v1.2.0
-
-# 2. Create patch branch
-git checkout -b patch-1.2.1
-
-# 3. Make fixes and release
-npm version patch
-npm publish
-git push origin patch-1.2.1 --follow-tags
-
-# 4. Return to main
-git checkout main
-```
+Releases are automated with release-please and published from GitHub Actions
+through npm trusted publishing, with provenance. There is no manual
+`npm version`, no tag pushing and no `npm publish` from a laptop
+(`publishConfig.provenance` makes a local publish fail on purpose).
+See [AGENTS.md](../AGENTS.md#releases) for the flow.
 
 ## External Dependencies
 

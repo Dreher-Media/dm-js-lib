@@ -59,7 +59,13 @@ Wait for CI green before requesting merge.
 
 Fully automated via [release-please](https://github.com/googleapis/release-please). You don't run `npm version`, push tags, or edit `CHANGELOG.md`.
 
-When a PR with a `feat:` or `fix:` title lands on `main`, release-please opens or updates a release PR titled `chore(main): release X.Y.Z`. Squash-merging that PR creates a tag, which triggers `npm publish`.
+When a PR with a `feat:` or `fix:` title lands on `main`, release-please opens or updates a release PR titled `chore(main): release X.Y.Z`. Squash-merging that PR creates the tag and GitHub release; `release-please.yml` then dispatches `publish.yml` for that tag.
+
+How publishing works:
+
+- release-please runs with `GITHUB_TOKEN`, not a personal token. Events caused by `GITHUB_TOKEN` don't start other workflows, so `release-please.yml` explicitly dispatches `ci.yml` on the release PR (so the required `verify` check reports) and `publish.yml` after a release.
+- `publish.yml` only runs on `workflow_dispatch` from `main`. A pushed tag on its own publishes nothing. It checks that the tag's commit is on `main` and matches `package.json`, builds and packs in a job without npm credentials, then publishes the tarball in a separate job that runs in the `npm-publish` environment (reviewer approval) with npm trusted publishing (OIDC) and `--provenance`.
+- To publish an existing tag by hand: Actions → Publish → Run workflow, branch `main`, tag `vX.Y.Z`.
 
 Bump rules:
 
@@ -81,7 +87,7 @@ Bump rules:
 
 - **Manifest:** [`.dm-standards.json`](./.dm-standards.json) — declares overlays (`typescript-node`, `public-package`) and visibility (`public`).
 - **Required CI check on `main`:** `verify`.
-- **Required secrets:** `NPM_TOKEN`, `RELEASE_PLEASE_TOKEN`.
+- **Required secrets:** none. npm publishing uses trusted publishing (OIDC) from `publish.yml` in the `npm-publish` environment; release-please uses `GITHUB_TOKEN`.
 
 ---
 

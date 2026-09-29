@@ -3,6 +3,18 @@ name: CI
 on:
   pull_request:
     branches: [main]
+  # release-please.yml dispatches this on the release PR's branch: the
+  # release PR is opened with GITHUB_TOKEN, and events caused by that token
+  # do not start pull_request runs, so without this the required `verify`
+  # check would never report on it.
+  workflow_dispatch:
+    inputs:
+      pr-title:
+        description: Title of the PR being checked (linted like a PR title)
+        required: true
+        type: string
+
+permissions: {}
 
 jobs:
   lint-pr-title:
@@ -10,23 +22,31 @@ jobs:
     # the PR title becomes the commit on the integration branch and is what
     # release-please reads. Malformed titles break the release pipeline.
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: lts/*
           cache: npm
       - run: npm ci
       - name: Lint PR title
         env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_TITLE: ${{ github.event.pull_request.title || inputs.pr-title }}
         run: echo "$PR_TITLE" | npx commitlint
 
   verify:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: lts/*
           cache: npm
