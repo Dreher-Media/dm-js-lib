@@ -29,6 +29,18 @@
   ],
   "author": "Tobias Laufersweiler <tobias@dreher-media.de>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dreher-Media/dm-js-lib.git"
+  },
+  "homepage": "https://github.com/Dreher-Media/dm-js-lib#readme",
+  "bugs": {
+    "url": "https://github.com/Dreher-Media/dm-js-lib/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "devDependencies": {
     "@commitlint/cli": "^19.5.0",
     "@commitlint/config-conventional": "^19.5.0",
