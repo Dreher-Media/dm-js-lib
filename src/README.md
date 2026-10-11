@@ -259,10 +259,9 @@ These are loaded separately (not bundled):
 
 - **FsCC (Finsweet Cookie Consent)** - For cookie consent module
 - **Webflow** - For Webflow initialization module
-- **Plyr** - Loaded dynamically for video players
-- **YouTube IFrame API** - Loaded dynamically
-- **Vimeo Player API** - Loaded dynamically
-- **Dailymotion Player Library** - Loaded dynamically
+- **Plyr** - Loaded dynamically, on the first click on a video
+- **YouTube IFrame API** - Loaded dynamically, on the first click on a YouTube video
+- **Vimeo Player API** - Loaded dynamically, on the first click on a Vimeo video
 - **Swiper** - Optional, for video carousels
 
 ### Development Dependencies

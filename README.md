@@ -153,7 +153,7 @@ Create standalone dropdowns or grouped accordion lists with strict data-attribut
 
 **Unified video player management**
 
-Supports YouTube, Vimeo, Dailymotion, and HTML5 videos (Plyr). Automatically pauses other videos when one plays. Integrates with Swiper carousels. **Also automatically upgrades YouTube thumbnail quality** for crisp, clear thumbnails.
+Supports YouTube, Vimeo, Dailymotion, and HTML5 videos (Plyr). Automatically pauses other videos when one plays. Integrates with Swiper carousels. **No third-party request before the first click** (privacy). **Also automatically upgrades YouTube thumbnail quality** for crisp, clear thumbnails.
 
 **Perfect for:** Video galleries, product demos, tutorial pages, media libraries
 
@@ -365,7 +365,7 @@ Works in all modern browsers:
 Most modules work standalone. Some modules have optional dependencies:
 
 - **Cookie Consent** - Requires [Finsweet Cookie Consent](https://www.finsweet.com/cookie-consent)
-- **Video Players** - Automatically loads required APIs (YouTube, Vimeo, etc.)
+- **Video Players** - Loads the required APIs (YouTube, Vimeo, Plyr) on the first click on a video, not on page load
 - **Webflow Init** - Requires Webflow to be loaded
 
 ## Getting Help
