@@ -61,6 +61,30 @@ function setPlayerState(el: HTMLElement, state: PlayerState): void {
   el.dataset.dmPlayerState = state;
 }
 
+// Swipers that already got their slideChange hook.
+const hookedSwipers = new WeakSet<object>();
+
+/**
+ * Makes every Swiper in window.videoSwipers pause all videos on slide change.
+ * Idempotent, and called whenever it might find a new Swiper (page ready, window
+ * load, every video start), because pages push Swipers into window.videoSwipers
+ * at their own pace, often after this module has initialised.
+ */
+export function hookVideoSwipers(
+  plyrPlayers: Plyr[],
+  players: Record<string, PlayerInstance>,
+): void {
+  const swipers = getVideoSwipers();
+  if (!swipers) return;
+  swipers.forEach((swiper) => {
+    if (hookedSwipers.has(swiper)) return;
+    hookedSwipers.add(swiper);
+    swiper.on('slideChange', () => {
+      pauseAllPlayers(null, plyrPlayers, players);
+    });
+  });
+}
+
 function stopSwiperAutoplay(): void {
   const swipers = getVideoSwipers();
   if (swipers) {
@@ -257,6 +281,7 @@ export function onPlay(
   plyrPlayers: Plyr[],
   players: Record<string, PlayerInstance>,
 ): void {
+  hookVideoSwipers(plyrPlayers, players);
   pauseAllPlayers(id, plyrPlayers, players);
   stopSwiperAutoplay();
 }
@@ -336,6 +361,44 @@ export function dailymotionEmbedUrl(videoId: string, time: number): string {
   return `https://www.dailymotion.com/embed/video/${encodeURIComponent(videoId)}?${params.toString()}`;
 }
 
+// Attach steps of embeds whose API failed to load. They run after a later load
+// of the same API succeeds (the next click retries the load), so an iframe that
+// kept playing without coordination gets coordinated once the API is there.
+const pendingAttach: Record<'youtube' | 'vimeo', Array<() => void>> = {
+  youtube: [],
+  vimeo: [],
+};
+
+function attachWhenApiReady(
+  type: 'youtube' | 'vimeo',
+  load: () => Promise<void>,
+  iframe: HTMLIFrameElement,
+  attach: () => void,
+): void {
+  const run = (): void => {
+    if (!iframe.isConnected) return;
+    try {
+      attach();
+    } catch (error) {
+      console.warn(`${type} API could not attach to the embed:`, error);
+    }
+  };
+
+  load().then(
+    () => {
+      pendingAttach[type].splice(0).forEach((fn) => fn());
+      run();
+    },
+    (error) => {
+      console.warn(
+        `${type} API unavailable; video plays without pause coordination until the next retry:`,
+        error,
+      );
+      pendingAttach[type].push(run);
+    },
+  );
+}
+
 function startYouTube(
   element: HTMLElement,
   id: string,
@@ -351,46 +414,41 @@ function startYouTube(
   iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
   setPlayerState(element, 'active');
 
-  loadYouTubeAPI()
-    .then(() => {
-      new window.YT!.Player(iframe, {
-        events: {
-          onReady: (event) => {
-            players[id] = { type: 'youtube', player: event.target };
-            // Another video was started while the API was loading.
-            if (activePlayerId !== id) {
-              callIfFunction(event.target, 'pauseVideo');
-              return;
-            }
-            // autoplay=1 in the URL is not enough everywhere: WebKit starts
-            // buffering and then drops back to "unstarted". The previous
-            // implementation called playVideo() from here, so keep doing that
-            // unless the player is already past that point. WebKit only honors
-            // it shortly after the click, so on the very first video (API not
-            // cached yet) it can arrive too late and the visitor taps play once.
-            const target = event.target as unknown as { getPlayerState?: () => number };
-            const state =
-              typeof target.getPlayerState === 'function' ? target.getPlayerState() : -1;
-            if (!YT_STATES_SETTLED.includes(state)) {
-              callIfFunction(event.target, 'playVideo');
-            }
-          },
-          onStateChange: (event: { data: number }) => {
-            if (event.data === window.YT!.PlayerState.PLAYING) {
-              onPlay(id, plyrPlayers, players);
-            } else if (
-              event.data === window.YT!.PlayerState.PAUSED ||
-              event.data === window.YT!.PlayerState.ENDED
-            ) {
-              onPause(id);
-            }
-          },
+  attachWhenApiReady('youtube', loadYouTubeAPI, iframe, () => {
+    new window.YT!.Player(iframe, {
+      events: {
+        onReady: (event) => {
+          players[id] = { type: 'youtube', player: event.target };
+          // Another video was started while the API was loading.
+          if (activePlayerId !== id) {
+            callIfFunction(event.target, 'pauseVideo');
+            return;
+          }
+          // autoplay=1 in the URL is not enough everywhere: WebKit starts
+          // buffering and then drops back to "unstarted". The previous
+          // implementation called playVideo() from here, so keep doing that
+          // unless the player is already past that point. WebKit only honors
+          // it shortly after the click, so on the very first video (API not
+          // cached yet) it can arrive too late and the visitor taps play once.
+          const target = event.target as unknown as { getPlayerState?: () => number };
+          const state = typeof target.getPlayerState === 'function' ? target.getPlayerState() : -1;
+          if (!YT_STATES_SETTLED.includes(state)) {
+            callIfFunction(event.target, 'playVideo');
+          }
         },
-      });
-    })
-    .catch((error) => {
-      console.warn('YouTube API unavailable; video plays without pause coordination:', error);
+        onStateChange: (event: { data: number }) => {
+          if (event.data === window.YT!.PlayerState.PLAYING) {
+            onPlay(id, plyrPlayers, players);
+          } else if (
+            event.data === window.YT!.PlayerState.PAUSED ||
+            event.data === window.YT!.PlayerState.ENDED
+          ) {
+            onPause(id);
+          }
+        },
+      },
     });
+  });
 }
 
 function startVimeo(
@@ -404,18 +462,14 @@ function startVimeo(
   const iframe = createEmbedIframe(element, id, vimeoEmbedUrl(videoId, time), VIMEO_ALLOW);
   setPlayerState(element, 'active');
 
-  loadVimeoAPI()
-    .then(() => {
-      const player = new window.Vimeo!.Player(iframe);
-      player.on('play', () => onPlay(id, plyrPlayers, players));
-      player.on('pause', () => onPause(id));
-      players[id] = { type: 'vimeo', player };
-      // Another video was started while the API was loading.
-      if (activePlayerId !== id) callIfFunction(player, 'pause');
-    })
-    .catch((error) => {
-      console.warn('Vimeo API unavailable; video plays without pause coordination:', error);
-    });
+  attachWhenApiReady('vimeo', loadVimeoAPI, iframe, () => {
+    const player = new window.Vimeo!.Player(iframe);
+    player.on('play', () => onPlay(id, plyrPlayers, players));
+    player.on('pause', () => onPause(id));
+    players[id] = { type: 'vimeo', player };
+    // Another video was started while the API was loading.
+    if (activePlayerId !== id) callIfFunction(player, 'pause');
+  });
 }
 
 function startDailymotion(
@@ -435,7 +489,8 @@ function startDailymotion(
 
   // Only the page itself can provide `dailymotion.createPlayer` (Dailymotion's
   // player library); this module does not load one. Without it, use the plain
-  // embed: it needs no script and, being created inside the click, can autoplay.
+  // embed: it needs no script. Dailymotion redirects that URL to its own player
+  // page, which drops autoplay, so the visitor may have to press play there.
   if (typeof createPlayer !== 'function') {
     plainEmbed();
     return;
@@ -475,7 +530,7 @@ function startDailymotion(
  * the element has `data-dm-preload`); the handler loads what it needs.
  */
 export function initializePlayers(
-  youtubeElements: NodeListOf<Element>,
+  youtubeElements: NodeListOf<Element> | Element[],
   players: Record<string, PlayerInstance>,
   plyrPlayers: Plyr[],
 ): void {

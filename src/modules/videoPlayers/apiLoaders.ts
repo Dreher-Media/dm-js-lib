@@ -13,12 +13,17 @@
  * click can try again.
  */
 
-import { loadScript, loadStylesheet } from '../../utils/loadResource';
+import { discardResource, loadScript, loadStylesheet } from '../../utils/loadResource';
 
 /** How long a click waits for an API before the load counts as failed. */
 export const API_LOAD_TIMEOUT_MS = 15000;
 
 const WAIT_INTERVAL_MS = 50;
+
+const YOUTUBE_SRC = 'https://www.youtube.com/iframe_api';
+const VIMEO_SRC = 'https://player.vimeo.com/api/player.js';
+const PLYR_CSS_SRC = 'https://cdn.plyr.io/3.7.8/plyr.css';
+const PLYR_JS_SRC = 'https://cdn.plyr.io/3.7.8/plyr.polyfilled.js';
 
 type ApiName = 'youtube' | 'vimeo' | 'plyr';
 
@@ -49,16 +54,18 @@ function waitFor(isReady: () => boolean, timeoutMs: number, what: string): Promi
 
 /**
  * Runs `load` once per API. Rejects (and forgets the attempt) on error or timeout.
+ * On timeout `discard` removes the tags of a request that never answered, so the
+ * next attempt really requests the file again.
  */
-function loadOnce(name: ApiName, load: () => Promise<void>): Promise<void> {
+function loadOnce(name: ApiName, load: () => Promise<void>, discard: () => void): Promise<void> {
   const existing = apiLoads.get(name);
   if (existing) return existing;
 
   const attempt = new Promise<void>((resolve, reject) => {
-    const timer = setTimeout(
-      () => reject(new Error(`Timed out loading the ${name} API`)),
-      API_LOAD_TIMEOUT_MS,
-    );
+    const timer = setTimeout(() => {
+      discard();
+      reject(new Error(`Timed out loading the ${name} API`));
+    }, API_LOAD_TIMEOUT_MS);
     load().then(
       () => {
         clearTimeout(timer);
@@ -88,21 +95,25 @@ const isPlyrReady = (): boolean => !!window.Plyr && typeof window.Plyr.setup ===
 export function loadYouTubeAPI(): Promise<void> {
   if (isYouTubeReady()) return Promise.resolve();
 
-  return loadOnce('youtube', () => {
-    return new Promise<void>((resolve, reject) => {
-      // iframe_api pulls in a second script and announces itself through this
-      // callback; keep whatever handler the page may already have set.
-      const previous = window.onYouTubeIframeAPIReady;
-      window.onYouTubeIframeAPIReady = () => {
-        if (typeof previous === 'function') previous();
-        resolve();
-      };
+  return loadOnce(
+    'youtube',
+    () => {
+      return new Promise<void>((resolve, reject) => {
+        // iframe_api pulls in a second script and announces itself through this
+        // callback; keep whatever handler the page may already have set.
+        const previous = window.onYouTubeIframeAPIReady;
+        window.onYouTubeIframeAPIReady = () => {
+          if (typeof previous === 'function') previous();
+          resolve();
+        };
 
-      loadScript('https://www.youtube.com/iframe_api')
-        .then(() => waitFor(isYouTubeReady, API_LOAD_TIMEOUT_MS, 'YT.Player'))
-        .then(resolve, reject);
-    });
-  });
+        loadScript(YOUTUBE_SRC)
+          .then(() => waitFor(isYouTubeReady, API_LOAD_TIMEOUT_MS, 'YT.Player'))
+          .then(resolve, reject);
+      });
+    },
+    () => discardResource(YOUTUBE_SRC),
+  );
 }
 
 /**
@@ -111,10 +122,11 @@ export function loadYouTubeAPI(): Promise<void> {
 export function loadVimeoAPI(): Promise<void> {
   if (isVimeoReady()) return Promise.resolve();
 
-  return loadOnce('vimeo', () =>
-    loadScript('https://player.vimeo.com/api/player.js').then(() =>
-      waitFor(isVimeoReady, API_LOAD_TIMEOUT_MS, 'Vimeo.Player'),
-    ),
+  return loadOnce(
+    'vimeo',
+    () =>
+      loadScript(VIMEO_SRC).then(() => waitFor(isVimeoReady, API_LOAD_TIMEOUT_MS, 'Vimeo.Player')),
+    () => discardResource(VIMEO_SRC),
   );
 }
 
@@ -124,11 +136,16 @@ export function loadVimeoAPI(): Promise<void> {
 export function loadPlyrAPI(): Promise<void> {
   if (isPlyrReady()) return Promise.resolve();
 
-  return loadOnce('plyr', () =>
-    Promise.all([
-      loadStylesheet('https://cdn.plyr.io/3.7.8/plyr.css'),
-      loadScript('https://cdn.plyr.io/3.7.8/plyr.polyfilled.js'),
-    ]).then(() => waitFor(isPlyrReady, API_LOAD_TIMEOUT_MS, 'Plyr.setup')),
+  return loadOnce(
+    'plyr',
+    () =>
+      Promise.all([loadStylesheet(PLYR_CSS_SRC), loadScript(PLYR_JS_SRC)]).then(() =>
+        waitFor(isPlyrReady, API_LOAD_TIMEOUT_MS, 'Plyr.setup'),
+      ),
+    () => {
+      discardResource(PLYR_CSS_SRC, 'stylesheet');
+      discardResource(PLYR_JS_SRC);
+    },
   );
 }
 

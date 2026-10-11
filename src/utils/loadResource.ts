@@ -62,6 +62,18 @@ export function loadResource(src: string, type: ResourceType = 'script'): Promis
 }
 
 /**
+ * Forgets a resource whose load never settled: removes its tag from the DOM and
+ * drops the in-flight entry, so the next loadResource() call requests the file
+ * again instead of joining a request that is not going to answer.
+ */
+export function discardResource(src: string, type: ResourceType = 'script'): void {
+  inFlight.delete(`${type}:${src}`);
+  const selector =
+    type === 'script' ? `script[src="${src}"]` : `link[rel="stylesheet"][href="${src}"]`;
+  document.querySelectorAll(selector).forEach((node) => node.remove());
+}
+
+/**
  * Convenience function to load a script
  * @param src - The URL of the script to load
  * @returns A promise that resolves when the script is loaded

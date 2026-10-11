@@ -2,8 +2,20 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Every test gets a fresh module graph: the API cache, the player key counter
-// and the "active player" are module state.
+// and the "active player" are module state. The module watches document.body for
+// late players; observers of earlier tests would bind this test's elements with
+// stale state, so they are tracked and disconnected between tests.
+const observers: MutationObserver[] = [];
+const RealMutationObserver = window.MutationObserver;
+window.MutationObserver = class extends RealMutationObserver {
+  constructor(callback: MutationCallback) {
+    super(callback);
+    observers.push(this);
+  }
+};
+
 async function setup(html: string) {
+  observers.splice(0).forEach((observer) => observer.disconnect());
   vi.resetModules();
   document.head.innerHTML = '';
   document.body.innerHTML = html;
@@ -223,7 +235,10 @@ describe('Vimeo', () => {
 });
 
 describe('Dailymotion', () => {
-  it('uses a plain autoplay embed and loads no script when the page has no player library', async () => {
+  // Only the embed URL is asserted: Dailymotion redirects it to its own player
+  // page (geo.dailymotion.com/player.html), which drops autoplay, so whether the
+  // video starts by itself is up to Dailymotion and is not tested here.
+  it('inserts the plain embed iframe once and loads no script when the page has no player library', async () => {
     await setup(dailymotionHtml('x7abc'));
     const el = document.querySelector('.youtube') as HTMLElement;
 
@@ -233,7 +248,6 @@ describe('Dailymotion', () => {
     const iframes = el.querySelectorAll('iframe');
     expect(iframes).toHaveLength(1);
     expect(iframes[0].src).toContain('https://www.dailymotion.com/embed/video/x7abc');
-    expect(iframes[0].src).toContain('autoplay=1');
     expect(scripts()).toHaveLength(0);
   });
 
@@ -403,5 +417,136 @@ describe('types without a script', () => {
     click(document.querySelector('.youtube')!);
     expect(document.querySelector('iframe')!.src).toBe('https://www.ardmediathek.de/embed/abc');
     expect(scripts()).toHaveLength(0);
+  });
+});
+
+describe('stuck loads', () => {
+  it('removes the tag when the 15 s timeout hits, so the next click requests the file again', async () => {
+    vi.useFakeTimers();
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    await setup(vimeoHtml('1') + vimeoHtml('2'));
+    const [a, b] = Array.from(document.querySelectorAll('.youtube'));
+    const { API_LOAD_TIMEOUT_MS } = await import('./apiLoaders');
+
+    click(a);
+    expect(scripts()).toHaveLength(1);
+    const first = scripts()[0];
+    // neither load nor error ever fires
+    await vi.advanceTimersByTimeAsync(API_LOAD_TIMEOUT_MS + 10);
+    expect(first.isConnected).toBe(false);
+    expect(scripts()).toHaveLength(0);
+
+    click(b);
+    expect(scripts().map((s) => s.src)).toEqual(['https://player.vimeo.com/api/player.js']);
+    expect(scripts()[0]).not.toBe(first);
+  });
+
+  it('removes both Plyr tags on timeout', async () => {
+    vi.useFakeTimers();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    await setup('<video class="_init-plyr" controls></video>');
+    const { API_LOAD_TIMEOUT_MS } = await import('./apiLoaders');
+
+    click(document.querySelector('video')!);
+    expect(scripts()).toHaveLength(1);
+    expect(links()).toHaveLength(1);
+    await vi.advanceTimersByTimeAsync(API_LOAD_TIMEOUT_MS + 10);
+    expect(scripts()).toHaveLength(0);
+    expect(links()).toHaveLength(0);
+  });
+});
+
+describe('API attaches after an earlier failure', () => {
+  it('coordinates the first YouTube embed once a later click loads the API', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    await setup(youtubeHtml('aaaaaaaaaaa') + youtubeHtml('bbbbbbbbbbb'));
+    const [a, b] = Array.from(document.querySelectorAll('.youtube'));
+    const Player = vi.fn();
+
+    click(a);
+    fire(scripts()[0], 'error');
+    await flush();
+    expect(scripts()).toHaveLength(0);
+
+    click(b);
+    expect(scripts()).toHaveLength(1);
+    (window as unknown as { YT: unknown }).YT = {
+      Player,
+      PlayerState: { PLAYING: 1, PAUSED: 2, ENDED: 0 },
+    };
+    window.onYouTubeIframeAPIReady?.();
+    await flush();
+
+    expect(Player).toHaveBeenCalledTimes(2);
+    expect(Player.mock.calls.map((call) => call[0])).toEqual([
+      a.querySelector('iframe'),
+      b.querySelector('iframe'),
+    ]);
+  });
+});
+
+describe('Swiper hook', () => {
+  const makeSwiper = () => ({
+    on: vi.fn(),
+    autoplay: { start: vi.fn(), stop: vi.fn() },
+  });
+
+  it('hooks a Swiper that is added to window.videoSwipers after init, at the first video start', async () => {
+    await setup(vimeoHtml('1') + vimeoHtml('2'));
+    const swiper = makeSwiper();
+    window.videoSwipers!.push(swiper as unknown as Swiper);
+
+    click(document.querySelectorAll('.youtube')[0]);
+    click(document.querySelectorAll('.youtube')[1]);
+
+    expect(swiper.on).toHaveBeenCalledTimes(1);
+    expect(swiper.on).toHaveBeenCalledWith('slideChange', expect.any(Function));
+    expect(swiper.autoplay.stop).toHaveBeenCalled();
+  });
+
+  it('hooks a Swiper pushed between init and DOMContentLoaded when loaded with defer', async () => {
+    Object.defineProperty(document, 'readyState', { value: 'interactive', configurable: true });
+    try {
+      await setup(vimeoHtml());
+      const swiper = makeSwiper();
+      window.videoSwipers!.push(swiper as unknown as Swiper);
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+      // (listeners of earlier tests' module instances on document fire too, so no call count)
+      expect(swiper.on).toHaveBeenCalledWith('slideChange', expect.any(Function));
+    } finally {
+      delete (document as unknown as { readyState?: string }).readyState;
+    }
+  });
+
+  it('hooks Swipers present at init right away', async () => {
+    const swiper = makeSwiper();
+    window.videoSwipers = [swiper as unknown as Swiper];
+    await setup(vimeoHtml());
+    expect(swiper.on).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('late elements', () => {
+  it('binds .youtube elements inserted after init without dmReinitVideoPlayers', async () => {
+    await setup('<div id="host"></div>');
+    document.getElementById('host')!.insertAdjacentHTML('beforeend', vimeoHtml('77'));
+    await flush();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(thirdPartyRequests()).toEqual([]);
+
+    click(document.querySelector('.youtube')!);
+    expect(document.querySelector('iframe')!.src).toContain('player.vimeo.com/video/77');
+  });
+
+  it('wraps late Plyr elements lazily and binds a late element that is itself the target', async () => {
+    await setup('<div id="host"></div>');
+    const video = document.createElement('video');
+    video.className = '_init-plyr';
+    document.getElementById('host')!.appendChild(video);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(thirdPartyRequests()).toEqual([]);
+
+    click(video);
+    expect(scripts().map((s) => s.src)).toEqual(['https://cdn.plyr.io/3.7.8/plyr.polyfilled.js']);
   });
 });
