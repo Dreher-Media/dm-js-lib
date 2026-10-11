@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.10.0](https://github.com/Dreher-Media/dm-js-lib/compare/v1.9.5...v1.10.0) (2026-10-11)
+
+
+### Features
+
+* **video-players:** load provider APIs on first click instead of page load ([#38](https://github.com/Dreher-Media/dm-js-lib/issues/38)) ([bb71b17](https://github.com/Dreher-Media/dm-js-lib/commit/bb71b1741d0e22844430700ce48a41e48776003a))
+
+
+### Bug Fixes
+
+* publish via npm trusted publishing and render data-separator as text ([#35](https://github.com/Dreher-Media/dm-js-lib/issues/35)) ([683e480](https://github.com/Dreher-Media/dm-js-lib/commit/683e48035de65e0439febb090593c45beab36da6))
+
 ## [1.9.5](https://github.com/Dreher-Media/dm-js-lib/compare/v1.9.4...v1.9.5) (2026-09-22)
 
 
