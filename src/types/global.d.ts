@@ -18,9 +18,9 @@ declare global {
     };
     YT?: {
       Player: new (
-        elementId: string,
+        element: string | HTMLElement,
         config: {
-          videoId: string;
+          videoId?: string;
           playerVars?: {
             start?: number;
             rel?: number;
@@ -39,9 +39,9 @@ declare global {
     };
     Vimeo?: {
       Player: new (
-        elementId: string,
-        config: {
-          id: string;
+        element: string | HTMLElement,
+        config?: {
+          id?: string;
           autoplay?: boolean;
           start?: number;
         },
@@ -60,12 +60,13 @@ declare global {
         },
       ): Promise<DailymotionPlayer>;
     };
+    onYouTubeIframeAPIReady?: () => void;
     videoSwipers?: Swiper[];
     dmReinitVideoPlayers?: (container: HTMLElement) => void;
   }
 
   interface Plyr {
-    play(): void;
+    play(): Promise<void> | void;
     pause(): void;
     stop(): void;
     on(event: string, callback: () => void): void;

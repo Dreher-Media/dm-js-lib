@@ -5,6 +5,11 @@
 
 export type ResourceType = 'script' | 'stylesheet';
 
+// Loads this module started and that have not settled yet. A second request for
+// the same resource joins the first one instead of resolving early because the
+// <script> tag already exists in the DOM but has not finished loading.
+const inFlight = new Map<string, Promise<void>>();
+
 /**
  * Loads a resource (script or stylesheet) dynamically and returns a promise
  * @param src - The URL of the resource to load
@@ -12,34 +17,48 @@ export type ResourceType = 'script' | 'stylesheet';
  * @returns A promise that resolves when the resource is loaded
  */
 export function loadResource(src: string, type: ResourceType = 'script'): Promise<void> {
-  return new Promise((resolve, reject) => {
-    // Check if resource is already loaded
-    const selector =
-      type === 'script' ? `script[src="${src}"]` : `link[rel="stylesheet"][href="${src}"]`;
-    const existingResource = document.querySelector(selector);
-    if (existingResource) {
-      resolve();
-      return;
-    }
+  const key = `${type}:${src}`;
+  const pending = inFlight.get(key);
+  if (pending) return pending;
 
+  // Check if resource is already loaded (or was added by the page itself)
+  const selector =
+    type === 'script' ? `script[src="${src}"]` : `link[rel="stylesheet"][href="${src}"]`;
+  if (document.querySelector(selector)) return Promise.resolve();
+
+  const promise = new Promise<void>((resolve, reject) => {
     if (type === 'script') {
       const script = document.createElement('script');
       script.src = src;
       script.async = true;
       script.onload = () => resolve();
-      script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+      script.onerror = () => {
+        // Drop the dead tag so a later retry actually requests the file again
+        script.remove();
+        reject(new Error(`Failed to load script: ${src}`));
+      };
       document.head.appendChild(script);
     } else if (type === 'stylesheet') {
       const link = document.createElement('link');
       link.rel = 'stylesheet';
       link.href = src;
       link.onload = () => resolve();
-      link.onerror = () => reject(new Error(`Failed to load stylesheet: ${src}`));
+      link.onerror = () => {
+        link.remove();
+        reject(new Error(`Failed to load stylesheet: ${src}`));
+      };
       document.head.appendChild(link);
     } else {
       reject(new Error(`Unsupported resource type: ${type}`));
     }
   });
+
+  inFlight.set(key, promise);
+  const clear = (): void => {
+    inFlight.delete(key);
+  };
+  promise.then(clear, clear);
+  return promise;
 }
 
 /**
