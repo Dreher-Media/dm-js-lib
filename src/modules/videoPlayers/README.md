@@ -142,7 +142,7 @@ https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg
 
 and that video has no max-resolution thumbnail, the module tries `sddefault.jpg`, then `hqdefault.jpg`, and so on, until one is large enough.
 
-**Privacy note:** this runs on page load, without a click, and it only requests images from the host that is already in your markup. With thumbnails on `img.youtube.com` or `i.ytimg.com` the visitor's IP therefore reaches Google when the page loads, whatever the player scripts do. The "no request before the first click" guarantee below holds for scripts and embeds; for thumbnails it only holds when the images are self-hosted (for example CMS images).
+**Privacy note:** this runs on page load, without a click, and it only requests images from the host that is already in your markup. With thumbnails on `img.youtube.com` or `i.ytimg.com` the visitor's IP therefore reaches Google when the page loads, whatever the player scripts do. The "no request before the first click" guarantee below holds for scripts and embeds; for thumbnails it only holds when the images are self-hosted (for example CMS images, or sites built by the Dreher.Media build service, which copies YouTube preview images to the site and picks the size that exists). Images that are not served from `img.youtube.com` / `i.ytimg.com` are left alone, so no size probing happens for a self-hosted copy.
 
 ### Automatic Pause Coordination
 
