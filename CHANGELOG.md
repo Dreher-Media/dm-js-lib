@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.11.0](https://github.com/Dreher-Media/dm-js-lib/compare/v1.10.0...v1.11.0) (2026-10-13)
+
+
+### Features
+
+* **video-players:** bundle Plyr as a standalone file pages can self-host ([#41](https://github.com/Dreher-Media/dm-js-lib/issues/41)) ([cb8e1de](https://github.com/Dreher-Media/dm-js-lib/commit/cb8e1def49f54a14b0a70da7f0d9e9ecd4b42d96))
+
+
+### Bug Fixes
+
+* **video-players:** leave self-hosted YouTube thumbnails alone ([#39](https://github.com/Dreher-Media/dm-js-lib/issues/39)) ([97bfa92](https://github.com/Dreher-Media/dm-js-lib/commit/97bfa9299f8db3fb70ce905f49ec5f09d33b4b68))
+
 ## [1.10.0](https://github.com/Dreher-Media/dm-js-lib/compare/v1.9.5...v1.10.0) (2026-10-11)
 
 
