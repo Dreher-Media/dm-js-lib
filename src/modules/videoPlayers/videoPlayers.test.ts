@@ -392,6 +392,63 @@ describe('Plyr', () => {
   });
 });
 
+describe('Plyr bundle provided by the page', () => {
+  const bundle =
+    '<script src="/libs/cdn.jsdelivr.net/npm/-at-dreher-media/dm-js-lib-at-1.11.0/dist/standalone/plyr.min.js"></script>';
+  const video = (extra = '') =>
+    `<video class="_init-plyr" controls ${extra}><source src="/v.mp4" type="video/mp4"></video>`;
+  const cdnRequests = (): string[] =>
+    thirdPartyRequests().filter((url) => url.includes('cdn.plyr.io'));
+  const fakePlyr = () => {
+    const setupFn = vi.fn((targets: Element[]) =>
+      targets.map(() => ({ on: vi.fn(), play: vi.fn(), pause: vi.fn() })),
+    );
+    return { setupFn, api: { setup: setupFn } };
+  };
+  const wait = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+
+  it('waits for the bundle and never asks cdn.plyr.io', async () => {
+    await setup(bundle + video('data-dm-preload'));
+    const { setupFn, api } = fakePlyr();
+
+    // The bundle executes a moment after the module initialized.
+    await wait(80);
+    (window as unknown as { Plyr: unknown }).Plyr = api;
+    await wait(120);
+
+    expect(setupFn).toHaveBeenCalledTimes(1);
+    expect(cdnRequests()).toEqual([]);
+  });
+
+  it('uses a Plyr that is already there without any request', async () => {
+    const { setupFn, api } = fakePlyr();
+    (window as unknown as { Plyr: unknown }).Plyr = api;
+    await setup(bundle + video('data-dm-preload'));
+    await flush();
+
+    expect(setupFn).toHaveBeenCalledTimes(1);
+    expect(cdnRequests()).toEqual([]);
+  });
+
+  it('falls back to the CDN when the bundle fails to load', async () => {
+    await setup(bundle + video('data-dm-preload'));
+    document.querySelector('script[src*="standalone/plyr"]')!.dispatchEvent(new Event('error'));
+    await flush();
+
+    expect(cdnRequests().sort()).toEqual([
+      'https://cdn.plyr.io/3.7.8/plyr.css',
+      'https://cdn.plyr.io/3.7.8/plyr.polyfilled.js',
+    ]);
+  });
+
+  it('keeps the native player until the first click without data-dm-preload', async () => {
+    await setup(bundle + video());
+    await flush();
+    expect(cdnRequests()).toEqual([]);
+    expect(document.querySelector('video')!.dataset.dmPlyrBound).toBeUndefined();
+  });
+});
+
 describe('data-dm-preload (opt-out)', () => {
   it('loads the API at init for opted-in elements only', async () => {
     await setup(vimeoHtml('1', 'data-dm-preload') + youtubeHtml());

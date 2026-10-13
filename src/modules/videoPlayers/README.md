@@ -191,6 +191,23 @@ Add `data-dm-preload` to a `.youtube` or `._init-plyr` element to restore the ol
 
 Use this only if the site gates scripts behind consent itself. It sends the visitor's IP to the provider on page load. `data-dm-preload="false"` is the same as leaving it out.
 
+### Serving Plyr yourself: `standalone/plyr.min.js`
+
+By default Plyr comes from `cdn.plyr.io` on the first click (or at page ready with `data-dm-preload`). A site that wants no request to the Plyr CDN at all includes the bundled file once:
+
+```html
+<script
+  src="https://cdn.jsdelivr.net/npm/@dreher-media/dm-js-lib@1/dist/standalone/plyr.min.js"
+  defer
+></script>
+```
+
+`plyr.min.js` contains Plyr 3.7.8 (pinned, MIT), its stylesheet and its icon sprite. It exposes `window.Plyr`, injects the stylesheet and the sprite, and tells Plyr not to download the sprite or its blank-video placeholder. The video-player module then finds `window.Plyr` ready and requests nothing from `cdn.plyr.io`. A build step that self-hosts third-party scripts serves this file from the site's own origin; the module matches the script by its `standalone/plyr` file name, so a rewritten path works.
+
+- Include it on pages that have `._init-plyr` elements; it costs about 150 KB (gzip well under half) and is not part of the main bundle.
+- Combine it with `data-dm-preload` on the `._init-plyr` element to get the Plyr controls right away instead of the native player until the first click. Because Plyr then comes from the site's own origin, this sends nothing to a third party.
+- If the file is included but fails to load (404, blocked), the module falls back to the CDN after the script's `error` event, or after 5 s without `window.Plyr`.
+
 ### Autoplay on iOS / mobile
 
 Mobile browsers (iOS Safari in particular) only start playback that is triggered by a user gesture, and they are strict about gestures that cross an asynchronous script load. How this is handled:
