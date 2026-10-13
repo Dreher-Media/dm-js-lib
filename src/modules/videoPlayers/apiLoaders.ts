@@ -25,6 +25,16 @@ const VIMEO_SRC = 'https://player.vimeo.com/api/player.js';
 const PLYR_CSS_SRC = 'https://cdn.plyr.io/3.7.8/plyr.css';
 const PLYR_JS_SRC = 'https://cdn.plyr.io/3.7.8/plyr.polyfilled.js';
 
+/**
+ * A page that serves Plyr itself includes dist/standalone/plyr.min.js (Plyr, its
+ * stylesheet and its icon sprite in one file). The path may be rewritten by a
+ * self-hosting step, so match on the file name only.
+ */
+const PROVIDED_PLYR_SELECTOR = 'script[src*="standalone/plyr"]';
+
+/** How long to wait for a page-provided Plyr script before falling back to the CDN. */
+const PROVIDED_PLYR_WAIT_MS = 5000;
+
 type ApiName = 'youtube' | 'vimeo' | 'plyr';
 
 const apiLoads = new Map<ApiName, Promise<void>>();
@@ -130,18 +140,43 @@ export function loadVimeoAPI(): Promise<void> {
   );
 }
 
+function loadPlyrFromCdn(): Promise<void> {
+  return Promise.all([loadStylesheet(PLYR_CSS_SRC), loadScript(PLYR_JS_SRC)]).then(() =>
+    waitFor(isPlyrReady, API_LOAD_TIMEOUT_MS, 'Plyr.setup'),
+  );
+}
+
 /**
- * Loads Plyr library and stylesheet from CDN
+ * Waits for the Plyr script the page itself includes. Rejects when that script fails
+ * to load or does not define Plyr in time, so the caller can fall back to the CDN.
+ */
+function waitForProvidedPlyr(script: HTMLScriptElement): Promise<void> {
+  return new Promise((resolve, reject) => {
+    script.addEventListener('error', () => reject(new Error('Provided Plyr script failed')), {
+      once: true,
+    });
+    waitFor(isPlyrReady, PROVIDED_PLYR_WAIT_MS, 'Provided Plyr').then(resolve, reject);
+  });
+}
+
+/**
+ * Makes Plyr available.
+ *
+ * Order: a `window.Plyr` that is already there is used as is. If the page includes
+ * the bundled standalone/plyr script, its arrival is awaited and no request goes to
+ * cdn.plyr.io. Only without either, or when the provided script is broken, Plyr
+ * (script and stylesheet) is loaded from the CDN.
  */
 export function loadPlyrAPI(): Promise<void> {
   if (isPlyrReady()) return Promise.resolve();
 
   return loadOnce(
     'plyr',
-    () =>
-      Promise.all([loadStylesheet(PLYR_CSS_SRC), loadScript(PLYR_JS_SRC)]).then(() =>
-        waitFor(isPlyrReady, API_LOAD_TIMEOUT_MS, 'Plyr.setup'),
-      ),
+    () => {
+      const provided = document.querySelector<HTMLScriptElement>(PROVIDED_PLYR_SELECTOR);
+      if (!provided) return loadPlyrFromCdn();
+      return waitForProvidedPlyr(provided).catch(() => loadPlyrFromCdn());
+    },
     () => {
       discardResource(PLYR_CSS_SRC, 'stylesheet');
       discardResource(PLYR_JS_SRC);
