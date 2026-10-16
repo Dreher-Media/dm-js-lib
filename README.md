@@ -317,6 +317,30 @@ Paginate any list of items on the client using simple data attributes. Supports 
 
 ---
 
+### 📸 Instagram Feed
+
+**A customer's Instagram posts as a tile grid or carousel**
+
+Shows the recent posts of a connected Instagram account from the Dreher.Media instagram-connector, as a responsive grid or a one-row carousel. The visitor's browser never talks to Meta, so no consent gate is needed. The Webflow counterpart of the `InstagramFeed` component in `astro-client-template`.
+
+**Perfect for:** Instagram sections on Webflow client sites that connect their account in the Squidex editor.
+
+**Installation:**
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@dreher-media/dm-js-lib@latest/dist/standalone/instagramFeed.min.js"></script>
+```
+
+**Example:**
+
+```html
+<div data-ig-feed data-ig-slug="my-client" data-ig-layout="carousel" data-ig-limit="12"></div>
+```
+
+[📖 Full Documentation →](./src/standalone/instagramFeed/README.md)
+
+---
+
 ## CDN Installation
 
 ### Recommended: Auto-update on patches
