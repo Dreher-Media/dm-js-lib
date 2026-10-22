@@ -414,6 +414,43 @@ describe('placeholders and failures', () => {
     expect(root.querySelector('.ig-feed__follow')).toBeNull();
   });
 
+  it('reserves the space while loading, whatever `placeholder` says, and the footer line too', async () => {
+    let resolve!: (v: unknown) => void;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => new Promise((r) => (resolve = r))),
+    );
+    const root = mountRoot({ 'data-ig-placeholder': 'hide' });
+    const done = initInstagramFeed();
+    expect(root.hidden).toBe(false);
+    expect(root.querySelectorAll('.ig-feed__tile--placeholder')).toHaveLength(6);
+    const reserved = root.querySelector('.ig-feed__footer')!;
+    expect(reserved.getAttribute('aria-hidden')).toBe('true');
+    expect(reserved.textContent).not.toBe('');
+
+    resolve({ ok: true, json: async () => feedJson(6) });
+    await done;
+    expect(root.querySelectorAll('.ig-feed__footer')).toHaveLength(1);
+    expect(root.querySelector('.ig-feed__footer')!.getAttribute('aria-hidden')).toBeNull();
+    expect(root.querySelectorAll('a.ig-feed__tile')).toHaveLength(6);
+  });
+
+  it('gives the tiles of a loading feed the shape of the real ones', async () => {
+    let resolve!: (v: unknown) => void;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => new Promise((r) => (resolve = r))),
+    );
+    const root = mountRoot({ 'data-ig-rows': '2', 'data-ig-ratio': '1 / 1' });
+    const done = initInstagramFeed();
+    expect(root.style.getPropertyValue('--ig-ratio')).toBe('1 / 1');
+    expect(root.querySelectorAll('.ig-feed__item')).toHaveLength(12);
+    resolve({ ok: true, json: async () => feedJson(12) });
+    await done;
+    expect(root.style.getPropertyValue('--ig-ratio')).toBe('1 / 1');
+    expect(root.querySelectorAll('.ig-feed__item')).toHaveLength(12);
+  });
+
   it('hides itself when there is nothing to show and placeholder="hide"', async () => {
     mockFetch({ status: 'unconfigured', posts: [] });
     const root = mountRoot({ 'data-ig-placeholder': 'hide' });

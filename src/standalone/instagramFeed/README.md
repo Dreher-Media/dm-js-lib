@@ -164,6 +164,22 @@ div.ig-feed[data-layout][data-status]                    role="group"
 
 `data-status` is `loading`, `ok`, `stale` (the connector served its last good feed while Instagram was down), `unconfigured` or `unavailable`.
 
+## No layout shift
+
+The space is reserved from the first moment: the module renders its placeholder tiles (in the real layout: columns, rows and `data-ig-ratio`, so the box has its final height) and an invisible line for the "Follow" link the moment the script runs, not when the feed has arrived, and the tiles size themselves by `aspect-ratio`, so a picture that loads later moves nothing. This holds for `data-ig-placeholder="hide"` too: that option only decides what a feed we could not read shows.
+
+What the module cannot do is act before it has loaded. To keep the gap short, load the script early, at the top of the page's footer code or in the head with `defer`. To close it completely, give the empty element a height in your own CSS (Project settings → Custom code → Head code); an estimate is enough, e.g. for the default grid of six 3 / 4 tiles in one row:
+
+```html
+<style>
+  [data-ig-feed]:empty {
+    aspect-ratio: 4.5 / 1;
+  }
+</style>
+```
+
+(`4.5 / 1` is six columns of 3 / 4 tiles; the empty element is the one before the script has run.) The rule stops applying as soon as the module has put its tiles in.
+
 ## When the feed is not available
 
 The module never throws and never blocks the page. With no connected account, an unreachable connector, or a response it cannot read, the element shows grey placeholder tiles (or is hidden with `data-ig-placeholder="hide"`). An account that answered but has no posts renders nothing. Requests time out after 8 seconds.
