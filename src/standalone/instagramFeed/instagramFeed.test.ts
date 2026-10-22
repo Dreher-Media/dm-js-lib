@@ -383,6 +383,17 @@ describe('the grid', () => {
   });
 });
 
+describe('styles', () => {
+  it("resets a page's global list-item rules, which would shift the first tile", async () => {
+    mockFetch(feedJson(2));
+    mountRoot();
+    await initInstagramFeed();
+    const css = document.querySelector('style[data-dm-ig-feed-style]')!.textContent!;
+    expect(css).toContain('.ig-feed__item{margin:0;padding:0;list-style:none}');
+    expect(css).toContain(':where(ul,ol,li,p){margin:0;padding:0}');
+  });
+});
+
 describe('placeholders and failures', () => {
   it('shows placeholder tiles while loading and when the feed is unconfigured', async () => {
     let resolve!: (v: unknown) => void;
