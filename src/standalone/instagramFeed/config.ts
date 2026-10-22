@@ -10,9 +10,9 @@ import type {
 export const DEFAULT_ENDPOINT = 'https://instagram-connector.services.dreher-media.de';
 
 const DEFAULT_LIMIT = 12;
-const MAX_LIMIT = 25;
+export const MAX_LIMIT = 25;
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const MEDIA_ID = /^\d{5,30}$/;
+const MEDIA_ID = /^\d{8,25}$/;
 
 const LABELS: Record<'de' | 'en', FeedLabels> = {
   de: {
@@ -21,17 +21,83 @@ const LABELS: Record<'de' | 'en', FeedLabels> = {
     video: 'Video',
     album: 'Mehrere Bilder',
     follow: 'Auf Instagram folgen',
-    prev: 'Zurück',
-    next: 'Weiter',
+    prev: 'Vorherige Beiträge',
+    next: 'Weitere Beiträge',
+    dialog: 'Instagram-Beitrag',
+    openPopup: 'Beitrag ansehen',
+    close: 'Schließen',
+    prevPost: 'Vorheriger Beitrag',
+    nextPost: 'Nächster Beitrag',
+    moreOnInstagram: 'Weitere Beiträge auf Instagram ansehen',
+    endCount: 'Noch {n} weitere Beiträge auf Instagram',
+    endCountOne: 'Noch ein weiterer Beitrag auf Instagram',
+    endMore: 'Es gibt weitere Beiträge auf Instagram',
+    endAll: 'Das waren alle Beiträge',
+    endLinkAll: 'Alle Beiträge auf Instagram ansehen',
+    endProfile: 'Zum Profil auf Instagram',
+    followShort: 'Folgen',
+    followProfile: 'Auf Instagram folgen (öffnet in neuem Tab)',
+    prevSlide: 'Vorheriges Bild',
+    nextSlide: 'Nächstes Bild',
+    slide: 'Bild {n} von {total}',
+    likes: 'Likes: {n}',
+    comments: 'Kommentare: {n}',
+    openOnInstagram: 'Auf Instagram ansehen',
+    commentsAll: 'Alle {n} Kommentare ansehen',
+    commentsOne: 'Kommentar ansehen',
+    share: 'Link zum Beitrag kopieren oder teilen',
+    copied: 'Link kopiert',
+    more: 'mehr',
+    less: 'weniger',
+    play: 'Video abspielen',
+    pause: 'Video pausieren',
+    seek: 'Position im Video',
+    seekText: '{current} von {total}',
+    mute: 'Ton ausschalten',
+    unmute: 'Ton einschalten',
+    videoFailed: 'Das Video lässt sich hier nicht abspielen – auf Instagram ansehen',
   },
   en: {
     region: 'Instagram posts',
     openPost: 'View post on Instagram (opens in a new tab)',
     video: 'Video',
-    album: 'Multiple images',
+    album: 'Image gallery',
     follow: 'Follow on Instagram',
-    prev: 'Previous',
-    next: 'Next',
+    prev: 'Previous posts',
+    next: 'More posts',
+    dialog: 'Instagram post',
+    openPopup: 'View post',
+    close: 'Close',
+    prevPost: 'Previous post',
+    nextPost: 'Next post',
+    moreOnInstagram: 'View more posts on Instagram',
+    endCount: '{n} more posts on Instagram',
+    endCountOne: '1 more post on Instagram',
+    endMore: 'There are more posts on Instagram',
+    endAll: 'That was every post',
+    endLinkAll: 'View all posts on Instagram',
+    endProfile: 'View the profile on Instagram',
+    followShort: 'Follow',
+    followProfile: 'Follow on Instagram (opens in a new tab)',
+    prevSlide: 'Previous image',
+    nextSlide: 'Next image',
+    slide: 'Image {n} of {total}',
+    likes: 'Likes: {n}',
+    comments: 'Comments: {n}',
+    openOnInstagram: 'View on Instagram',
+    commentsAll: 'View all {n} comments',
+    commentsOne: 'View comment',
+    share: 'Copy or share link to the post',
+    copied: 'Link copied',
+    more: 'more',
+    less: 'less',
+    play: 'Play video',
+    pause: 'Pause video',
+    seek: 'Position in the video',
+    seekText: '{current} of {total}',
+    mute: 'Mute',
+    unmute: 'Unmute',
+    videoFailed: 'This video cannot be played here – watch it on Instagram',
   },
 };
 
@@ -64,10 +130,20 @@ const idList = (raw: string | undefined): string[] =>
     .filter((s) => MEDIA_ID.test(s))
     .slice(0, 50);
 
-const languageOf = (el: HTMLElement): 'de' | 'en' => {
-  const raw = el.dataset.igLang ?? el.closest('[lang]')?.getAttribute('lang') ?? '';
-  return raw.toLowerCase().startsWith('en') ? 'en' : 'de';
-};
+/** The reader's locale tag (`de`, `en-GB`): the attribute, else the nearest `lang`, else German. */
+const localeOf = (el: HTMLElement): string =>
+  (
+    el.dataset.igLocale ??
+    el.dataset.igLang ??
+    el.closest('[lang]')?.getAttribute('lang') ??
+    ''
+  ).trim() || 'de';
+
+const languageOf = (el: HTMLElement): 'de' | 'en' =>
+  localeOf(el).toLowerCase().startsWith('en') ? 'en' : 'de';
+
+const flag = (raw: string | undefined, fallback: boolean): boolean =>
+  raw === undefined ? fallback : raw !== 'false';
 
 /** `undefined` when the element cannot be rendered (no valid slug or endpoint). */
 export function readOptions(el: HTMLElement): FeedOptions | undefined {
@@ -82,8 +158,12 @@ export function readOptions(el: HTMLElement): FeedOptions | undefined {
     lg: positiveInt(d.igColumnsLg, 6, 12),
   };
   const fallback = LABELS[languageOf(el)];
-  const label = (key: keyof FeedLabels, attr: string | undefined): string =>
-    attr?.trim() || fallback[key];
+  const kebab = (key: string): string => key.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`);
+  const labels = { ...fallback };
+  for (const key of Object.keys(fallback) as (keyof FeedLabels)[]) {
+    const own = el.getAttribute(`data-ig-label-${kebab(key)}`)?.trim();
+    if (own) labels[key] = own;
+  }
 
   return {
     slug,
@@ -101,14 +181,12 @@ export function readOptions(el: HTMLElement): FeedOptions | undefined {
     placeholder: oneOf<FeedPlaceholder>(d.igPlaceholder, ['tiles', 'hide'], 'tiles'),
     showProfileLink: d.igProfileLink !== 'false',
     profileUrl: d.igProfileUrl?.trim() || undefined,
-    labels: {
-      region: label('region', d.igLabelRegion),
-      openPost: label('openPost', d.igLabelOpenPost),
-      video: label('video', d.igLabelVideo),
-      album: label('album', d.igLabelAlbum),
-      follow: label('follow', d.igLabelFollow),
-      prev: label('prev', d.igLabelPrev),
-      next: label('next', d.igLabelNext),
-    },
+    protectMedia: flag(d.igProtectMedia, true),
+    hoverPreview: flag(d.igHoverPreview, true),
+    popup: flag(d.igPopup, true),
+    popupLimit: positiveInt(d.igPopupLimit, MAX_LIMIT, MAX_LIMIT),
+    locale: localeOf(el),
+    timeZone: d.igTimeZone?.trim() || 'Europe/Berlin',
+    labels,
   };
 }
