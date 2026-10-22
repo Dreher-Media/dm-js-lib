@@ -53,10 +53,10 @@ const CSS = `
 .ig-feed__overlay{position: absolute;inset: 0;display: flex;align-items: flex-end;padding: var(--space-3);background: var(--ig-overlay-bg, color-mix(in srgb, var(--color-black) 55%, transparent));font-size: var(--text-sm);line-height: 1.35;opacity: 0;pointer-events: none;transition: opacity var(--duration-base) var(--ease-out);}
 .ig-feed__caption{display: -webkit-box;-webkit-box-orient: vertical;-webkit-line-clamp: 6;line-clamp: 6;overflow: hidden;}
 @media (hover: hover){.ig-feed__tile:hover .ig-feed__overlay, .ig-feed__tile:focus-visible .ig-feed__overlay{opacity: 1;}}
-.ig-feed__nav{position: absolute;inset-block-start: 50%;z-index: 1;display: grid;place-items: center;inline-size: var(--space-10);block-size: var(--space-10);padding: 0;border: 0;border-radius: var(--radius-pill);background: var(--ig-nav-bg, #fff);color: var(--ig-nav-color, #111);cursor: pointer;transform: translateY(-50%);transition: opacity var(--duration-fast) var(--ease-out);}
+.ig-feed__nav{position: absolute;inset-block-start: 50%;z-index: 1;display: grid;place-items: center;inline-size: 28px;block-size: 28px;padding: 0;border: 0;border-radius: var(--radius-pill);background: var(--ig-nav-bg, rgb(255 255 255 / 0.7));color: var(--ig-nav-color, #262626);cursor: pointer;transform: translateY(-50%);transition: opacity var(--duration-fast) var(--ease-out);}
 .ig-feed__nav[hidden]{display: none;}
 .ig-feed__nav:disabled{opacity: 0;pointer-events: none;}
-.ig-feed__nav svg{inline-size: var(--space-5);block-size: var(--space-5);}
+.ig-feed__nav svg{inline-size: var(--space-4);block-size: var(--space-4);}
 .ig-feed__nav--prev{inset-inline-start: var(--space-2);}
 .ig-feed__nav--next{inset-inline-end: var(--space-2);}
 .ig-feed__footer{margin-block-start: var(--space-6);}
