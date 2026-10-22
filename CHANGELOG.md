@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.12.0](https://github.com/Dreher-Media/dm-js-lib/compare/v1.11.0...v1.12.0) (2026-10-22)
+
+
+### Features
+
+* **instagram-feed:** standalone module for Webflow sites ([#42](https://github.com/Dreher-Media/dm-js-lib/issues/42)) ([9bbbcd6](https://github.com/Dreher-Media/dm-js-lib/commit/9bbbcd6b6f7d571d553582ded90e01e27d504521))
+
 ## [1.11.0](https://github.com/Dreher-Media/dm-js-lib/compare/v1.10.0...v1.11.0) (2026-10-13)
 
 
