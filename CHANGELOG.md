@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.3](https://github.com/Dreher-Media/dm-js-lib/compare/v1.13.2...v1.13.3) (2026-10-22)
+
+
+### Bug Fixes
+
+* **instagram-feed:** reserve the feed's space from the moment the script runs ([#50](https://github.com/Dreher-Media/dm-js-lib/issues/50)) ([a1980e3](https://github.com/Dreher-Media/dm-js-lib/commit/a1980e32aa27f05f3a000f547784a98246a61c89))
+
 ## [1.13.2](https://github.com/Dreher-Media/dm-js-lib/compare/v1.13.1...v1.13.2) (2026-10-22)
 
 
