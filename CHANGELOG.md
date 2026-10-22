@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.2](https://github.com/Dreher-Media/dm-js-lib/compare/v1.13.1...v1.13.2) (2026-10-22)
+
+
+### Bug Fixes
+
+* **instagram-feed:** smaller, translucent carousel arrows ([#48](https://github.com/Dreher-Media/dm-js-lib/issues/48)) ([83c4a9c](https://github.com/Dreher-Media/dm-js-lib/commit/83c4a9cede9393cfef094073d471081916ecb2d0))
+
 ## [1.13.1](https://github.com/Dreher-Media/dm-js-lib/compare/v1.13.0...v1.13.1) (2026-10-22)
 
 
