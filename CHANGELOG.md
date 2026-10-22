@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.0](https://github.com/Dreher-Media/dm-js-lib/compare/v1.12.0...v1.13.0) (2026-10-22)
+
+
+### Features
+
+* **instagram-feed:** post popup, clip preview and media protection ([#44](https://github.com/Dreher-Media/dm-js-lib/issues/44)) ([710afdf](https://github.com/Dreher-Media/dm-js-lib/commit/710afdf58ee8b3a6ee27f117f34ab9c4721e5125))
+
 ## [1.12.0](https://github.com/Dreher-Media/dm-js-lib/compare/v1.11.0...v1.12.0) (2026-10-22)
 
 
