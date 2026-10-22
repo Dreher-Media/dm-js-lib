@@ -809,11 +809,15 @@ export function renderFeed(
 ): void {
   const posts = feed.posts;
   const hasPosts = posts.length > 0;
-  // Placeholders stand in for a feed we could NOT read, never for an account that has no posts.
+  // While the feed is on its way the space it will take is reserved: placeholder tiles (whatever
+  // `placeholder` says, which only decides what a feed we could NOT read shows) and the profile link's
+  // line, so nothing below the feed moves when the posts arrive. Placeholders never stand in for an
+  // account that answered and has no posts.
   const showPlaceholder =
-    !hasPosts && (loading || feed.status !== 'ok') && opts.placeholder === 'tiles';
+    !hasPosts && (loading || (feed.status !== 'ok' && opts.placeholder === 'tiles'));
   const profileUrl = opts.profileUrl ?? feed.account?.profileUrl;
   const showFooter = opts.showProfileLink && Boolean(profileUrl) && !loading;
+  const reserveFooter = loading && opts.showProfileLink;
   const popupOn = opts.popup && hasPosts;
   const popupCount = Math.max(1, Math.min(opts.popupLimit, MAX_LIMIT, posts.length));
   const hasPreview =
@@ -835,7 +839,7 @@ export function renderFeed(
   root.style.setProperty('--ig-ratio', opts.ratio);
   root.replaceChildren();
 
-  if (!hasPosts && !showPlaceholder && !showFooter) {
+  if (!hasPosts && !showPlaceholder && !showFooter && !reserveFooter) {
     root.hidden = true;
     return;
   }
@@ -857,6 +861,18 @@ export function renderFeed(
       wireCarousel(track, prev, next);
     }
     root.appendChild(stage);
+  }
+
+  if (reserveFooter) {
+    // an invisible line of the footer's height, replaced by the real link when the feed has arrived
+    root.appendChild(
+      h(
+        'div',
+        'ig-feed__footer',
+        { 'aria-hidden': 'true' },
+        h('span', 'ig-feed__follow', { style: 'visibility:hidden' }, opts.labels.follow),
+      ),
+    );
   }
 
   if (showFooter && profileUrl) {

@@ -9,9 +9,10 @@ import { initInstagramFeed } from './instagramFeed/index';
 export { initInstagramFeed, instagramFeedAPI } from './instagramFeed/index';
 
 if (typeof document !== 'undefined') {
+  // Render at once what is already in the page, placeholders included, so the space is reserved as
+  // early as possible; whatever comes after the script is picked up when the DOM is complete.
+  initInstagramFeed();
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => initInstagramFeed(), { once: true });
-  } else {
-    initInstagramFeed();
   }
 }
