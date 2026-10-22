@@ -58,7 +58,7 @@ dm-js-lib/
 │   │   │   ├── api.ts
 │   │   │   └── README.md
 │   │   ├── instagramFeed.ts     # Entry point for the Instagram feed module
-│   │   ├── instagramFeed/       # Instagram feed implementation (config, feed, render, styles)
+│   │   ├── instagramFeed/       # Instagram feed: config, feed, render, styles, popup, preview, modal, lib/
 │   │   │   ├── index.ts
 │   │   │   └── README.md
 │   │   ├── previewDetailSwitcher.ts  # Entry point
