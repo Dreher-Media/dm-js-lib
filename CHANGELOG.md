@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.1](https://github.com/Dreher-Media/dm-js-lib/compare/v1.13.0...v1.13.1) (2026-10-22)
+
+
+### Bug Fixes
+
+* **instagram-feed:** reset a page's global list-item padding ([#46](https://github.com/Dreher-Media/dm-js-lib/issues/46)) ([3d9762b](https://github.com/Dreher-Media/dm-js-lib/commit/3d9762bb1100e27a84210cae1aa2d95572a8aefa))
+
 ## [1.13.0](https://github.com/Dreher-Media/dm-js-lib/compare/v1.12.0...v1.13.0) (2026-10-22)
 
 
