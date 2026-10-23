@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.0](https://github.com/Dreher-Media/dm-js-lib/compare/v1.13.3...v1.14.0) (2026-10-23)
+
+
+### Features
+
+* **instagram-feed:** carousel defaults, 4 / 5 tiles, no profile link ([#52](https://github.com/Dreher-Media/dm-js-lib/issues/52)) ([0fff647](https://github.com/Dreher-Media/dm-js-lib/commit/0fff647b3da8472a39b398bfe30076485ea1a7d1))
+
 ## [1.13.3](https://github.com/Dreher-Media/dm-js-lib/compare/v1.13.2...v1.13.3) (2026-10-22)
 
 
