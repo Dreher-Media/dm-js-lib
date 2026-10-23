@@ -39,11 +39,22 @@ function mockFetch(body: unknown, init: { ok?: boolean } = {}) {
   return fn;
 }
 
-function mountRoot(attrs: Record<string, string> = {}): HTMLElement {
+/** The grid the tests were written against; the module's own defaults are a carousel (see below). */
+const GRID: Record<string, string> = {
+  'data-ig-layout': 'grid',
+  'data-ig-ratio': '3 / 4',
+  'data-ig-columns-base': '3',
+  'data-ig-columns-md': '4',
+  'data-ig-columns-lg': '6',
+  'data-ig-profile-link': 'true',
+};
+
+function mountRoot(attrs: Record<string, string> = {}, defaults = true): HTMLElement {
   const root = document.createElement('div');
   root.setAttribute('data-ig-feed', '');
   root.setAttribute('data-ig-slug', 'demo');
-  for (const [k, v] of Object.entries(attrs)) root.setAttribute(k, v);
+  const all = defaults ? { ...GRID, ...attrs } : attrs;
+  for (const [k, v] of Object.entries(all)) root.setAttribute(k, v);
   document.body.appendChild(root);
   return root;
 }
@@ -94,17 +105,17 @@ describe('readOptions', () => {
     expect(readOptions(root)).toBeUndefined();
   });
 
-  it('falls back to the template defaults', () => {
-    expect(readOptions(mountRoot())).toMatchObject({
+  it('falls back to the defaults: a carousel of 4 / 5 tiles, 1 / 2 / 3 per row, no profile link', () => {
+    expect(readOptions(mountRoot({}, false))).toMatchObject({
       endpoint: ENDPOINT,
       limit: 12,
-      layout: 'grid',
-      columns: { base: 3, md: 4, lg: 6 },
+      layout: 'carousel',
+      columns: { base: 1, md: 2, lg: 3 },
       rows: 1,
-      ratio: '3 / 4',
+      ratio: '4 / 5',
       overlay: 'hover',
       placeholder: 'tiles',
-      showProfileLink: true,
+      showProfileLink: false,
       protectMedia: true,
       hoverPreview: true,
       popup: true,
@@ -126,8 +137,8 @@ describe('readOptions', () => {
       }),
     )!;
     expect(o.limit).toBe(25);
-    expect(o.layout).toBe('grid');
-    expect(o.ratio).toBe('3 / 4');
+    expect(o.layout).toBe('carousel');
+    expect(o.ratio).toBe('4 / 5');
     expect(o.hiddenIds).toEqual(['179000000000000001', '179000000000000002']);
     expect(o.popup).toBe(false);
     expect(o.protectMedia).toBe(false);

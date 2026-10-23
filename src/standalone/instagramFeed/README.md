@@ -68,7 +68,7 @@ Drop an **Embed** element where the feed should appear. `data-ig-slug` is the pr
 <div data-ig-feed data-ig-slug="my-client"></div>
 ```
 
-That is a grid of one row: 3 tiles on phones, 4 from 768 px, 6 from 1024 px. Style the surrounding section in the Designer as usual.
+That is a carousel of 4 / 5 tiles: 1 tile on phones, 2 from 768 px, 3 from 1024 px, 12 posts in all. Style the surrounding section in the Designer as usual.
 
 ### 3. Connect the account
 
@@ -83,15 +83,15 @@ All options are `data-ig-*` attributes on the element.
 | `data-ig-slug`         | – (required)                        | Squidex app name of the project                                                     |
 | `data-ig-endpoint`     | the production connector            | Origin of another connector (https, or `http://localhost` for dev)                  |
 | `data-ig-limit`        | `12`                                | Posts to fetch (1–25)                                                               |
-| `data-ig-layout`       | `grid`                              | `grid` or `carousel`                                                                |
-| `data-ig-columns-base` | `3`                                 | Tiles per row below 768 px                                                          |
-| `data-ig-columns-md`   | `4`                                 | Tiles per row from 768 px                                                           |
-| `data-ig-columns-lg`   | `6`                                 | Tiles per row from 1024 px                                                          |
+| `data-ig-layout`       | `carousel`                          | `grid` or `carousel`                                                                |
+| `data-ig-columns-base` | `1`                                 | Tiles per row below 768 px                                                          |
+| `data-ig-columns-md`   | `2`                                 | Tiles per row from 768 px                                                           |
+| `data-ig-columns-lg`   | `3`                                 | Tiles per row from 1024 px                                                          |
 | `data-ig-rows`         | `1`                                 | Rows in the `grid` layout (tiles beyond rows × columns are hidden)                  |
-| `data-ig-ratio`        | `3 / 4`                             | Tile aspect ratio, CSS `aspect-ratio` syntax (`1 / 1`, `4 / 5`, …)                  |
+| `data-ig-ratio`        | `4 / 5`                             | Tile aspect ratio, CSS `aspect-ratio` syntax (`1 / 1`, `4 / 5`, …)                  |
 | `data-ig-overlay`      | `hover`                             | `hover`: caption over the tile on hover/focus; `none`                               |
 | `data-ig-placeholder`  | `tiles`                             | What to show when the feed is not available: grey `tiles`, or `hide`                |
-| `data-ig-profile-link` | `true`                              | `false` removes the "Follow on Instagram" link                                      |
+| `data-ig-profile-link` | `false`                             | `true` shows the "Follow on Instagram" link under the feed                          |
 | `data-ig-profile-url`  | the account the API reported        | Target of that link                                                                 |
 | `data-ig-hidden`       | –                                   | Comma list of media ids to leave out                                                |
 | `data-ig-pinned`       | –                                   | Comma list of media ids to show first                                               |
@@ -168,7 +168,7 @@ div.ig-feed[data-layout][data-status]                    role="group"
 
 The space is reserved from the first moment: the module renders its placeholder tiles (in the real layout: columns, rows and `data-ig-ratio`, so the box has its final height) and an invisible line for the "Follow" link the moment the script runs, not when the feed has arrived, and the tiles size themselves by `aspect-ratio`, so a picture that loads later moves nothing. This holds for `data-ig-placeholder="hide"` too: that option only decides what a feed we could not read shows.
 
-What the module cannot do is act before it has loaded. To keep the gap short, load the script early, at the top of the page's footer code or in the head with `defer`. To close it completely, give the empty element a height in your own CSS (Project settings → Custom code → Head code); an estimate is enough, e.g. for the default grid of six 3 / 4 tiles in one row:
+What the module cannot do is act before it has loaded. To keep the gap short, load the script early, at the top of the page's footer code or in the head with `defer`. To close it completely, give the empty element a height in your own CSS (Project settings → Custom code → Head code); an estimate is enough, e.g. for the default carousel of 4 / 5 tiles, one visible at a time on a phone:
 
 ```html
 <style>
@@ -178,7 +178,7 @@ What the module cannot do is act before it has loaded. To keep the gap short, lo
 </style>
 ```
 
-(`4.5 / 1` is six columns of 3 / 4 tiles; the empty element is the one before the script has run.) The rule stops applying as soon as the module has put its tiles in.
+(`4 / 5` is one tile on a phone; the empty element is the one before the script has run.) The rule stops applying as soon as the module has put its tiles in.
 
 ## When the feed is not available
 

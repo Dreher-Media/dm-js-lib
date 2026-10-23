@@ -153,9 +153,9 @@ export function readOptions(el: HTMLElement): FeedOptions | undefined {
   if (!SLUG.test(slug) || slug.length > 63 || !endpoint) return undefined;
 
   const columns: FeedColumns = {
-    base: positiveInt(d.igColumnsBase, 3, 12),
-    md: positiveInt(d.igColumnsMd, 4, 12),
-    lg: positiveInt(d.igColumnsLg, 6, 12),
+    base: positiveInt(d.igColumnsBase, 1, 12),
+    md: positiveInt(d.igColumnsMd, 2, 12),
+    lg: positiveInt(d.igColumnsLg, 3, 12),
   };
   const fallback = LABELS[languageOf(el)];
   const kebab = (key: string): string => key.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`);
@@ -171,15 +171,15 @@ export function readOptions(el: HTMLElement): FeedOptions | undefined {
     limit: positiveInt(d.igLimit, DEFAULT_LIMIT, MAX_LIMIT),
     hiddenIds: idList(d.igHidden),
     pinnedIds: idList(d.igPinned),
-    layout: oneOf<FeedLayout>(d.igLayout, ['grid', 'carousel'], 'grid'),
+    layout: oneOf<FeedLayout>(d.igLayout, ['grid', 'carousel'], 'carousel'),
     columns,
     rows: positiveInt(d.igRows, 1, 10),
     ratio: /^\d+(\.\d+)?\s*\/\s*\d+(\.\d+)?$/.test(d.igRatio ?? '')
       ? (d.igRatio as string)
-      : '3 / 4',
+      : '4 / 5',
     overlay: oneOf<FeedOverlay>(d.igOverlay, ['hover', 'none'], 'hover'),
     placeholder: oneOf<FeedPlaceholder>(d.igPlaceholder, ['tiles', 'hide'], 'tiles'),
-    showProfileLink: d.igProfileLink !== 'false',
+    showProfileLink: d.igProfileLink === 'true',
     profileUrl: d.igProfileUrl?.trim() || undefined,
     protectMedia: flag(d.igProtectMedia, true),
     hoverPreview: flag(d.igHoverPreview, true),
