@@ -52,6 +52,15 @@ export function getBrowserLanguage(): string | null {
 }
 
 /**
+ * Gets the page's own language from the <html lang> attribute
+ * @returns The two-letter language code or null if the attribute is missing or invalid
+ */
+export function getPageLanguage(): string | null {
+  const lang = document.documentElement.getAttribute('lang');
+  return lang ? getTwoLetterLangCode(lang) : null;
+}
+
+/**
  * Checks if a language is available on the page
  * @param lang - The language code to check
  * @returns True if the language is available, false otherwise
