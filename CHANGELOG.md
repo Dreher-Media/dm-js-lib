@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.0](https://github.com/Dreher-Media/dm-js-lib/compare/v1.14.0...v1.15.0) (2026-11-23)
+
+
+### Features
+
+* **lang:** fall back to the page's &lt;html lang&gt; before English ([#55](https://github.com/Dreher-Media/dm-js-lib/issues/55)) ([36667fa](https://github.com/Dreher-Media/dm-js-lib/commit/36667fa8d03c1da1fd13160f7519005793d44fa0))
+
 ## [1.14.0](https://github.com/Dreher-Media/dm-js-lib/compare/v1.13.3...v1.14.0) (2026-10-23)
 
 
