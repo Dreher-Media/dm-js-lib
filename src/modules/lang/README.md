@@ -45,7 +45,7 @@ Add `data-lang-content` to content blocks:
 
 ### Automatic Language Detection
 
-The module automatically detects the user's browser language and switches to it if available. If the browser language isn't available, it falls back to English (if available).
+The module automatically detects the user's browser language and switches to it if available. If the browser language isn't available, it falls back to the page's own language (the `lang` attribute of `<html>`, if that language is offered), and then to English (if available). A German page with `<html lang="de">` therefore stays German for visitors whose browser language isn't offered.
 
 ### Session Persistence
 
@@ -58,7 +58,7 @@ Language links automatically get the `active` class when their language is selec
 ## How It Works
 
 1. On page load, the module checks for a saved language preference
-2. If none exists, it detects the browser's preferred language
+2. If none exists, it detects the browser's preferred language, falling back to the page's `<html lang>`, then English
 3. It shows content matching the selected language and hides others
 4. When a language link is clicked, it switches the visible content
 5. The preference is saved for the session
@@ -89,6 +89,7 @@ Style visible content:
 ## Language Codes
 
 Use standard two-letter language codes (ISO 639-1):
+
 - `en` - English
 - `de` - German
 - `fr` - French

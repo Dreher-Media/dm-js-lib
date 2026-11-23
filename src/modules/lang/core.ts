@@ -3,7 +3,12 @@
  * Main language switching and restoration functionality
  */
 
-import { getLangFromElement, getBrowserLanguage, isLanguageAvailable } from './utils';
+import {
+  getLangFromElement,
+  getBrowserLanguage,
+  getPageLanguage,
+  isLanguageAvailable,
+} from './utils';
 
 /**
  * Switches to the specified language using the attribute-based system
@@ -47,8 +52,12 @@ export function restoreLanguage(): void {
   // If no language in session storage, try browser language
   if (!selectedLang) {
     const browserLang = getBrowserLanguage();
+    const pageLang = getPageLanguage();
     if (browserLang && isLanguageAvailable(browserLang)) {
       selectedLang = browserLang;
+    } else if (pageLang && isLanguageAvailable(pageLang)) {
+      // Fallback to the page's own language (<html lang>) if available
+      selectedLang = pageLang;
     } else if (isLanguageAvailable('en')) {
       // Fallback to English if available
       selectedLang = 'en';
